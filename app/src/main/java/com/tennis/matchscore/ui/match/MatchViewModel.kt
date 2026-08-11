@@ -2,9 +2,9 @@ package com.tennis.matchscore.ui.match
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.tennis.matchscore.data.local.entity.PlayerEntity
 import com.tennis.matchscore.domain.repository.MatchRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -38,60 +38,82 @@ class MatchViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(MatchUiState())
     val uiState: StateFlow<MatchUiState> = _uiState.asStateFlow()
 
-    init {
-        initMatch()
-    }
+    private var observeMatchJob: Job? = null
 
-    private fun initMatch() {
+    fun startNewMatch(
+        player1Id: Long,
+        player2Id: Long,
+        formatId: Long,
+        initialServer: Int,
+        surface: String,
+        onMatchCreated: () -> Unit
+    ) {
         viewModelScope.launch {
             _uiState.update { it.copy(isSaving = true) }
             runCatching {
-                val p1Id = matchRepository.savePlayer(PlayerEntity(firstName = "Jogador 1", lastName = ""))
-                val p2Id = matchRepository.savePlayer(PlayerEntity(firstName = "Jogador 2", lastName = ""))
+                // Determina o ID do sacador inicial com base na seleção
+                val initialServerId = if (initialServer == 1) player1Id else player2Id
 
+                // Cria a partida no repositório com os dados reais
                 val matchId = matchRepository.createMatch(
-                    player1Id = p1Id,
-                    player2Id = p2Id,
-                    matchFormatId = 1L,
-                    initialServerId = p1Id
+                    player1Id = player1Id,
+                    player2Id = player2Id,
+                    matchFormatId = formatId,
+                    initialServerId = initialServerId
                 )
 
                 _uiState.update {
                     it.copy(
                         currentMatchId = matchId,
-                        player1Id = p1Id,
-                        player2Id = p2Id,
+                        player1Id = player1Id,
+                        player2Id = player2Id,
                         isSaving = false
                     )
                 }
 
-                // Começa a escutar as atualizações da partida do Room
-                matchRepository.observeMatchWithDetails(matchId).collect { details ->
-                    details?.let { matchDetails ->
-                        val match = matchDetails.match
-                        val p1Sets = matchDetails.sets.count { set -> set.winnerPlayerId == match.player1Id }
-                        val p2Sets = matchDetails.sets.count { set -> set.winnerPlayerId == match.player2Id }
+                // Começa a observar os dados dessa nova partida no banco
+                observeMatch(matchId)
 
-                        _uiState.update { state ->
-                            state.copy(
-                                player1Score = match.player1PointsCurrentGame,
-                                player2Score = match.player2PointsCurrentGame,
-                                player1Games = match.player1GamesCurrentSet,
-                                player2Games = match.player2GamesCurrentSet,
-                                player1Sets = p1Sets,
-                                player2Sets = p2Sets,
-                                isTieBreak = match.isTieBreak,
-                                isMatchFinished = match.status == com.tennis.matchscore.domain.model.MatchStatus.FINISHED,
-                                winnerName = if (match.winnerId == match.player1Id) state.player1Name
-                                else if (match.winnerId == match.player2Id) state.player2Name
-                                else null
-                            )
-                        }
-                    }
-                }
+                // Callback para prosseguir na navegação
+                onMatchCreated()
             }.onFailure { error ->
                 error.printStackTrace()
                 _uiState.update { it.copy(isSaving = false) }
+            }
+        }
+    }
+
+    private fun observeMatch(matchId: Long) {
+        observeMatchJob?.cancel()
+        observeMatchJob = viewModelScope.launch {
+            matchRepository.observeMatchWithDetails(matchId).collect { details ->
+                details?.let { matchDetails ->
+                    val match = matchDetails.match
+                    val p1Sets = matchDetails.sets.count { set -> set.winnerPlayerId == match.player1Id }
+                    val p2Sets = matchDetails.sets.count { set -> set.winnerPlayerId == match.player2Id }
+
+                    // Monta o nome completo do jogador se disponível
+                    val p1FullName = "${matchDetails.player1.firstName} ${matchDetails.player1.lastName}".trim()
+                    val p2FullName = "${matchDetails.player2.firstName} ${matchDetails.player2.lastName}".trim()
+
+                    _uiState.update { state ->
+                        state.copy(
+                            player1Name = p1FullName.ifBlank { "Jogador 1" },
+                            player2Name = p2FullName.ifBlank { "Jogador 2" },
+                            player1Score = match.player1PointsCurrentGame,
+                            player2Score = match.player2PointsCurrentGame,
+                            player1Games = match.player1GamesCurrentSet,
+                            player2Games = match.player2GamesCurrentSet,
+                            player1Sets = p1Sets,
+                            player2Sets = p2Sets,
+                            isTieBreak = match.isTieBreak,
+                            isMatchFinished = match.status == com.tennis.matchscore.domain.model.MatchStatus.FINISHED,
+                            winnerName = if (match.winnerId == match.player1Id) p1FullName
+                            else if (match.winnerId == match.player2Id) p2FullName
+                            else null
+                        )
+                    }
+                }
             }
         }
     }
@@ -130,6 +152,12 @@ class MatchViewModel @Inject constructor(
     }
 
     fun resetMatch() {
-        initMatch()
+        val state = _uiState.value
+        val matchId = state.currentMatchId ?: return
+
+        // Reinicia a observação/estado da partida atual
+        viewModelScope.launch {
+            observeMatch(matchId)
+        }
     }
 }
