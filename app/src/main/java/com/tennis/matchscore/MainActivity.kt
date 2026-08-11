@@ -65,7 +65,10 @@ class MainActivity : ComponentActivity() {
                                 )
                             }
                         )
-                        "match" -> MatchScreen(viewModel = matchViewModel)
+                        "match" -> MatchScreen(
+                            viewModel = matchViewModel,
+                            onCloseClick = { currentScreen = "home" }
+                        )
                         "players" -> PlayerScreen(
                             viewModel = playerViewModel,
                             onBackClick = { currentScreen = "home" }

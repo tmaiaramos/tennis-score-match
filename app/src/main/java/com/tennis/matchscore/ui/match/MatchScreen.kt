@@ -32,11 +32,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MatchScreen(
-    viewModel: MatchViewModel
+    viewModel: MatchViewModel = hiltViewModel(),
+    onCloseClick: () -> Unit // <--- Adicione este parâmetro
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -140,9 +142,10 @@ fun MatchScreen(
             },
             confirmButton = {
                 Button(
-                    onClick = { viewModel.resetMatch() }
+                    onClick = onCloseClick, // <--- Troque para chamar o onCloseClick
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Nova Partida")
+                    Text("Fechar")
                 }
             }
         )

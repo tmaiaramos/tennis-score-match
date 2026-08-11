@@ -144,9 +144,16 @@ private fun MatchHistoryCard(matchDetails: MatchWithDetails) {
                         fontSize = 16.sp
                     )
                 }
+                // Placar Jogador 1 (Games / Sets)
+                Text(
+                    text = "${match.player1GamesCurrentSet} games (${match.player1PointsCurrentGame})",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 15.sp,
+                    color = MaterialTheme.colorScheme.primary
+                )
             }
 
-            // Jogador 2
+            // Jogador 2 e Placar
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -168,6 +175,14 @@ private fun MatchHistoryCard(matchDetails: MatchWithDetails) {
                         fontSize = 16.sp
                     )
                 }
+
+                // Placar Jogador 2 (Games / Sets)
+                Text(
+                    text = "${match.player2GamesCurrentSet} games (${match.player2PointsCurrentGame})",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 15.sp,
+                    color = MaterialTheme.colorScheme.primary
+                )
             }
         }
     }
