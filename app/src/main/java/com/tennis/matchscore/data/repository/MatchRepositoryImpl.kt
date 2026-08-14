@@ -19,21 +19,23 @@ import javax.inject.Inject
 class MatchRepositoryImpl @Inject constructor(
     private val matchDao: MatchDao,
     private val matchFormatDao: MatchFormatDao,
-    private val playerDao: PlayerDao
+    private val playerDao: PlayerDao,
 ) : MatchRepository {
 
     override suspend fun createMatch(
         player1Id: Long,
         player2Id: Long,
         matchFormatId: Long,
-        initialServerId: Long
+        initialServerId: Long,
+        createdAt: Long,
     ): Long {
         val match = MatchEntity(
             player1Id = player1Id,
             player2Id = player2Id,
             matchFormatId = matchFormatId,
             currentServerId = initialServerId,
-            status = MatchStatus.IN_PROGRESS
+            status = MatchStatus.IN_PROGRESS,
+            createdAt = createdAt,
         )
         return matchDao.insertMatch(match)
     }
@@ -68,7 +70,7 @@ class MatchRepositoryImpl @Inject constructor(
             scoreP1Before = match.player1PointsCurrentGame,
             scoreP2Before = match.player2PointsCurrentGame,
             gamesP1Before = match.player1GamesCurrentSet,
-            gamesP2Before = match.player2GamesCurrentSet
+            gamesP2Before = match.player2GamesCurrentSet,
         )
         matchDao.insertPointHistory(historyEntry)
 
@@ -85,7 +87,7 @@ class MatchRepositoryImpl @Inject constructor(
             player1Id = match.player1Id,
             player2Id = match.player2Id,
             isTieBreak = match.isTieBreak,
-            isFinished = match.status == MatchStatus.FINISHED,
+            isFinished = false,
             winnerId = match.winnerId,
             completedSetScores = matchDetails.sets.map { Pair(it.player1Games, it.player2Games) }
         )
@@ -95,17 +97,33 @@ class MatchRepositoryImpl @Inject constructor(
         val newState = engine.processPoint(currentState, pointWinnerId)
 
         // 4. Se um set foi concluído, registra o resultado na tabela SetScore
-        if (newState.currentSet > currentState.currentSet || newState.isFinished) {
+        if ((newState.currentSet > currentState.currentSet) || newState.isFinished) {
             val lastCompletedSetIndex = currentState.currentSet - 1
             if (newState.completedSetScores.size > lastCompletedSetIndex) {
                 val (p1Games, p2Games) = newState.completedSetScores[lastCompletedSetIndex]
                 val setWinnerId = if (p1Games > p2Games) match.player1Id else match.player2Id
+
+                // Verificação 100% dinâmica baseada na flag do estado OU na regra do formato
+                val wasTieBreakSet = currentState.isTieBreak ||
+                        format.isTieBreakSet(p1Games, p2Games, setNumber = currentState.currentSet)
+
+                val tbP1 = if (wasTieBreakSet) {
+                    if (pointWinnerId == match.player1Id) currentState.player1PointsCurrentGame.toIntOrNull()?.plus(1)
+                    else currentState.player1PointsCurrentGame.toIntOrNull()
+                } else null
+
+                val tbP2 = if (wasTieBreakSet) {
+                    if (pointWinnerId == match.player2Id) currentState.player2PointsCurrentGame.toIntOrNull()?.plus(1)
+                    else currentState.player2PointsCurrentGame.toIntOrNull()
+                } else null
 
                 val setScore = SetScoreEntity(
                     matchId = matchId,
                     setNumber = currentState.currentSet,
                     player1Games = p1Games,
                     player2Games = p2Games,
+                    tieBreakPointsPlayer1 = tbP1,
+                    tieBreakPointsPlayer2 = tbP2,
                     winnerPlayerId = setWinnerId
                 )
                 matchDao.insertSetScore(setScore)

@@ -6,7 +6,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
@@ -23,7 +23,7 @@ import com.tennis.matchscore.domain.model.DominantHand
 @Composable
 fun PlayerScreen(
     viewModel: PlayerViewModel,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
 ) {
     val players by viewModel.players.collectAsState()
 
@@ -37,7 +37,10 @@ fun PlayerScreen(
                 title = { Text("Cadastro de Jogadores", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Voltar")
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Voltar",
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -87,13 +90,12 @@ fun PlayerScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.Start
                     ) {
-                        DominantHand.values().forEach { hand ->
+                        DominantHand.entries.forEach { hand ->
                             Row(
                                 modifier = Modifier
                                     .selectable(
                                         selected = (selectedHand == hand),
-                                        onClick = { selectedHand = hand }
-                                    )
+                                    ) { selectedHand = hand }
                                     .padding(end = 16.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {

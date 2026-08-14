@@ -46,7 +46,8 @@ class MatchViewModel @Inject constructor(
         formatId: Long,
         initialServer: Int,
         surface: String,
-        onMatchCreated: () -> Unit
+        createdAt: Long = System.currentTimeMillis(),
+        onMatchCreated: () -> Unit,
     ) {
         viewModelScope.launch {
             _uiState.update { it.copy(isSaving = true) }
@@ -59,7 +60,8 @@ class MatchViewModel @Inject constructor(
                     player1Id = player1Id,
                     player2Id = player2Id,
                     matchFormatId = formatId,
-                    initialServerId = initialServerId
+                    initialServerId = initialServerId,
+                    createdAt = createdAt,
                 )
 
                 _uiState.update {

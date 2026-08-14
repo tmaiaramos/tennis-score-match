@@ -1,7 +1,6 @@
 package com.tennis.matchscore
 
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -40,7 +39,7 @@ class MainActivity : ComponentActivity() {
             TennisMatchScoreTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
+                    color = MaterialTheme.colorScheme.background,
                 ) {
                     var currentScreen by remember { mutableStateOf("home") }
 
@@ -49,16 +48,17 @@ class MainActivity : ComponentActivity() {
                             onNavigateToNewMatch = { currentScreen = "setup_match" },
                             onNavigateToPlayers = { currentScreen = "players" },
                             onNavigateToFormats = { currentScreen = "formats" },
-                            onNavigateToHistory = { currentScreen = "history" }
-                        )
+                        ) { currentScreen = "history" }
                         "setup_match" -> NewMatchSetupScreen(
-                            onStartMatch = { p1Id, p2Id, formatId, server, surface ->
+                            onBackClick = { currentScreen = "home" },
+                            onStartMatch = { p1Id, p2Id, formatId, server, surface, dateTimestamp ->
                                 matchViewModel.startNewMatch(
                                     player1Id = p1Id,
                                     player2Id = p2Id,
                                     formatId = formatId,
                                     initialServer = server,
                                     surface = surface,
+                                    createdAt = dateTimestamp,
                                     onMatchCreated = {
                                         currentScreen = "match"
                                     }

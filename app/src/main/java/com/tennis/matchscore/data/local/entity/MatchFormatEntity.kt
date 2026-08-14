@@ -15,4 +15,18 @@ data class MatchFormatEntity(
     val hasSuperTieBreakInFinalSet: Boolean = true, // Se o último set é substituído por Super Tie-Break
     val superTieBreakPoints: Int = 10, // Pontos do Super Tie-Break (geralmente 10)
     val isDefault: Boolean = false // Se é um formato padrão do sistema (não pode ser excluído)
-)
+){
+    /**
+     * Identifica dinamicamente se um placar final de set corresponde a um Tie-Break
+     * com base nas regras deste formato.
+     */
+    fun isTieBreakSet(p1Games: Int, p2Games: Int, setNumber: Int): Boolean {
+        val isFinalSet = setNumber == numberOfSets
+        if (isFinalSet && hasSuperTieBreakInFinalSet) {
+            return true
+        }
+        val maxGames = maxOf(p1Games, p2Games)
+        val minGames = minOf(p1Games, p2Games)
+        return maxGames == tieBreakAt + 1 && minGames == tieBreakAt
+    }
+}

@@ -4,7 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Settings
@@ -23,7 +23,7 @@ fun HomeScreen(
     onNavigateToNewMatch: () -> Unit,
     onNavigateToPlayers: () -> Unit,
     onNavigateToFormats: () -> Unit,
-    onNavigateToHistory: () -> Unit
+    onNavigateToHistory: () -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -31,7 +31,7 @@ fun HomeScreen(
                 title = { Text("Tennis Match Score", fontWeight = FontWeight.Bold) },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
             )
         }
@@ -116,7 +116,7 @@ fun HomeScreen(
                 MenuOptionCard(
                     title = "Histórico",
                     subtitle = "Partidas Anteriores",
-                    icon = Icons.Default.List,
+                    icon = Icons.AutoMirrored.Filled.List,
                     modifier = Modifier.weight(1f),
                     onClick = onNavigateToHistory
                 )

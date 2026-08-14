@@ -20,10 +20,23 @@ class TennisScoreEngine(
 
         if (!isP1 && !isP2) return currentState
 
-        return if (currentState.isTieBreak || currentState.isSuperTieBreak) {
-            processTieBreakPoint(currentState, isP1)
+        // Avalia dinamicamente se o set atual DEVE ser tratado como Super Tie-Break
+        val isFinalSet = currentState.currentSet == format.numberOfSets
+        val isSuperTieBreakSet = isFinalSet && format.hasSuperTieBreakInFinalSet
+
+        val inTieBreak = currentState.isTieBreak || currentState.isSuperTieBreak || isSuperTieBreakSet
+
+        // Se for Super Tie-Break, garante que o estado reflita isSuperTieBreak = true
+        val stateToProcess = if (isSuperTieBreakSet && !currentState.isSuperTieBreak) {
+            currentState.copy(isSuperTieBreak = true, isTieBreak = true)
         } else {
-            processRegularGamePoint(currentState, isP1)
+            currentState
+        }
+
+        return if (inTieBreak) {
+            processTieBreakPoint(stateToProcess, isP1)
+        } else {
+            processRegularGamePoint(stateToProcess, isP1)
         }
     }
 
@@ -40,8 +53,14 @@ class TennisScoreEngine(
                 p1Points == "0" -> p1Points = "15"
                 p1Points == "15" -> p1Points = "30"
                 p1Points == "30" -> p1Points = "40"
-                p1Points == "40" && p2Points == "40" -> p1Points = "AD"
-                p1Points == "40" && p2Points == "AD" -> p2Points = "40"
+                p1Points == "40" && p2Points == "40" -> {
+                    p1Points = "AD"
+                    p2Points = ""
+                }
+                p1Points == "" && p2Points == "AD" -> {
+                    p1Points = "40"
+                    p2Points = "40"
+                }
                 p1Points == "40" && p2Points != "AD" -> return winGame(state, isP1Winner = true)
                 p1Points == "AD" -> return winGame(state, isP1Winner = true)
             }
@@ -50,8 +69,16 @@ class TennisScoreEngine(
                 p2Points == "0" -> p2Points = "15"
                 p2Points == "15" -> p2Points = "30"
                 p2Points == "30" -> p2Points = "40"
-                p2Points == "40" && p1Points == "40" -> p2Points = "AD"
-                p2Points == "40" && p1Points == "AD" -> p1Points = "40"
+                // P2 faz ponto no 40x40: ganha AD e P1 fica em branco
+                p2Points == "40" && p1Points == "40" -> {
+                    p2Points = "AD"
+                    p1Points = ""
+                }
+                // P2 faz ponto com P1 em AD: volta para 40x40
+                p2Points == "" && p1Points == "AD" -> {
+                    p2Points = "40"
+                    p1Points = "40"
+                }
                 p2Points == "40" && p1Points != "AD" -> return winGame(state, isP1Winner = false)
                 p2Points == "AD" -> return winGame(state, isP1Winner = false)
             }
@@ -72,7 +99,22 @@ class TennisScoreEngine(
         val targetGames = format.gamesPerSet
         val tieBreakAt = format.tieBreakAt
 
-        // Checa se o set foi vencido (ex: 6x4 ou 8x6)
+        // 1. Checa se deve entrar em Tie-Break conforme parametrizado no formato (ex: 5x5, 6x6, 7x7)
+        val shouldStartTieBreak = newP1Games == tieBreakAt && newP2Games == tieBreakAt
+
+        if (shouldStartTieBreak) {
+            return state.copy(
+                player1GamesCurrentSet = newP1Games,
+                player2GamesCurrentSet = newP2Games,
+                player1PointsCurrentGame = "0",
+                player2PointsCurrentGame = "0",
+                currentServerId = nextServerId,
+                isTieBreak = true,
+                isSuperTieBreak = false
+            )
+        }
+
+        // 2. Checa se o set foi vencido por margem regular de games (ex: 6x4, 7x5, 8x6)
         val isSetWon = when {
             newP1Games >= targetGames && (newP1Games - newP2Games) >= 2 -> true
             newP2Games >= targetGames && (newP2Games - newP1Games) >= 2 -> true
@@ -83,16 +125,14 @@ class TennisScoreEngine(
             return winSet(state, newP1Games, newP2Games, isP1Winner = newP1Games > newP2Games)
         }
 
-        // Checa se deve entrar em Tie-Break (ex: 6x6 ou 8x8)
-        val shouldStartTieBreak = newP1Games == tieBreakAt && newP2Games == tieBreakAt
-
         return state.copy(
             player1GamesCurrentSet = newP1Games,
             player2GamesCurrentSet = newP2Games,
             player1PointsCurrentGame = "0",
             player2PointsCurrentGame = "0",
             currentServerId = nextServerId,
-            isTieBreak = shouldStartTieBreak
+            isTieBreak = false,
+            isSuperTieBreak = false
         )
     }
 
@@ -108,7 +148,7 @@ class TennisScoreEngine(
         val newP2Pts = if (!isP1Winner) p2Pts + 1 else p2Pts
         val totalPts = newP1Pts + newP2Pts
 
-        // Troca de saque no Tie-Break: O 1º saca 1 ponto; a partir daí, alternam a cada 2 pontos
+        // Troca de saque no Tie-Break (1º saca 1 ponto, depois alternam a cada 2 pontos)
         val nextServer = if (totalPts % 2 == 1) {
             toggleServer(state.currentServerId, state.player1Id, state.player2Id)
         } else {
@@ -117,7 +157,7 @@ class TennisScoreEngine(
 
         val targetPoints = if (state.isSuperTieBreak) format.superTieBreakPoints else format.tieBreakPoints
 
-        // Checa se alguém venceu o Tie-Break (ex: 7 a 5, ou 10 a 8)
+        // Checa se alguém venceu o Tie-Break
         val isTieBreakWon = when {
             newP1Pts >= targetPoints && (newP1Pts - newP2Pts) >= 2 -> true
             newP2Pts >= targetPoints && (newP2Pts - newP1Pts) >= 2 -> true
@@ -125,9 +165,22 @@ class TennisScoreEngine(
         }
 
         if (isTieBreakWon) {
-            val finalP1Games = if (newP1Pts > newP2Pts) state.player1GamesCurrentSet + 1 else state.player1GamesCurrentSet
-            val finalP2Games = if (newP2Pts > newP1Pts) state.player2GamesCurrentSet + 1 else state.player2GamesCurrentSet
-            return winSet(state, finalP1Games, finalP2Games, isP1Winner = newP1Pts > newP2Pts)
+            val isP1SetWinner = newP1Pts > newP2Pts
+
+            // O vencedor do Tie-Break recebe +1 game no placar do set (ex: 5x5 vira 6x5; 6x6 vira 7x6; 7x7 vira 8x7)
+            val finalP1Games = if (state.isSuperTieBreak) {
+                if (isP1SetWinner) 1 else 0
+            } else {
+                if (isP1SetWinner) state.player1GamesCurrentSet + 1 else state.player1GamesCurrentSet
+            }
+
+            val finalP2Games = if (state.isSuperTieBreak) {
+                if (!isP1SetWinner) 1 else 0
+            } else {
+                if (!isP1SetWinner) state.player2GamesCurrentSet + 1 else state.player2GamesCurrentSet
+            }
+
+            return winSet(state, finalP1Games, finalP2Games, isP1Winner = isP1SetWinner)
         }
 
         return state.copy(
@@ -150,7 +203,6 @@ class TennisScoreEngine(
         val updatedCompletedSets = state.completedSetScores + Pair(finalP1Games, finalP2Games)
         val setsToWinMatch = (format.numberOfSets / 2) + 1
 
-        // Checa se a partida terminou
         val isMatchFinished = newP1SetsWon == setsToWinMatch || newP2SetsWon == setsToWinMatch
 
         if (isMatchFinished) {
@@ -163,14 +215,14 @@ class TennisScoreEngine(
                 player2SetsWon = newP2SetsWon,
                 completedSetScores = updatedCompletedSets,
                 isFinished = true,
+                isTieBreak = false,
+                isSuperTieBreak = false,
                 winnerId = if (newP1SetsWon > newP2SetsWon) state.player1Id else state.player2Id
             )
         }
 
-        // Prepara o próximo Set
         val nextSetNumber = state.currentSet + 1
 
-        // Verifica se o próximo set (último) será um Super Tie-Break
         val isNextSetSuperTieBreak = format.hasSuperTieBreakInFinalSet &&
                 nextSetNumber == format.numberOfSets &&
                 newP1SetsWon == newP2SetsWon

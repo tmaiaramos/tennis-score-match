@@ -12,7 +12,8 @@ interface MatchRepository {
         player1Id: Long,
         player2Id: Long,
         matchFormatId: Long,
-        initialServerId: Long
+        initialServerId: Long,
+        createdAt: Long = System.currentTimeMillis()
     ): Long
 
     fun observeMatchWithDetails(matchId: Long): Flow<MatchWithDetails?>

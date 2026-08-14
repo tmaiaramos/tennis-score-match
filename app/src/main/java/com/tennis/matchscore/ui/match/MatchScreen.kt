@@ -10,22 +10,29 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -38,18 +45,35 @@ import androidx.hilt.navigation.compose.hiltViewModel
 @Composable
 fun MatchScreen(
     viewModel: MatchViewModel = hiltViewModel(),
-    onCloseClick: () -> Unit // <--- Adicione este parâmetro
+    onCloseClick: () -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    var showExitConfirmationDialog by remember { mutableStateOf(value = false) }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Text(
-                        if (uiState.isTieBreak) "Placar de Tênis (TIE-BREAK)" else "Placar de Tênis",
-                        fontWeight = FontWeight.Bold
+                        text = if (uiState.isTieBreak) "Placar de Tênis (TIE-BREAK)" else "Placar de Tênis",
+                        fontWeight = FontWeight.Bold,
                     )
+                },
+                navigationIcon = {
+                    IconButton(
+                        onClick = {
+                            if (uiState.isMatchFinished) {
+                                onCloseClick()
+                            } else {
+                                showExitConfirmationDialog = true
+                            }
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Voltar"
+                        )
+                    }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -132,8 +156,32 @@ fun MatchScreen(
         }
     }
 
+    // Diálogo de confirmação para sair/abandonar partida em andamento
+    if (showExitConfirmationDialog) {
+        AlertDialog(
+            onDismissRequest = { showExitConfirmationDialog = false },
+            title = { Text("Sair da partida?") },
+            text = { Text("A partida ainda está em andamento. Deseja realmente sair e retornar ao menu?") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showExitConfirmationDialog = false
+                        onCloseClick()
+                    }
+                ) {
+                    Text("Sair")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showExitConfirmationDialog = false }) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
+
     // Diálogo exibido ao finalizar a partida
-    if (uiState.isMatchFinished && uiState.winnerName != null) {
+    if ((uiState.isMatchFinished && uiState.winnerName != null)) {
         AlertDialog(
             onDismissRequest = { },
             title = { Text("Fim de Jogo! 🏆") },
@@ -142,7 +190,7 @@ fun MatchScreen(
             },
             confirmButton = {
                 Button(
-                    onClick = onCloseClick, // <--- Troque para chamar o onCloseClick
+                    onClick = onCloseClick,
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text("Fechar")
@@ -207,8 +255,8 @@ private fun PlayerScoreRow(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(playerName, modifier = Modifier.weight(2f), fontSize = 16.sp)
-        Text("$sets", modifier = Modifier.weight(1f), textAlign = TextAlign.Center, fontSize = 18.sp)
-        Text("$games", modifier = Modifier.weight(1f), textAlign = TextAlign.Center, fontSize = 18.sp)
+        Text(sets.toString(), modifier = Modifier.weight(1f), textAlign = TextAlign.Center, fontSize = 18.sp)
+        Text(games.toString(), modifier = Modifier.weight(1f), textAlign = TextAlign.Center, fontSize = 18.sp)
 
         Box(
             modifier = Modifier
