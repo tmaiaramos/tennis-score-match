@@ -37,9 +37,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -370,22 +374,61 @@ private fun PlayerScoreRow(
             }
         }
 
-        // Placar dos Sets Finalizados (Congelados)
+        // Placar dos Sets Finalizados (Congelados com Sobrescrito de Tiebreak)
         completedSets.forEach { set ->
-            val isWinnerOfSet = set.winnerPlayerId == playerId
-            val setScoreText = if (set.isSuperTieBreak) {
-                if (isPlayer1) set.player1Points else set.player2Points
-            } else {
-                (if (isPlayer1) set.player1Games else set.player2Games).toString()
-            }
+            val games = if (isPlayer1) set.player1Games else set.player2Games
+            val opponentGames = if (isPlayer1) set.player2Games else set.player1Games
+            val myTbPoints = if (isPlayer1) set.tieBreakPointsPlayer1 else set.tieBreakPointsPlayer2
+            val opponentTbPoints = if (isPlayer1) set.tieBreakPointsPlayer2 else set.tieBreakPointsPlayer1
 
-            Text(
-                text = setScoreText,
-                modifier = Modifier.weight(1f),
-                textAlign = TextAlign.Center,
-                fontSize = 16.sp,
-                fontWeight = if (isWinnerOfSet) FontWeight.Bold else FontWeight.Normal
-            )
+            val isWinner = set.winnerPlayerId == playerId || (set.winnerPlayerId == null && games > opponentGames)
+            val isLoser = !isWinner
+            val hasTieBreak = myTbPoints != null && opponentTbPoints != null
+
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(24.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                if (!set.isSuperTieBreak && hasTieBreak && isLoser && myTbPoints != null) {
+                    Text(
+                        text = buildAnnotatedString {
+                            withStyle(
+                                SpanStyle(
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Normal
+                                )
+                            ) {
+                                append(games.toString())
+                            }
+                            withStyle(
+                                SpanStyle(
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Normal,
+                                    baselineShift = BaselineShift.Superscript
+                                )
+                            ) {
+                                append(myTbPoints.toString())
+                            }
+                        },
+                        textAlign = TextAlign.Center
+                    )
+                } else {
+                    val displayScore = if (set.isSuperTieBreak && myTbPoints != null) {
+                        myTbPoints.toString()
+                    } else {
+                        games.toString()
+                    }
+
+                    Text(
+                        text = displayScore,
+                        textAlign = TextAlign.Center,
+                        fontSize = 16.sp,
+                        fontWeight = if (isWinner) FontWeight.Bold else FontWeight.Normal
+                    )
+                }
+            }
         }
 
         // Games e Pontos atuais (Ocultos se o jogo acabou)

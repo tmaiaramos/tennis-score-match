@@ -19,7 +19,9 @@ data class CompletedSetUiState(
     val winnerPlayerId: Long?,
     val isSuperTieBreak: Boolean = false,
     val player1Points: String = "0",
-    val player2Points: String = "0"
+    val player2Points: String = "0",
+    val tieBreakPointsPlayer1: Int? = null,
+    val tieBreakPointsPlayer2: Int? = null
 )
 
 data class MatchUiState(
@@ -115,8 +117,10 @@ class MatchViewModel @Inject constructor(
                     val completedSetsList = matchDetails.sets
                         .sortedBy { it.setNumber }
                         .map { setEntity ->
-                            val isFinalSetSuperTieBreak = format.hasSuperTieBreakInFinalSet &&
-                                    (setEntity.setNumber == format.numberOfSets)
+                            val isFinalSetSuperTieBreak = (format.hasSuperTieBreakInFinalSet &&
+                                    setEntity.setNumber == format.numberOfSets) ||
+                                    ((setEntity.player1Games + setEntity.player2Games <= 1) &&
+                                            setEntity.tieBreakPointsPlayer1 != null && setEntity.tieBreakPointsPlayer2 != null)
 
                             CompletedSetUiState(
                                 setNumber = setEntity.setNumber,
@@ -125,7 +129,9 @@ class MatchViewModel @Inject constructor(
                                 winnerPlayerId = setEntity.winnerPlayerId,
                                 isSuperTieBreak = isFinalSetSuperTieBreak,
                                 player1Points = match.player1PointsCurrentGame,
-                                player2Points = match.player2PointsCurrentGame
+                                player2Points = match.player2PointsCurrentGame,
+                                tieBreakPointsPlayer1 = setEntity.tieBreakPointsPlayer1,
+                                tieBreakPointsPlayer2 = setEntity.tieBreakPointsPlayer2
                             )
                         }
 
@@ -151,9 +157,11 @@ class MatchViewModel @Inject constructor(
                             isTieBreak = match.isTieBreak,
                             isSuperTieBreak = isSuperTieBreak,
                             isMatchFinished = match.status == com.tennis.matchscore.domain.model.MatchStatus.FINISHED,
-                            winnerName = if (match.winnerId == match.player1Id) p1FullName
-                            else if (match.winnerId == match.player2Id) p2FullName
-                            else null
+                            winnerName = when (match.winnerId) {
+                                match.player1Id -> p1FullName
+                                match.player2Id -> p2FullName
+                                else -> null
+                            }
                         )
                     }
                 }
