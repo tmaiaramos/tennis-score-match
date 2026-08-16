@@ -12,6 +12,16 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+data class CompletedSetUiState(
+    val setNumber: Int,
+    val player1Games: Int,
+    val player2Games: Int,
+    val winnerPlayerId: Long?,
+    val isSuperTieBreak: Boolean = false,
+    val player1Points: String = "0",
+    val player2Points: String = "0"
+)
+
 data class MatchUiState(
     val currentMatchId: Long? = null,
     val player1Id: Long = 0L,
@@ -25,6 +35,7 @@ data class MatchUiState(
     val player2Games: Int = 0,
     val player1Sets: Int = 0,
     val player2Sets: Int = 0,
+    val completedSets: List<CompletedSetUiState> = emptyList(),
     val isTieBreak: Boolean = false,
     val isSuperTieBreak: Boolean = false,
     val isMatchFinished: Boolean = false,
@@ -101,6 +112,23 @@ class MatchViewModel @Inject constructor(
                     val p1Sets = matchDetails.sets.count { set -> set.winnerPlayerId == match.player1Id }
                     val p2Sets = matchDetails.sets.count { set -> set.winnerPlayerId == match.player2Id }
 
+                    val completedSetsList = matchDetails.sets
+                        .sortedBy { it.setNumber }
+                        .map { setEntity ->
+                            val isFinalSetSuperTieBreak = format.hasSuperTieBreakInFinalSet &&
+                                    (setEntity.setNumber == format.numberOfSets)
+
+                            CompletedSetUiState(
+                                setNumber = setEntity.setNumber,
+                                player1Games = setEntity.player1Games,
+                                player2Games = setEntity.player2Games,
+                                winnerPlayerId = setEntity.winnerPlayerId,
+                                isSuperTieBreak = isFinalSetSuperTieBreak,
+                                player1Points = match.player1PointsCurrentGame,
+                                player2Points = match.player2PointsCurrentGame
+                            )
+                        }
+
                     val p1FullName = "${matchDetails.player1.firstName} ${matchDetails.player1.lastName}".trim()
                     val p2FullName = "${matchDetails.player2.firstName} ${matchDetails.player2.lastName}".trim()
 
@@ -119,6 +147,7 @@ class MatchViewModel @Inject constructor(
                             player2Games = match.player2GamesCurrentSet,
                             player1Sets = p1Sets,
                             player2Sets = p2Sets,
+                            completedSets = completedSetsList,
                             isTieBreak = match.isTieBreak,
                             isSuperTieBreak = isSuperTieBreak,
                             isMatchFinished = match.status == com.tennis.matchscore.domain.model.MatchStatus.FINISHED,
