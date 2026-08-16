@@ -15,15 +15,10 @@ interface PlayerDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(player: PlayerEntity): Long
 
-    @Update
-    suspend fun update(player: PlayerEntity)
-
     @Delete
     suspend fun delete(player: PlayerEntity)
 
     @Query("SELECT * FROM players ORDER BY firstName ASC")
     fun getAllPlayers(): Flow<List<PlayerEntity>>
 
-    @Query("SELECT * FROM players WHERE id = :id")
-    suspend fun getPlayerById(id: Long): PlayerEntity?
 }

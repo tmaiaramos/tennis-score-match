@@ -69,12 +69,10 @@ class TennisScoreEngine(
                 p2Points == "0" -> p2Points = "15"
                 p2Points == "15" -> p2Points = "30"
                 p2Points == "30" -> p2Points = "40"
-                // P2 faz ponto no 40x40: ganha AD e P1 fica em branco
                 p2Points == "40" && p1Points == "40" -> {
                     p2Points = "AD"
                     p1Points = ""
                 }
-                // P2 faz ponto com P1 em AD: volta para 40x40
                 p2Points == "" && p1Points == "AD" -> {
                     p2Points = "40"
                     p1Points = "40"
@@ -114,7 +112,7 @@ class TennisScoreEngine(
             )
         }
 
-        // 2. Checa se o set foi vencido por margem regular de games (ex: 6x4, 7x5, 8x6)
+        // 2. Checa se o set foi vencido por margem regular de games (ex: 6x4, 7x5, 8x6 no Pro Set)
         val isSetWon = when {
             newP1Games >= targetGames && (newP1Games - newP2Games) >= 2 -> true
             newP2Games >= targetGames && (newP2Games - newP1Games) >= 2 -> true
@@ -167,7 +165,7 @@ class TennisScoreEngine(
         if (isTieBreakWon) {
             val isP1SetWinner = newP1Pts > newP2Pts
 
-            // O vencedor do Tie-Break recebe +1 game no placar do set (ex: 5x5 vira 6x5; 6x6 vira 7x6; 7x7 vira 8x7)
+            // O vencedor do Tie-Break recebe +1 game no placar do set
             val finalP1Games = if (state.isSuperTieBreak) {
                 if (isP1SetWinner) 1 else 0
             } else {
@@ -227,6 +225,8 @@ class TennisScoreEngine(
                 nextSetNumber == format.numberOfSets &&
                 newP1SetsWon == newP2SetsWon
 
+        val nextServerId = toggleServer(state.currentServerId, state.player1Id, state.player2Id)
+
         return state.copy(
             currentSet = nextSetNumber,
             player1GamesCurrentSet = 0,
@@ -236,7 +236,7 @@ class TennisScoreEngine(
             player1SetsWon = newP1SetsWon,
             player2SetsWon = newP2SetsWon,
             completedSetScores = updatedCompletedSets,
-            currentServerId = toggleServer(state.currentServerId, state.player1Id, state.player2Id),
+            currentServerId = nextServerId,
             isTieBreak = isNextSetSuperTieBreak,
             isSuperTieBreak = isNextSetSuperTieBreak
         )

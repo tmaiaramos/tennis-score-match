@@ -27,6 +27,7 @@ class MatchRepositoryImpl @Inject constructor(
         player2Id: Long,
         matchFormatId: Long,
         initialServerId: Long,
+        courtType: com.tennis.matchscore.domain.model.CourtType,
         createdAt: Long,
     ): Long {
         val match = MatchEntity(
@@ -34,6 +35,7 @@ class MatchRepositoryImpl @Inject constructor(
             player2Id = player2Id,
             matchFormatId = matchFormatId,
             currentServerId = initialServerId,
+            courtType = courtType,
             status = MatchStatus.IN_PROGRESS,
             createdAt = createdAt,
         )
@@ -96,14 +98,13 @@ class MatchRepositoryImpl @Inject constructor(
         val engine = TennisScoreEngine(format)
         val newState = engine.processPoint(currentState, pointWinnerId)
 
-        // 4. Se um set foi concluído, registra o resultado na tabela SetScore
+        // 4. Se um set foi concluído ou a partida terminou, registra o resultado na tabela SetScore
         if ((newState.currentSet > currentState.currentSet) || newState.isFinished) {
             val lastCompletedSetIndex = currentState.currentSet - 1
             if (newState.completedSetScores.size > lastCompletedSetIndex) {
                 val (p1Games, p2Games) = newState.completedSetScores[lastCompletedSetIndex]
                 val setWinnerId = if (p1Games > p2Games) match.player1Id else match.player2Id
 
-                // Verificação 100% dinâmica baseada na flag do estado OU na regra do formato
                 val wasTieBreakSet = currentState.isTieBreak ||
                         format.isTieBreakSet(p1Games, p2Games, setNumber = currentState.currentSet)
 

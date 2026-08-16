@@ -30,9 +30,6 @@ interface MatchFormatDao {
     @Query("SELECT * FROM match_formats WHERE id = :id")
     suspend fun getFormatById(id: Long): MatchFormatEntity?
 
-    @Query("SELECT COUNT(*) FROM match_formats")
-    suspend fun getCount(): Int
-
     @Query("SELECT COUNT(*) FROM matches WHERE matchFormatId = :matchFormatId")
     suspend fun getMatchCountForFormat(matchFormatId: Long): Int
 }

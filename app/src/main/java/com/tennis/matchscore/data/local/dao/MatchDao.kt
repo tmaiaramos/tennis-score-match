@@ -26,9 +26,6 @@ interface MatchDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertSetScore(setScore: SetScoreEntity): Long
 
-    @Update
-    suspend fun updateSetScore(setScore: SetScoreEntity)
-
     @Query("SELECT * FROM set_scores WHERE matchId = :matchId ORDER BY setNumber ASC")
     fun getSetScoresForMatch(matchId: Long): Flow<List<SetScoreEntity>>
 

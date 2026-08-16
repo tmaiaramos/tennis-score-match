@@ -13,6 +13,7 @@ interface MatchRepository {
         player2Id: Long,
         matchFormatId: Long,
         initialServerId: Long,
+        courtType: com.tennis.matchscore.domain.model.CourtType = com.tennis.matchscore.domain.model.CourtType.CLAY,
         createdAt: Long = System.currentTimeMillis()
     ): Long
 

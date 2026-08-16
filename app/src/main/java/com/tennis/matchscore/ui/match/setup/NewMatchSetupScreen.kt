@@ -70,7 +70,7 @@ fun NewMatchSetupScreen(
 
                 // Seletor Jogador 1
                 PlayerDropdown(
-                    label = "Jogador 1 (Sacador inicial por padrão)",
+                    label = "Jogador 1",
                     players = uiState.players,
                     selectedPlayer = uiState.player1,
                     onPlayerSelected = viewModel::onPlayer1Selected
@@ -83,6 +83,32 @@ fun NewMatchSetupScreen(
                     selectedPlayer = uiState.player2,
                     onPlayerSelected = viewModel::onPlayer2Selected
                 )
+
+                HorizontalDivider()
+
+                // Quem começa sacando
+                Text("Sacador Inicial", style = MaterialTheme.typography.titleMedium)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    val p1Name = uiState.player1?.let { "${it.firstName} ${it.lastName}".trim() } ?: "Jogador 1"
+                    val p2Name = uiState.player2?.let { "${it.firstName} ${it.lastName}".trim() } ?: "Jogador 2"
+
+                    FilterChip(
+                        selected = uiState.initialServer == 1,
+                        onClick = { viewModel.onInitialServerChanged(1) },
+                        label = { Text("🎾 $p1Name") },
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    FilterChip(
+                        selected = uiState.initialServer == 2,
+                        onClick = { viewModel.onInitialServerChanged(2) },
+                        label = { Text("🎾 $p2Name") },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
 
                 HorizontalDivider()
 

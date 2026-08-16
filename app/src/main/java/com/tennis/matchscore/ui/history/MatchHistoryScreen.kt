@@ -5,6 +5,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -21,13 +22,10 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import com.tennis.matchscore.data.local.relation.MatchWithDetails
-import com.tennis.matchscore.domain.model.MatchStatus
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -92,7 +90,6 @@ private fun MatchHistoryCard(matchDetails: MatchWithDetails) {
     val p1Name = "${matchDetails.player1.firstName} ${matchDetails.player1.lastName}".trim().ifBlank { "Jogador 1" }
     val p2Name = "${matchDetails.player2.firstName} ${matchDetails.player2.lastName}".trim().ifBlank { "Jogador 2" }
 
-    val isFinished = match.status == MatchStatus.FINISHED
     val isP1Winner = match.winnerId == match.player1Id
     val isP2Winner = match.winnerId == match.player2Id
 
@@ -112,43 +109,35 @@ private fun MatchHistoryCard(matchDetails: MatchWithDetails) {
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // Cabeçalho do Card (Status + Data + Formato)
+            // Cabeçalho
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Surface(
-                        color = if (isFinished) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.tertiaryContainer,
-                        shape = RoundedCornerShape(6.dp)
-                    ) {
-                        Text(
-                            text = if (isFinished) "FINALIZADA" else "EM ANDAMENTO",
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = if (isFinished) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onTertiaryContainer,
-                        )
-                    }
+                Text(
+                    text = formattedDate,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
 
-                    // Exibição da Data Formatada
+                Column(
+                    horizontalAlignment = Alignment.End,
+                    verticalArrangement = Arrangement.spacedBy(2.dp)
+                ) {
                     Text(
-                        text = formattedDate,
+                        text = matchDetails.format.name,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = match.courtType.displayName,
+                        fontSize = 11.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-
-                Text(
-                    text = "Formato: ${matchDetails.format.name}",
-                    fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
             }
 
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
@@ -163,20 +152,20 @@ private fun MatchHistoryCard(matchDetails: MatchWithDetails) {
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.weight(1f)
                 ) {
+                    Text(
+                        text = p1Name,
+                        fontWeight = if (isP1Winner) FontWeight.Bold else FontWeight.Normal,
+                        fontSize = 16.sp
+                    )
                     if (isP1Winner) {
+                        Spacer(modifier = Modifier.width(4.dp))
                         Icon(
                             imageVector = Icons.Default.EmojiEvents,
                             contentDescription = "Vencedor",
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(18.dp)
                         )
-                        Spacer(modifier = Modifier.width(4.dp))
                     }
-                    Text(
-                        text = p1Name,
-                        fontWeight = if (isP1Winner) FontWeight.Bold else FontWeight.Normal,
-                        fontSize = 16.sp
-                    )
                 }
 
                 // Colunas de Sets
@@ -195,12 +184,13 @@ private fun MatchHistoryCard(matchDetails: MatchWithDetails) {
                             )
                         }
                     } else {
-                        Box(modifier = Modifier.width(30.dp), contentAlignment = Alignment.Center) {
+                        // Fallback para Pro Set / Set Único / Partida sem tabela de sets
+                        Box(modifier = Modifier.width(32.dp), contentAlignment = Alignment.Center) {
                             Text(
-                                text = match.player1GamesCurrentSet.toString(),
-                                fontWeight = FontWeight.Bold,
+                                text = "${match.player1GamesCurrentSet}",
+                                fontWeight = if (isP1Winner) FontWeight.Bold else FontWeight.Normal,
                                 fontSize = 16.sp,
-                                color = MaterialTheme.colorScheme.primary
+                                color = if (isP1Winner) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
@@ -217,20 +207,20 @@ private fun MatchHistoryCard(matchDetails: MatchWithDetails) {
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.weight(1f)
                 ) {
+                    Text(
+                        text = p2Name,
+                        fontWeight = if (isP2Winner) FontWeight.Bold else FontWeight.Normal,
+                        fontSize = 16.sp
+                    )
                     if (isP2Winner) {
+                        Spacer(modifier = Modifier.width(4.dp))
                         Icon(
                             imageVector = Icons.Default.EmojiEvents,
                             contentDescription = "Vencedor",
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(18.dp)
                         )
-                        Spacer(modifier = Modifier.width(4.dp))
                     }
-                    Text(
-                        text = p2Name,
-                        fontWeight = if (isP2Winner) FontWeight.Bold else FontWeight.Normal,
-                        fontSize = 16.sp
-                    )
                 }
 
                 // Colunas de Sets
@@ -249,12 +239,13 @@ private fun MatchHistoryCard(matchDetails: MatchWithDetails) {
                             )
                         }
                     } else {
-                        Box(modifier = Modifier.width(30.dp), contentAlignment = Alignment.Center) {
+                        // Fallback para Pro Set / Set Único / Partida sem tabela de sets
+                        Box(modifier = Modifier.width(32.dp), contentAlignment = Alignment.Center) {
                             Text(
-                                text = match.player2GamesCurrentSet.toString(),
-                                fontWeight = FontWeight.Bold,
+                                text = "${match.player2GamesCurrentSet}",
+                                fontWeight = if (isP2Winner) FontWeight.Bold else FontWeight.Normal,
                                 fontSize = 16.sp,
-                                color = MaterialTheme.colorScheme.primary
+                                color = if (isP2Winner) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
@@ -266,8 +257,6 @@ private fun MatchHistoryCard(matchDetails: MatchWithDetails) {
 
 /**
  * Componente individual de exibição de Set.
- * Resolve o desalinhamento vertical (usando Row com Alignment.Bottom)
- * e exibe a pontuação subscrita APENAS para o perdedor do set.
  */
 @Composable
 private fun SetScoreItem(
@@ -280,14 +269,12 @@ private fun SetScoreItem(
     val hasTieBreak = (myTbPoints != null && opponentTbPoints != null)
     val isLoser = !isWinner
 
-    // Se for Super Tie-Break, o valor principal exibido passa a ser a própria pontuação (ex: 10 ou 3)
     val displayScore = if (isSuperTieBreak && myTbPoints != null) {
         myTbPoints.toString()
     } else {
         games.toString()
     }
 
-    // Caixa com largura e altura fixas para alinhar perfeitamente as colunas dos sets
     Box(
         modifier = Modifier
             .width(32.dp)
@@ -297,7 +284,6 @@ private fun SetScoreItem(
         if (!isSuperTieBreak && hasTieBreak && isLoser) {
             Text(
                 text = buildAnnotatedString {
-                    // Número do Game
                     withStyle(
                         SpanStyle(
                             fontSize = 16.sp,
@@ -307,7 +293,6 @@ private fun SetScoreItem(
                     ) {
                         append(displayScore)
                     }
-                    // Pontuação do Tie-Break em formato sobrescrito
                     withStyle(
                         SpanStyle(
                             fontSize = 10.sp,
@@ -321,7 +306,6 @@ private fun SetScoreItem(
                 }
             )
         } else {
-            // Exibição normal para sets sem tie-break ou para o vencedor
             Text(
                 text = displayScore,
                 fontSize = 16.sp,

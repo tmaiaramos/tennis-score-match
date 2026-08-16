@@ -4,6 +4,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.tennis.matchscore.domain.model.CourtType
 import com.tennis.matchscore.domain.model.MatchStatus
 import com.tennis.matchscore.domain.model.TrackingLevel
 
@@ -49,6 +50,7 @@ data class MatchEntity(
     val player2Id: Long,
     val matchFormatId: Long, // FK para a nova tabela MatchFormatEntity
     val trackingLevel: TrackingLevel = TrackingLevel.BASIC, // Nível de detalhe da marcação
+    val courtType: CourtType = CourtType.HARD,
 
     // Estado atual do placar no Game e Set ativos
     val currentSet: Int = 1,

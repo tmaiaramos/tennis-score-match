@@ -53,7 +53,6 @@ class NewMatchSetupViewModel @Inject constructor(
         currentSelection.copy(
             players = players,
             formats = formats,
-            // Seleciona o formato padrão automaticamente na primeira carga
             selectedFormat = currentSelection.selectedFormat ?: formats.firstOrNull { it.isDefault } ?: formats.firstOrNull(),
             isLoading = false
         )

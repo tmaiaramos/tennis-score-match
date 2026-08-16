@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -23,6 +24,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -55,7 +57,11 @@ fun MatchScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = if (uiState.isTieBreak) "Placar de Tênis (TIE-BREAK)" else "Placar de Tênis",
+                        text = when {
+                            uiState.isSuperTieBreak -> "Placar (SUPER TIE-BREAK)"
+                            uiState.isTieBreak -> "Placar (TIE-BREAK)"
+                            else -> "Placar"
+                        },
                         fontWeight = FontWeight.Bold,
                     )
                 },
@@ -98,6 +104,39 @@ fun MatchScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.fillMaxWidth()
             ) {
+                // Banner indicando o Sacador Atual
+                val currentServerName = if (uiState.currentServerId == uiState.player1Id) {
+                    uiState.player1Name
+                } else {
+                    uiState.player2Name
+                }
+
+                Surface(
+                    color = MaterialTheme.colorScheme.secondaryContainer,
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = "🎾 Saque: ",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
+                        Text(
+                            text = currentServerName,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
+                    }
+                }
+
                 Text(
                     text = "Registrar Ponto",
                     fontSize = 18.sp,
@@ -134,23 +173,11 @@ fun MatchScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                OutlinedButton(
+                    onClick = { viewModel.undoLastPoint() },
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    OutlinedButton(
-                        onClick = { viewModel.undoLastPoint() },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text("↩ Desfazer Ponto")
-                    }
-
-                    OutlinedButton(
-                        onClick = { viewModel.resetMatch() },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text("Reiniciar Partida")
-                    }
+                    Text("↩ Desfazer Ponto")
                 }
             }
         }
@@ -181,7 +208,7 @@ fun MatchScreen(
     }
 
     // Diálogo exibido ao finalizar a partida
-    if ((uiState.isMatchFinished && uiState.winnerName != null)) {
+    if (uiState.isMatchFinished && uiState.winnerName != null) {
         AlertDialog(
             onDismissRequest = { },
             title = { Text("Fim de Jogo! 🏆") },
@@ -228,7 +255,8 @@ private fun ScoreBoardCard(uiState: MatchUiState) {
                 playerName = uiState.player1Name,
                 sets = uiState.player1Sets,
                 games = uiState.player1Games,
-                points = uiState.player1Score
+                points = uiState.player1Score,
+                isServing = uiState.currentServerId == uiState.player1Id
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -237,7 +265,8 @@ private fun ScoreBoardCard(uiState: MatchUiState) {
                 playerName = uiState.player2Name,
                 sets = uiState.player2Sets,
                 games = uiState.player2Games,
-                points = uiState.player2Score
+                points = uiState.player2Score,
+                isServing = uiState.currentServerId == uiState.player2Id
             )
         }
     }
@@ -248,13 +277,27 @@ private fun PlayerScoreRow(
     playerName: String,
     sets: Int,
     games: Int,
-    points: String
+    points: String,
+    isServing: Boolean = false
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(playerName, modifier = Modifier.weight(2f), fontSize = 16.sp)
+        Row(
+            modifier = Modifier.weight(2f),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = playerName,
+                fontSize = 16.sp,
+                fontWeight = if (isServing) FontWeight.Bold else FontWeight.Normal
+            )
+            if (isServing) {
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(text = "🎾", fontSize = 14.sp)
+            }
+        }
         Text(sets.toString(), modifier = Modifier.weight(1f), textAlign = TextAlign.Center, fontSize = 18.sp)
         Text(games.toString(), modifier = Modifier.weight(1f), textAlign = TextAlign.Center, fontSize = 18.sp)
 

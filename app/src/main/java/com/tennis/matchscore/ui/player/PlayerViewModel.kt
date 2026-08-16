@@ -25,13 +25,16 @@ class PlayerViewModel @Inject constructor(
         )
 
     fun savePlayer(firstName: String, lastName: String, dominantHand: DominantHand) {
-        if (firstName.isBlank()) return
+        val trimmedFirst = firstName.trim()
+        val trimmedLast = lastName.trim()
+
+        if (trimmedFirst.isBlank()) return
 
         viewModelScope.launch {
             playerRepository.insertPlayer(
                 PlayerEntity(
-                    firstName = firstName.trim(),
-                    lastName = lastName.trim(),
+                    firstName = trimmedFirst,
+                    lastName = trimmedLast,
                     dominantHand = dominantHand
                 )
             )
