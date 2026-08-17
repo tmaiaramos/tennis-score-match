@@ -1,6 +1,7 @@
 package com.tennis.matchscore.domain.engine
 
 import com.tennis.matchscore.data.local.entity.MatchFormatEntity
+import com.tennis.matchscore.data.local.entity.REGULAR_TIEBREAK_POINTS
 
 class TennisScoreEngine(
     private val format: MatchFormatEntity
@@ -97,7 +98,7 @@ class TennisScoreEngine(
         val targetGames = format.gamesPerSet
         val tieBreakAt = format.tieBreakAt
 
-        // 1. Checa se deve entrar em Tie-Break conforme parametrizado no formato (ex: 5x5, 6x6, 7x7)
+        // 1. Checa se deve entrar em Tie-Break conforme parametrizado no formato (ex: 6x6, 5x5, 4x4)
         val shouldStartTieBreak = newP1Games == tieBreakAt && newP2Games == tieBreakAt
 
         if (shouldStartTieBreak) {
@@ -112,7 +113,7 @@ class TennisScoreEngine(
             )
         }
 
-        // 2. Checa se o set foi vencido por margem regular de games (ex: 6x4, 7x5, 8x6 no Pro Set)
+        // 2. Checa se o set foi vencido por margem regular de games (ex: 6x4, 7x5, 8x6)
         val isSetWon = when {
             newP1Games >= targetGames && (newP1Games - newP2Games) >= 2 -> true
             newP2Games >= targetGames && (newP2Games - newP1Games) >= 2 -> true
@@ -153,7 +154,7 @@ class TennisScoreEngine(
             state.currentServerId
         }
 
-        val targetPoints = if (state.isSuperTieBreak) format.superTieBreakPoints else format.tieBreakPoints
+        val targetPoints = if (state.isSuperTieBreak) format.superTieBreakPoints else REGULAR_TIEBREAK_POINTS
 
         // Checa se alguém venceu o Tie-Break
         val isTieBreakWon = when {

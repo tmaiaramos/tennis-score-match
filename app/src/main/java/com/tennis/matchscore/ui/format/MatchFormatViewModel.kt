@@ -28,7 +28,6 @@ class MatchFormatViewModel @Inject constructor(
         numberOfSets: Int,
         gamesPerSet: Int,
         tieBreakAt: Int,
-        tieBreakPoints: Int,
         hasSuperTieBreakInFinalSet: Boolean,
         superTieBreakPoints: Int
     ) {
@@ -41,7 +40,6 @@ class MatchFormatViewModel @Inject constructor(
                     numberOfSets = numberOfSets,
                     gamesPerSet = gamesPerSet,
                     tieBreakAt = tieBreakAt,
-                    tieBreakPoints = tieBreakPoints,
                     hasSuperTieBreakInFinalSet = hasSuperTieBreakInFinalSet,
                     superTieBreakPoints = superTieBreakPoints,
                     isDefault = false

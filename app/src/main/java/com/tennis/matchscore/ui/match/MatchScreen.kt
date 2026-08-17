@@ -111,10 +111,27 @@ fun MatchScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            // Cartão de Placar Principal
-            ScoreBoardCard(uiState = uiState)
+            // Seção Superior: Cartão do Placar + Botão de Desfazer
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Cartão de Placar Principal
+                ScoreBoardCard(uiState = uiState)
 
-            // Controles de Pontuação (exibidos somente durante o jogo)
+                // Botão "Desfazer Ponto" posicionado logo abaixo do placar
+                if (!uiState.isMatchFinished) {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    OutlinedButton(
+                        onClick = { viewModel.undoLastPoint() },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("↩ Desfazer Ponto")
+                    }
+                }
+            }
+
+            // Seção Inferior: Controles de Pontuação
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.fillMaxWidth()
@@ -191,15 +208,6 @@ fun MatchScreen(
                                 overflow = TextOverflow.Ellipsis
                             )
                         }
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    OutlinedButton(
-                        onClick = { viewModel.undoLastPoint() },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("↩ Desfazer Ponto")
                     }
                 } else {
                     // Botão para sair quando encerrado

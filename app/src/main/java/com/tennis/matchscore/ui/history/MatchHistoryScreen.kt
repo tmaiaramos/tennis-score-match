@@ -14,11 +14,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.BaselineShift
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -257,6 +253,8 @@ private fun MatchHistoryCard(matchDetails: MatchWithDetails) {
 
 /**
  * Componente individual de exibição de Set.
+ * Mantém o número do game no centro e posiciona o número do tiebreak
+ * no canto superior direito do dígito com pequeno espaçamento lateral.
  */
 @Composable
 private fun SetScoreItem(
@@ -281,36 +279,24 @@ private fun SetScoreItem(
             .height(24.dp),
         contentAlignment = Alignment.Center
     ) {
-        if (!isSuperTieBreak && hasTieBreak && isLoser) {
+        // Dígito principal dos games (ancorado no centro exato)
+        Text(
+            text = displayScore,
+            fontSize = 16.sp,
+            fontWeight = if (isWinner) FontWeight.Bold else FontWeight.Normal,
+            color = if (isWinner) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        // Ponto do tiebreak posicionado no canto superior direito do número (Padrão ATP)
+        if (!isSuperTieBreak && hasTieBreak && isLoser && myTbPoints != null) {
             Text(
-                text = buildAnnotatedString {
-                    withStyle(
-                        SpanStyle(
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Normal,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    ) {
-                        append(displayScore)
-                    }
-                    withStyle(
-                        SpanStyle(
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Normal,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            baselineShift = BaselineShift.Superscript,
-                        )
-                    ) {
-                        append(myTbPoints.toString())
-                    }
-                }
-            )
-        } else {
-            Text(
-                text = displayScore,
-                fontSize = 16.sp,
-                fontWeight = if (isWinner) FontWeight.Bold else FontWeight.Normal,
-                color = if (isWinner) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                text = myTbPoints.toString(),
+                fontSize = 10.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .offset(x = 10.dp, y = (-5).dp)
             )
         }
     }

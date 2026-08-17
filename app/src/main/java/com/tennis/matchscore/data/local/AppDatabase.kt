@@ -73,7 +73,6 @@ abstract class AppDatabase : RoomDatabase() {
                         numberOfSets = 3,
                         gamesPerSet = 6,
                         tieBreakAt = 6,
-                        tieBreakPoints = 7,
                         hasSuperTieBreakInFinalSet = true,
                         superTieBreakPoints = 10,
                         isDefault = true
@@ -83,7 +82,6 @@ abstract class AppDatabase : RoomDatabase() {
                         numberOfSets = 1,
                         gamesPerSet = 6,
                         tieBreakAt = 6,
-                        tieBreakPoints = 7,
                         hasSuperTieBreakInFinalSet = false,
                         isDefault = true
                     ),
@@ -92,7 +90,6 @@ abstract class AppDatabase : RoomDatabase() {
                         numberOfSets = 1,
                         gamesPerSet = 8,
                         tieBreakAt = 8,
-                        tieBreakPoints = 7,
                         hasSuperTieBreakInFinalSet = false,
                         isDefault = true
                     ),
@@ -101,7 +98,6 @@ abstract class AppDatabase : RoomDatabase() {
                         numberOfSets = 3,
                         gamesPerSet = 4,
                         tieBreakAt = 3,
-                        tieBreakPoints = 7,
                         hasSuperTieBreakInFinalSet = true,
                         superTieBreakPoints = 10,
                         isDefault = true

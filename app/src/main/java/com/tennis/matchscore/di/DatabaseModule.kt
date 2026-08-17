@@ -37,9 +37,9 @@ object DatabaseModule {
                         """
                         INSERT INTO match_formats (
                             id, name, numberOfSets, gamesPerSet, tieBreakAt, 
-                            tieBreakPoints, hasSuperTieBreakInFinalSet, superTieBreakPoints, isDefault
+                            hasSuperTieBreakInFinalSet, superTieBreakPoints, isDefault
                         ) VALUES (
-                            4, 'Melhor de 3 c/ Super Tie', 3, 6, 6, 7, 1, 10, 1
+                            4, 'Melhor de 3 c/ Super Tie', 3, 6, 6, 1, 10, 1
                         )
                         """.trimIndent()
                     )
@@ -49,9 +49,9 @@ object DatabaseModule {
                         """
                         INSERT INTO match_formats (
                             id, name, numberOfSets, gamesPerSet, tieBreakAt, 
-                            tieBreakPoints, hasSuperTieBreakInFinalSet, superTieBreakPoints, isDefault
+                            hasSuperTieBreakInFinalSet, superTieBreakPoints, isDefault
                         ) VALUES (
-                            2, 'Set Pro (8 Games)', 1, 8, 8, 7, 0, 10, 0
+                            2, 'Set Pro (8 Games)', 1, 8, 8, 0, 10, 0
                         )
                         """.trimIndent()
                     )
@@ -61,9 +61,9 @@ object DatabaseModule {
                         """
                         INSERT INTO match_formats (
                             id, name, numberOfSets, gamesPerSet, tieBreakAt, 
-                            tieBreakPoints, hasSuperTieBreakInFinalSet, superTieBreakPoints, isDefault
+                            hasSuperTieBreakInFinalSet, superTieBreakPoints, isDefault
                         ) VALUES (
-                            3, 'Set Único (6 Games)', 1, 6, 6, 7, 0, 10, 0
+                            3, 'Set Único (6 Games)', 1, 6, 6, 0, 10, 0
                         )
                         """.trimIndent()
                     )
@@ -73,9 +73,9 @@ object DatabaseModule {
                         """
                         INSERT INTO match_formats (
                             id, name, numberOfSets, gamesPerSet, tieBreakAt, 
-                            tieBreakPoints, hasSuperTieBreakInFinalSet, superTieBreakPoints, isDefault
+                            hasSuperTieBreakInFinalSet, superTieBreakPoints, isDefault
                         ) VALUES (
-                            1, 'Melhor de 3 Sets', 3, 6, 6, 7, 0, 10, 0
+                            1, 'Melhor de 3 Sets', 3, 6, 6, 0, 10, 0
                         )
                         """.trimIndent()
                     )
