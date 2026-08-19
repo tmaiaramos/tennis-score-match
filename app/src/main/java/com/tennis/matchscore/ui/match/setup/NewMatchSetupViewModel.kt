@@ -21,6 +21,12 @@ enum class CourtSurface(val displayName: String) {
     GRASS("Grama")
 }
 
+enum class ScoringMode(val displayName: String) {
+    BASIC("Básica"),
+    INTERMEDIATE("Intermediária"),
+    ADVANCED("Avançada")
+}
+
 data class NewMatchSetupUiState(
     val players: List<PlayerEntity> = emptyList(),
     val formats: List<MatchFormatEntity> = emptyList(),
@@ -29,6 +35,7 @@ data class NewMatchSetupUiState(
     val selectedFormat: MatchFormatEntity? = null,
     val initialServer: Int = 1, // 1 para Player 1, 2 para Player 2
     val surface: CourtSurface = CourtSurface.CLAY,
+    val scoringMode: ScoringMode = ScoringMode.BASIC,
     val isLoading: Boolean = true
 ) {
     val isValid: Boolean
@@ -80,5 +87,9 @@ class NewMatchSetupViewModel @Inject constructor(
 
     fun onSurfaceChanged(surface: CourtSurface) {
         _userSelections.update { it.copy(surface = surface) }
+    }
+
+    fun onScoringModeChanged(mode: ScoringMode) {
+        _userSelections.update { it.copy(scoringMode = mode) }
     }
 }

@@ -18,6 +18,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.runtime.mutableLongStateOf
 import com.tennis.matchscore.data.local.entity.MatchFormatEntity
 import com.tennis.matchscore.data.local.entity.PlayerEntity
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -35,9 +36,13 @@ fun NewMatchSetupScreen(
     var selectedDateMillis by remember { mutableLongStateOf(System.currentTimeMillis()) }
     var showDatePicker by remember { mutableStateOf(false) }
 
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
     val dateFormatter = remember { SimpleDateFormat("dd/MM/yyyy", Locale("pt", "BR")) }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text("Nova Partida") },
@@ -111,6 +116,23 @@ fun NewMatchSetupScreen(
 
                 HorizontalDivider()
 
+                Text("Tipo de Marcação de Pontos", style = MaterialTheme.typography.titleMedium)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    ScoringMode.entries.forEach { mode ->
+                        FilterChip(
+                            selected = uiState.scoringMode == mode,
+                            onClick = { viewModel.onScoringModeChanged(mode) },
+                            label = { Text(mode.displayName) },
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
+
+                HorizontalDivider()
+
                 Text("Regras e Data da Partida", style = MaterialTheme.typography.titleMedium)
 
                 OutlinedTextField(
@@ -169,14 +191,26 @@ fun NewMatchSetupScreen(
                         val p1 = uiState.player1 ?: return@Button
                         val p2 = uiState.player2 ?: return@Button
                         val fmt = uiState.selectedFormat ?: return@Button
-                        onStartMatch(
-                            p1.id,
-                            p2.id,
-                            fmt.id,
-                            uiState.initialServer,
-                            uiState.surface.name,
-                            selectedDateMillis
-                        )
+
+                        when (uiState.scoringMode) {
+                            ScoringMode.BASIC -> {
+                                onStartMatch(
+                                    p1.id,
+                                    p2.id,
+                                    fmt.id,
+                                    uiState.initialServer,
+                                    uiState.surface.name,
+                                    selectedDateMillis
+                                )
+                            }
+                            ScoringMode.INTERMEDIATE, ScoringMode.ADVANCED -> {
+                                scope.launch {
+                                    snackbarHostState.showSnackbar(
+                                        message = "A marcação ${uiState.scoringMode.displayName} foi selecionada e em breve estará disponível!"
+                                    )
+                                }
+                            }
+                        }
                     },
                     modifier = Modifier.fillMaxWidth(),
                     enabled = uiState.isValid

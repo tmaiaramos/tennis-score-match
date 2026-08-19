@@ -59,7 +59,7 @@ private fun formatPlayerName(fullName: String): String {
 fun MatchScreen(
     viewModel: MatchViewModel = hiltViewModel(),
     onCloseClick: () -> Unit,
-) {
+    ) {
     val uiState by viewModel.uiState.collectAsState()
     var showExitConfirmationDialog by remember { mutableStateOf(value = false) }
 
@@ -75,7 +75,7 @@ fun MatchScreen(
                             else -> "Placar"
                         },
                         fontWeight = FontWeight.Bold,
-                    )
+                        )
                 },
                 navigationIcon = {
                     IconButton(
@@ -108,15 +108,15 @@ fun MatchScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            // Seção Superior: Cartão do Placar + Botão de Desfazer
+// Seção Superior: Cartão do Placar + Botão de Desfazer
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Cartão de Placar Principal
+// Cartão de Placar Principal
                 ScoreBoardCard(uiState = uiState)
 
-                // Botão "Desfazer Ponto" posicionado logo abaixo do placar
+// Botão "Desfazer Ponto" posicionado logo abaixo do placar
                 if (!uiState.isMatchFinished) {
                     Spacer(modifier = Modifier.height(12.dp))
                     OutlinedButton(
@@ -128,13 +128,13 @@ fun MatchScreen(
                 }
             }
 
-            // Seção Inferior: Controles de Pontuação
+// Seção Inferior: Controles de Pontuação
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 if (!uiState.isMatchFinished) {
-                    // Banner indicando o Sacador Atual
+// Banner indicando o Sacador Atual
                     val currentServerName = if (uiState.currentServerId == uiState.player1Id) {
                         uiState.player1Name
                     } else {
@@ -207,7 +207,7 @@ fun MatchScreen(
                         }
                     }
                 } else {
-                    // Botão para sair quando encerrado
+// Botão para sair quando encerrado
                     Button(
                         onClick = onCloseClick,
                         modifier = Modifier
@@ -221,7 +221,7 @@ fun MatchScreen(
         }
     }
 
-    // Diálogo de confirmação para sair/abandonar partida em andamento
+// Diálogo de confirmação para sair/abandonar partida em andamento
     if (showExitConfirmationDialog) {
         AlertDialog(
             onDismissRequest = { showExitConfirmationDialog = false },
@@ -245,7 +245,7 @@ fun MatchScreen(
         )
     }
 
-    // Diálogo exibido ao finalizar a partida
+// Diálogo exibido ao finalizar a partida
     if (uiState.isMatchFinished && uiState.winnerName != null) {
         AlertDialog(
             onDismissRequest = { },
@@ -276,7 +276,7 @@ private fun ScoreBoardCard(uiState: MatchUiState) {
             modifier = Modifier.padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Cabeçalho da Tabela Dinâmico
+// Cabeçalho da Tabela Dinâmico
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -287,7 +287,7 @@ private fun ScoreBoardCard(uiState: MatchUiState) {
                     fontWeight = FontWeight.Bold
                 )
 
-                // Colunas para Sets Finalizados (S1, S2, ...)
+// Colunas para Sets Finalizados (S1, S2, ...)
                 uiState.completedSets.forEach { completedSet ->
                     Text(
                         text = "S${completedSet.setNumber}",
@@ -297,7 +297,7 @@ private fun ScoreBoardCard(uiState: MatchUiState) {
                     )
                 }
 
-                // Colunas de Games e Pontos (somente se a partida NÃO estiver encerrada)
+// Colunas de Games e Pontos (somente se a partida NÃO estiver encerrada)
                 if (!uiState.isMatchFinished) {
                     Text(
                         text = "G",
@@ -317,7 +317,7 @@ private fun ScoreBoardCard(uiState: MatchUiState) {
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Jogador 1
+// Jogador 1
             PlayerScoreRow(
                 playerName = formatPlayerName(uiState.player1Name),
                 playerId = uiState.player1Id,
@@ -331,7 +331,7 @@ private fun ScoreBoardCard(uiState: MatchUiState) {
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Jogador 2
+// Jogador 2
             PlayerScoreRow(
                 playerName = formatPlayerName(uiState.player2Name),
                 playerId = uiState.player2Id,
@@ -361,7 +361,7 @@ private fun PlayerScoreRow(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Nome e Indicador de Saque
+// Nome e Indicador de Saque
         Row(
             modifier = Modifier.weight(2.5f),
             verticalAlignment = Alignment.CenterVertically
@@ -379,7 +379,7 @@ private fun PlayerScoreRow(
             }
         }
 
-        // Placar dos Sets Finalizados (Congelados com Sobrescrito de Tiebreak)
+// Placar dos Sets Finalizados (Congelados com Sobrescrito de Tiebreak)
         completedSets.forEach { set ->
             val games = if (isPlayer1) set.player1Games else set.player2Games
             val opponentGames = if (isPlayer1) set.player2Games else set.player1Games
@@ -402,7 +402,7 @@ private fun PlayerScoreRow(
                     .height(24.dp),
                 contentAlignment = Alignment.Center
             ) {
-                // Dígito principal dos games (ancorado no centro exato)
+// Dígito principal dos games (ancorado no centro exato)
                 Text(
                     text = displayScore,
                     fontSize = 16.sp,
@@ -410,7 +410,7 @@ private fun PlayerScoreRow(
                     textAlign = TextAlign.Center
                 )
 
-                // Ponto do tiebreak posicionado no canto superior direito do número (Padrão ATP)
+// Ponto do tiebreak posicionado no canto superior direito do número (Padrão ATP)
                 if (!set.isSuperTieBreak && hasTieBreak && isLoser && myTbPoints != null) {
                     Text(
                         text = myTbPoints.toString(),
@@ -424,7 +424,7 @@ private fun PlayerScoreRow(
             }
         }
 
-        // Games e Pontos atuais (Ocultos se o jogo acabou)
+// Games e Pontos atuais (Ocultos se o jogo acabou)
         if (!isMatchFinished) {
             Text(
                 text = currentGames.toString(),
