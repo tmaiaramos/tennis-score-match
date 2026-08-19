@@ -5,6 +5,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.tennis.matchscore.data.local.converter.Converter
 import com.tennis.matchscore.data.local.dao.MatchDao
@@ -27,7 +28,7 @@ import kotlinx.coroutines.launch
         SetScoreEntity::class,
         PointHistoryEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 @TypeConverters(Converter::class)
@@ -41,6 +42,12 @@ abstract class AppDatabase : RoomDatabase() {
         @Volatile
         private var INSTANCE: AppDatabase? = null
 
+        val MIGRATION_1_2 = object : Migration(1, 2) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE match_formats ADD COLUMN hasAdvantage INTEGER NOT NULL DEFAULT 1")
+            }
+        }
+
         fun getDatabase(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -48,6 +55,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "tennis_match_score.db"
                 )
+                    .addMigrations(MIGRATION_1_2)
                     .addCallback(DatabaseCallback(context))
                     .build()
                 INSTANCE = instance
@@ -60,7 +68,6 @@ abstract class AppDatabase : RoomDatabase() {
         ) : Callback() {
             override fun onCreate(db: SupportSQLiteDatabase) {
                 super.onCreate(db)
-                // Quando o banco é criado pela 1ª vez, este callback roda e cadastra os formatos padrão
                 CoroutineScope(Dispatchers.IO).launch {
                     populateDefaultFormats(getDatabase(context).matchFormatDao())
                 }
@@ -73,6 +80,7 @@ abstract class AppDatabase : RoomDatabase() {
                         numberOfSets = 3,
                         gamesPerSet = 6,
                         tieBreakAt = 6,
+                        hasAdvantage = true,
                         hasSuperTieBreakInFinalSet = true,
                         superTieBreakPoints = 10,
                         isDefault = true
@@ -82,6 +90,7 @@ abstract class AppDatabase : RoomDatabase() {
                         numberOfSets = 1,
                         gamesPerSet = 6,
                         tieBreakAt = 6,
+                        hasAdvantage = true,
                         hasSuperTieBreakInFinalSet = false,
                         isDefault = true
                     ),
@@ -90,6 +99,7 @@ abstract class AppDatabase : RoomDatabase() {
                         numberOfSets = 1,
                         gamesPerSet = 8,
                         tieBreakAt = 8,
+                        hasAdvantage = true,
                         hasSuperTieBreakInFinalSet = false,
                         isDefault = true
                     ),
@@ -98,6 +108,7 @@ abstract class AppDatabase : RoomDatabase() {
                         numberOfSets = 3,
                         gamesPerSet = 4,
                         tieBreakAt = 3,
+                        hasAdvantage = false, // Fast4 por regra é No-Ad
                         hasSuperTieBreakInFinalSet = true,
                         superTieBreakPoints = 10,
                         isDefault = true

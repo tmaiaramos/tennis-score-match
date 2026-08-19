@@ -151,6 +151,7 @@ fun MatchFormatScreen(
                             updatedOrNewFormat.numberOfSets,
                             updatedOrNewFormat.gamesPerSet,
                             updatedOrNewFormat.tieBreakAt,
+                            updatedOrNewFormat.hasAdvantage,
                             updatedOrNewFormat.hasSuperTieBreakInFinalSet,
                             updatedOrNewFormat.superTieBreakPoints
                         )
@@ -246,6 +247,7 @@ private fun FormatItemCard(
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
 
             Text(text = "• Sets: ${format.numberOfSets} | Games por set: ${format.gamesPerSet}", fontSize = 13.sp)
+            Text(text = "• Vantagem: ${if (format.hasAdvantage) "Com Vantagem (Ad)" else "Sem Vantagem (No-Ad)"}", fontSize = 13.sp)
             Text(text = "• Tie-Break em: ${format.tieBreakAt}-${format.tieBreakAt} (7 pts)", fontSize = 13.sp)
 
             if (format.hasSuperTieBreakInFinalSet) {
@@ -270,6 +272,7 @@ private fun FormatFormDialog(
     var numberOfSets by remember { mutableStateOf(initialFormat?.numberOfSets?.toString() ?: "3") }
     var gamesPerSet by remember { mutableStateOf(initialFormat?.gamesPerSet?.toString() ?: "6") }
     var tieBreakAt by remember { mutableStateOf(initialFormat?.tieBreakAt?.toString() ?: "6") }
+    var hasAdvantage by remember { mutableStateOf(initialFormat?.hasAdvantage ?: true) }
     var hasSuperTieBreak by remember { mutableStateOf(initialFormat?.hasSuperTieBreakInFinalSet ?: false) }
     var superTieBreakPoints by remember { mutableStateOf(initialFormat?.superTieBreakPoints?.toString() ?: "10") }
 
@@ -297,7 +300,6 @@ private fun FormatFormDialog(
                         value = gamesPerSet,
                         onValueChange = {
                             gamesPerSet = it
-                            // Sincroniza o gatilho padrão do Tie-break para bater com o valor dos games por set
                             if (initialFormat == null) {
                                 tieBreakAt = it
                             }
@@ -315,6 +317,17 @@ private fun FormatFormDialog(
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.fillMaxWidth()
                 )
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Checkbox(
+                        checked = hasAdvantage,
+                        onCheckedChange = { hasAdvantage = it }
+                    )
+                    Text("Com Vantagem (Ad)", fontSize = 14.sp)
+                }
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -350,6 +363,7 @@ private fun FormatFormDialog(
                         numberOfSets = sets,
                         gamesPerSet = games,
                         tieBreakAt = tieAt,
+                        hasAdvantage = hasAdvantage,
                         hasSuperTieBreakInFinalSet = hasSuperTieBreak,
                         superTieBreakPoints = superPts
                     ) ?: MatchFormatEntity(
@@ -358,6 +372,7 @@ private fun FormatFormDialog(
                         numberOfSets = sets,
                         gamesPerSet = games,
                         tieBreakAt = tieAt,
+                        hasAdvantage = hasAdvantage,
                         hasSuperTieBreakInFinalSet = hasSuperTieBreak,
                         superTieBreakPoints = superPts,
                         isDefault = false

@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -37,13 +38,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -393,47 +390,35 @@ private fun PlayerScoreRow(
             val isLoser = !isWinner
             val hasTieBreak = myTbPoints != null && opponentTbPoints != null
 
+            val displayScore = if (set.isSuperTieBreak && myTbPoints != null) {
+                myTbPoints.toString()
+            } else {
+                games.toString()
+            }
+
             Box(
                 modifier = Modifier
                     .weight(1f)
                     .height(24.dp),
                 contentAlignment = Alignment.Center
             ) {
+                // Dígito principal dos games (ancorado no centro exato)
+                Text(
+                    text = displayScore,
+                    fontSize = 16.sp,
+                    fontWeight = if (isWinner) FontWeight.Bold else FontWeight.Normal,
+                    textAlign = TextAlign.Center
+                )
+
+                // Ponto do tiebreak posicionado no canto superior direito do número (Padrão ATP)
                 if (!set.isSuperTieBreak && hasTieBreak && isLoser && myTbPoints != null) {
                     Text(
-                        text = buildAnnotatedString {
-                            withStyle(
-                                SpanStyle(
-                                    fontSize = 16.sp,
-                                    fontWeight = FontWeight.Normal
-                                )
-                            ) {
-                                append(games.toString())
-                            }
-                            withStyle(
-                                SpanStyle(
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.Normal,
-                                    baselineShift = BaselineShift.Superscript
-                                )
-                            ) {
-                                append(myTbPoints.toString())
-                            }
-                        },
-                        textAlign = TextAlign.Center
-                    )
-                } else {
-                    val displayScore = if (set.isSuperTieBreak && myTbPoints != null) {
-                        myTbPoints.toString()
-                    } else {
-                        games.toString()
-                    }
-
-                    Text(
-                        text = displayScore,
-                        textAlign = TextAlign.Center,
-                        fontSize = 16.sp,
-                        fontWeight = if (isWinner) FontWeight.Bold else FontWeight.Normal
+                        text = myTbPoints.toString(),
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .offset(x = 10.dp, y = (-5).dp)
                     )
                 }
             }

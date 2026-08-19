@@ -7,9 +7,6 @@ class TennisScoreEngine(
     private val format: MatchFormatEntity
 ) {
 
-    /**
-     * Processa quem ganhou o ponto e retorna o novo estado do placar.
-     */
     fun processPoint(
         currentState: MatchScoreState,
         pointWinnerId: Long
@@ -21,13 +18,11 @@ class TennisScoreEngine(
 
         if (!isP1 && !isP2) return currentState
 
-        // Avalia dinamicamente se o set atual DEVE ser tratado como Super Tie-Break
         val isFinalSet = currentState.currentSet == format.numberOfSets
         val isSuperTieBreakSet = isFinalSet && format.hasSuperTieBreakInFinalSet
 
         val inTieBreak = currentState.isTieBreak || currentState.isSuperTieBreak || isSuperTieBreakSet
 
-        // Se for Super Tie-Break, garante que o estado reflita isSuperTieBreak = true
         val stateToProcess = if (isSuperTieBreakSet && !currentState.isSuperTieBreak) {
             currentState.copy(isSuperTieBreak = true, isTieBreak = true)
         } else {
@@ -41,7 +36,6 @@ class TennisScoreEngine(
         }
     }
 
-    // --- PONTUAÇÃO DE GAME REGULAR (0 -> 15 -> 30 -> 40 -> AD -> GAME) ---
     private fun processRegularGamePoint(
         state: MatchScoreState,
         isP1Winner: Boolean
@@ -55,8 +49,13 @@ class TennisScoreEngine(
                 p1Points == "15" -> p1Points = "30"
                 p1Points == "30" -> p1Points = "40"
                 p1Points == "40" && p2Points == "40" -> {
-                    p1Points = "AD"
-                    p2Points = ""
+                    if (format.hasAdvantage) {
+                        p1Points = "AD"
+                        p2Points = ""
+                    } else {
+                        // Regra Sem Vantagem (No-Ad): Ponto decisivo na igualdade (Deuce) ganha o game
+                        return winGame(state, isP1Winner = true)
+                    }
                 }
                 p1Points == "" && p2Points == "AD" -> {
                     p1Points = "40"
@@ -71,8 +70,13 @@ class TennisScoreEngine(
                 p2Points == "15" -> p2Points = "30"
                 p2Points == "30" -> p2Points = "40"
                 p2Points == "40" && p1Points == "40" -> {
-                    p2Points = "AD"
-                    p1Points = ""
+                    if (format.hasAdvantage) {
+                        p2Points = "AD"
+                        p1Points = ""
+                    } else {
+                        // Regra Sem Vantagem (No-Ad): Ponto decisivo na igualdade (Deuce) ganha o game
+                        return winGame(state, isP1Winner = false)
+                    }
                 }
                 p2Points == "" && p1Points == "AD" -> {
                     p2Points = "40"
@@ -89,7 +93,6 @@ class TennisScoreEngine(
         )
     }
 
-    // --- PROCESSAR VITÓRIA DE UM GAME ---
     private fun winGame(state: MatchScoreState, isP1Winner: Boolean): MatchScoreState {
         val newP1Games = if (isP1Winner) state.player1GamesCurrentSet + 1 else state.player1GamesCurrentSet
         val newP2Games = if (!isP1Winner) state.player2GamesCurrentSet + 1 else state.player2GamesCurrentSet
@@ -98,7 +101,6 @@ class TennisScoreEngine(
         val targetGames = format.gamesPerSet
         val tieBreakAt = format.tieBreakAt
 
-        // 1. Checa se deve entrar em Tie-Break conforme parametrizado no formato (ex: 6x6, 5x5, 4x4)
         val shouldStartTieBreak = newP1Games == tieBreakAt && newP2Games == tieBreakAt
 
         if (shouldStartTieBreak) {
@@ -113,7 +115,6 @@ class TennisScoreEngine(
             )
         }
 
-        // 2. Checa se o set foi vencido por margem regular de games (ex: 6x4, 7x5, 8x6)
         val isSetWon = when {
             newP1Games >= targetGames && (newP1Games - newP2Games) >= 2 -> true
             newP2Games >= targetGames && (newP2Games - newP1Games) >= 2 -> true
@@ -135,7 +136,6 @@ class TennisScoreEngine(
         )
     }
 
-    // --- PONTUAÇÃO DE TIE-BREAK E SUPER TIE-BREAK (1, 2, 3...) ---
     private fun processTieBreakPoint(
         state: MatchScoreState,
         isP1Winner: Boolean
@@ -147,7 +147,6 @@ class TennisScoreEngine(
         val newP2Pts = if (!isP1Winner) p2Pts + 1 else p2Pts
         val totalPts = newP1Pts + newP2Pts
 
-        // Troca de saque no Tie-Break (1º saca 1 ponto, depois alternam a cada 2 pontos)
         val nextServer = if (totalPts % 2 == 1) {
             toggleServer(state.currentServerId, state.player1Id, state.player2Id)
         } else {
@@ -156,7 +155,6 @@ class TennisScoreEngine(
 
         val targetPoints = if (state.isSuperTieBreak) format.superTieBreakPoints else REGULAR_TIEBREAK_POINTS
 
-        // Checa se alguém venceu o Tie-Break
         val isTieBreakWon = when {
             newP1Pts >= targetPoints && (newP1Pts - newP2Pts) >= 2 -> true
             newP2Pts >= targetPoints && (newP2Pts - newP1Pts) >= 2 -> true
@@ -166,7 +164,6 @@ class TennisScoreEngine(
         if (isTieBreakWon) {
             val isP1SetWinner = newP1Pts > newP2Pts
 
-            // O vencedor do Tie-Break recebe +1 game no placar do set
             val finalP1Games = if (state.isSuperTieBreak) {
                 if (isP1SetWinner) 1 else 0
             } else {
@@ -189,7 +186,6 @@ class TennisScoreEngine(
         )
     }
 
-    // --- PROCESSAR VITÓRIA DE UM SET ---
     private fun winSet(
         state: MatchScoreState,
         finalP1Games: Int,

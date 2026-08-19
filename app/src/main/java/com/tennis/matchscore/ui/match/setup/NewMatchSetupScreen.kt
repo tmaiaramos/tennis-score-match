@@ -11,8 +11,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.compose.material3.MenuAnchorType
 import androidx.compose.runtime.mutableLongStateOf
 import com.tennis.matchscore.data.local.entity.MatchFormatEntity
 import com.tennis.matchscore.data.local.entity.PlayerEntity
@@ -68,7 +70,6 @@ fun NewMatchSetupScreen(
             ) {
                 Text("Jogadores", style = MaterialTheme.typography.titleMedium)
 
-                // Seletor Jogador 1
                 PlayerDropdown(
                     label = "Jogador 1",
                     players = uiState.players,
@@ -76,7 +77,6 @@ fun NewMatchSetupScreen(
                     onPlayerSelected = viewModel::onPlayer1Selected
                 )
 
-                // Seletor Jogador 2
                 PlayerDropdown(
                     label = "Jogador 2",
                     players = uiState.players.filter { it.id != uiState.player1?.id },
@@ -86,7 +86,6 @@ fun NewMatchSetupScreen(
 
                 HorizontalDivider()
 
-                // Quem começa sacando
                 Text("Sacador Inicial", style = MaterialTheme.typography.titleMedium)
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -114,7 +113,6 @@ fun NewMatchSetupScreen(
 
                 Text("Regras e Data da Partida", style = MaterialTheme.typography.titleMedium)
 
-                // Seletor de Data da Partida
                 OutlinedTextField(
                     value = dateFormatter.format(Date(selectedDateMillis)),
                     onValueChange = {},
@@ -138,14 +136,21 @@ fun NewMatchSetupScreen(
                         .clickable { showDatePicker = true }
                 )
 
-                // Seletor de Formato
                 FormatDropdown(
                     formats = uiState.formats,
                     selectedFormat = uiState.selectedFormat,
                     onFormatSelected = viewModel::onFormatSelected
                 )
 
-                // Piso da Quadra
+                uiState.selectedFormat?.let { format ->
+                    Text(
+                        text = if (format.hasAdvantage) "• Modo: Com Vantagem (Ad)" else "• Modo: Sem Vantagem (No-Ad)",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(start = 4.dp, top = 2.dp)
+                    )
+                }
+
                 Text("Tipo de Piso", style = MaterialTheme.typography.bodyMedium)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     CourtSurface.entries.forEach { surface ->
@@ -159,7 +164,6 @@ fun NewMatchSetupScreen(
 
                 Spacer(modifier = Modifier.weight(1f))
 
-                // Botão Iniciar Partida
                 Button(
                     onClick = {
                         val p1 = uiState.player1 ?: return@Button
@@ -182,7 +186,6 @@ fun NewMatchSetupScreen(
             }
         }
 
-        // DatePicker Dialog
         if (showDatePicker) {
             val datePickerState = rememberDatePickerState(
                 initialSelectedDateMillis = selectedDateMillis
@@ -240,7 +243,7 @@ private fun PlayerDropdown(
             label = { Text(label) },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
             modifier = Modifier
-                .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
                 .fillMaxWidth()
         )
         ExposedDropdownMenu(
@@ -281,7 +284,7 @@ private fun FormatDropdown(
             label = { Text("Formato / Regra") },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
             modifier = Modifier
-                .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
                 .fillMaxWidth()
         )
         ExposedDropdownMenu(
@@ -290,7 +293,16 @@ private fun FormatDropdown(
         ) {
             formats.forEach { format ->
                 DropdownMenuItem(
-                    text = { Text(format.name) },
+                    text = {
+                        Column {
+                            Text(format.name, fontWeight = FontWeight.Medium)
+                            Text(
+                                text = if (format.hasAdvantage) "Com Vantagem (Ad)" else "Sem Vantagem (No-Ad)",
+                                fontSize = 11.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    },
                     onClick = {
                         onFormatSelected(format)
                         expanded = false

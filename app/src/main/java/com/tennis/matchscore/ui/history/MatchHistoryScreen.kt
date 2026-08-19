@@ -94,6 +94,8 @@ private fun MatchHistoryCard(matchDetails: MatchWithDetails) {
     val dateFormatter = remember { SimpleDateFormat("dd/MM/yyyy", Locale("pt", "BR")) }
     val formattedDate = dateFormatter.format(Date(match.createdAt))
 
+    val advantageText = if (matchDetails.format.hasAdvantage) "Ad" else "No-Ad"
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
@@ -105,7 +107,6 @@ private fun MatchHistoryCard(matchDetails: MatchWithDetails) {
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // Cabeçalho
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -123,7 +124,7 @@ private fun MatchHistoryCard(matchDetails: MatchWithDetails) {
                     verticalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
                     Text(
-                        text = matchDetails.format.name,
+                        text = "${matchDetails.format.name} ($advantageText)",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onSurface
@@ -138,7 +139,6 @@ private fun MatchHistoryCard(matchDetails: MatchWithDetails) {
 
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
 
-            // Jogador 1
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -164,7 +164,6 @@ private fun MatchHistoryCard(matchDetails: MatchWithDetails) {
                     }
                 }
 
-                // Colunas de Sets
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     if (completedSets.isNotEmpty()) {
                         completedSets.forEach { set ->
@@ -180,7 +179,6 @@ private fun MatchHistoryCard(matchDetails: MatchWithDetails) {
                             )
                         }
                     } else {
-                        // Fallback para Pro Set / Set Único / Partida sem tabela de sets
                         Box(modifier = Modifier.width(32.dp), contentAlignment = Alignment.Center) {
                             Text(
                                 text = "${match.player1GamesCurrentSet}",
@@ -193,7 +191,6 @@ private fun MatchHistoryCard(matchDetails: MatchWithDetails) {
                 }
             }
 
-            // Jogador 2
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -219,7 +216,6 @@ private fun MatchHistoryCard(matchDetails: MatchWithDetails) {
                     }
                 }
 
-                // Colunas de Sets
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     if (completedSets.isNotEmpty()) {
                         completedSets.forEach { set ->
@@ -235,7 +231,6 @@ private fun MatchHistoryCard(matchDetails: MatchWithDetails) {
                             )
                         }
                     } else {
-                        // Fallback para Pro Set / Set Único / Partida sem tabela de sets
                         Box(modifier = Modifier.width(32.dp), contentAlignment = Alignment.Center) {
                             Text(
                                 text = "${match.player2GamesCurrentSet}",
@@ -251,11 +246,6 @@ private fun MatchHistoryCard(matchDetails: MatchWithDetails) {
     }
 }
 
-/**
- * Componente individual de exibição de Set.
- * Mantém o número do game no centro e posiciona o número do tiebreak
- * no canto superior direito do dígito com pequeno espaçamento lateral.
- */
 @Composable
 private fun SetScoreItem(
     games: Int,
@@ -279,7 +269,6 @@ private fun SetScoreItem(
             .height(24.dp),
         contentAlignment = Alignment.Center
     ) {
-        // Dígito principal dos games (ancorado no centro exato)
         Text(
             text = displayScore,
             fontSize = 16.sp,
@@ -287,7 +276,6 @@ private fun SetScoreItem(
             color = if (isWinner) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
         )
 
-        // Ponto do tiebreak posicionado no canto superior direito do número (Padrão ATP)
         if (!isSuperTieBreak && hasTieBreak && isLoser && myTbPoints != null) {
             Text(
                 text = myTbPoints.toString(),
