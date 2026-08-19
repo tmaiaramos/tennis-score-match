@@ -153,6 +153,16 @@ class MatchRepositoryImpl @Inject constructor(
         val lastPoint = matchDao.getLastPoint(matchId) ?: return false
         val matchDetails = matchDao.getMatchWithDetailsById(matchId) ?: return false
         val match = matchDetails.match
+        val format = matchDetails.format
+
+        // Se o ponto a desfecho for de um set que havia sido concluído, apaga o registro desse set
+        if (lastPoint.setNumber < match.currentSet || match.status == MatchStatus.FINISHED) {
+            matchDao.deleteSetScoreBySetNumber(matchId, lastPoint.setNumber)
+        }
+
+        // Recalcula se o estado restaurado corresponde a um Tie-Break
+        val isRestoredTieBreak = (lastPoint.gamesP1Before == format.tieBreakAt && lastPoint.gamesP2Before == format.tieBreakAt) ||
+                (format.hasSuperTieBreakInFinalSet && lastPoint.setNumber == format.numberOfSets)
 
         // Restaura o placar exato gravado na PointHistoryEntity
         val restoredMatch = match.copy(
@@ -162,6 +172,7 @@ class MatchRepositoryImpl @Inject constructor(
             player1PointsCurrentGame = lastPoint.scoreP1Before,
             player2PointsCurrentGame = lastPoint.scoreP2Before,
             currentServerId = lastPoint.serverId,
+            isTieBreak = isRestoredTieBreak,
             status = MatchStatus.IN_PROGRESS,
             winnerId = null,
             finishedAt = null

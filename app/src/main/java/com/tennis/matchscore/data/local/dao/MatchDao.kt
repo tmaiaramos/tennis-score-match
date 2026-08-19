@@ -29,6 +29,9 @@ interface MatchDao {
     @Query("SELECT * FROM set_scores WHERE matchId = :matchId ORDER BY setNumber ASC")
     fun getSetScoresForMatch(matchId: Long): Flow<List<SetScoreEntity>>
 
+    @Query("DELETE FROM set_scores WHERE matchId = :matchId AND setNumber = :setNumber")
+    suspend fun deleteSetScoreBySetNumber(matchId: Long, setNumber: Int)
+
     // --- Histórico de Pontos (para Undo/Desfazer) ---
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPointHistory(point: PointHistoryEntity): Long
