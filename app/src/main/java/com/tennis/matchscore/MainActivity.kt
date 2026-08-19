@@ -51,13 +51,14 @@ class MainActivity : ComponentActivity() {
                         ) { currentScreen = "history" }
                         "setup_match" -> NewMatchSetupScreen(
                             onBackClick = { currentScreen = "home" },
-                            onStartMatch = { p1Id, p2Id, formatId, server, surface, dateTimestamp ->
+                            onStartMatch = { p1Id, p2Id, formatId, server, surface, scoringMode, dateTimestamp ->
                                 matchViewModel.startNewMatch(
                                     player1Id = p1Id,
                                     player2Id = p2Id,
                                     formatId = formatId,
                                     initialServer = server,
                                     surface = surface,
+                                    scoringModeString = scoringMode,
                                     createdAt = dateTimestamp,
                                     onMatchCreated = {
                                         currentScreen = "match"

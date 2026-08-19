@@ -12,15 +12,21 @@ class MatchFormatRepositoryImpl @Inject constructor(
     private val matchFormatDao: MatchFormatDao
 ) : MatchFormatRepository {
 
-    override fun getAllMatchFormats(): Flow<List<MatchFormatEntity>> = matchFormatDao.getAllFormats()
-
-    override suspend fun insertMatchFormat(format: MatchFormatEntity): Long = matchFormatDao.insert(format)
-
-    override suspend fun updateMatchFormat(format: MatchFormatEntity) {
-        matchFormatDao.insert(format)
+    override fun getAllMatchFormats(): Flow<List<MatchFormatEntity>> {
+        return matchFormatDao.getAllFormats()
     }
 
-    override suspend fun deleteMatchFormat(format: MatchFormatEntity) = matchFormatDao.delete(format)
+    override suspend fun insertMatchFormat(format: MatchFormatEntity): Long {
+        return matchFormatDao.insert(format)
+    }
+
+    override suspend fun updateMatchFormat(format: MatchFormatEntity) {
+        matchFormatDao.update(format)
+    }
+
+    override suspend fun deleteMatchFormat(format: MatchFormatEntity) {
+        matchFormatDao.delete(format)
+    }
 
     override suspend fun isFormatInUse(formatId: Long): Boolean {
         return matchFormatDao.getMatchCountForFormat(formatId) > 0

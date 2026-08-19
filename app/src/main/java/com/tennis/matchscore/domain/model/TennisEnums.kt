@@ -16,7 +16,14 @@ enum class DominantHand(val displayName: String) {
 // Tipo de Quadra
 enum class CourtType(val displayName: String) {
     HARD("Quadra Rápida"),
-    CLAY("Saibro")
+    CLAY("Saibro"),
+    GRASS("Grama")
+}
+
+// Estado do Saque (Utilizado no modo Intermediário)
+enum class ServeState {
+    FIRST_SERVE,
+    SECOND_SERVE
 }
 
 // Tipos de Eventos / Pontos
@@ -25,7 +32,8 @@ enum class MatchEventType {
     DOUBLE_FAULT,
     WINNER,
     FORCED_ERROR,
-    UNFORCED_ERROR
+    UNFORCED_ERROR,
+    REGULAR_POINT
 }
 
 // Tipo do golpe / batida

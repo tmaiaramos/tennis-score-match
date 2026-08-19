@@ -18,7 +18,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.runtime.mutableLongStateOf
 import com.tennis.matchscore.data.local.entity.MatchFormatEntity
 import com.tennis.matchscore.data.local.entity.PlayerEntity
-import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -29,7 +28,7 @@ import java.util.TimeZone
 fun NewMatchSetupScreen(
     viewModel: NewMatchSetupViewModel = hiltViewModel(),
     onBackClick: () -> Unit,
-    onStartMatch: (player1Id: Long, player2Id: Long, formatId: Long, initialServer: Int, surface: String, dateTimestamp: Long) -> Unit
+    onStartMatch: (player1Id: Long, player2Id: Long, formatId: Long, initialServer: Int, surface: String, scoringMode: String, dateTimestamp: Long) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -37,7 +36,6 @@ fun NewMatchSetupScreen(
     var showDatePicker by remember { mutableStateOf(false) }
 
     val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
 
     val dateFormatter = remember { SimpleDateFormat("dd/MM/yyyy", Locale("pt", "BR")) }
 
@@ -192,25 +190,15 @@ fun NewMatchSetupScreen(
                         val p2 = uiState.player2 ?: return@Button
                         val fmt = uiState.selectedFormat ?: return@Button
 
-                        when (uiState.scoringMode) {
-                            ScoringMode.BASIC -> {
-                                onStartMatch(
-                                    p1.id,
-                                    p2.id,
-                                    fmt.id,
-                                    uiState.initialServer,
-                                    uiState.surface.name,
-                                    selectedDateMillis
-                                )
-                            }
-                            ScoringMode.INTERMEDIATE, ScoringMode.ADVANCED -> {
-                                scope.launch {
-                                    snackbarHostState.showSnackbar(
-                                        message = "A marcação ${uiState.scoringMode.displayName} foi selecionada e em breve estará disponível!"
-                                    )
-                                }
-                            }
-                        }
+                        onStartMatch(
+                            p1.id,
+                            p2.id,
+                            fmt.id,
+                            uiState.initialServer,
+                            uiState.surface.name,
+                            uiState.scoringMode.name,
+                            selectedDateMillis
+                        )
                     },
                     modifier = Modifier.fillMaxWidth(),
                     enabled = uiState.isValid

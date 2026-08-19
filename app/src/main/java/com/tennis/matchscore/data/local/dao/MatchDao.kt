@@ -29,6 +29,9 @@ interface MatchDao {
     @Query("SELECT * FROM set_scores WHERE matchId = :matchId ORDER BY setNumber ASC")
     fun getSetScoresForMatch(matchId: Long): Flow<List<SetScoreEntity>>
 
+    @Query("SELECT * FROM set_scores WHERE matchId = :matchId ORDER BY setNumber ASC")
+    suspend fun getSetScoresForMatchSync(matchId: Long): List<SetScoreEntity>
+
     @Query("DELETE FROM set_scores WHERE matchId = :matchId AND setNumber = :setNumber")
     suspend fun deleteSetScoreBySetNumber(matchId: Long, setNumber: Int)
 

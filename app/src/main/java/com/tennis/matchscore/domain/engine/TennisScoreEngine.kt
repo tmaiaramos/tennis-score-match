@@ -2,10 +2,20 @@ package com.tennis.matchscore.domain.engine
 
 import com.tennis.matchscore.data.local.entity.MatchFormatEntity
 import com.tennis.matchscore.data.local.entity.REGULAR_TIEBREAK_POINTS
+import com.tennis.matchscore.domain.model.ServeState
 
 class TennisScoreEngine(
     private val format: MatchFormatEntity
 ) {
+
+    // Registra falta (transição de 1º Saque para 2º Saque)
+    fun processFault(currentState: MatchScoreState): MatchScoreState {
+        if (currentState.isFinished) return currentState
+        if (currentState.serveState == ServeState.FIRST_SERVE) {
+            return currentState.copy(serveState = ServeState.SECOND_SERVE)
+        }
+        return currentState
+    }
 
     fun processPoint(
         currentState: MatchScoreState,
@@ -23,16 +33,17 @@ class TennisScoreEngine(
 
         val inTieBreak = currentState.isTieBreak || currentState.isSuperTieBreak || isSuperTieBreakSet
 
-        val stateToProcess = if (isSuperTieBreakSet && !currentState.isSuperTieBreak) {
+        // Ao pontuar (seja por Ace, Ponto regular ou Dupla Falta), reseta o estado do saque para 1º Saque
+        val stateWithResetServe = (if (isSuperTieBreakSet && !currentState.isSuperTieBreak) {
             currentState.copy(isSuperTieBreak = true, isTieBreak = true)
         } else {
             currentState
-        }
+        }).copy(serveState = ServeState.FIRST_SERVE)
 
         return if (inTieBreak) {
-            processTieBreakPoint(stateToProcess, isP1)
+            processTieBreakPoint(stateWithResetServe, isP1)
         } else {
-            processRegularGamePoint(stateToProcess, isP1)
+            processRegularGamePoint(stateWithResetServe, isP1)
         }
     }
 
@@ -53,7 +64,6 @@ class TennisScoreEngine(
                         p1Points = "AD"
                         p2Points = ""
                     } else {
-                        // Regra Sem Vantagem (No-Ad): Ponto decisivo na igualdade (Deuce) ganha o game
                         return winGame(state, isP1Winner = true)
                     }
                 }
@@ -74,7 +84,6 @@ class TennisScoreEngine(
                         p2Points = "AD"
                         p1Points = ""
                     } else {
-                        // Regra Sem Vantagem (No-Ad): Ponto decisivo na igualdade (Deuce) ganha o game
                         return winGame(state, isP1Winner = false)
                     }
                 }
@@ -110,6 +119,7 @@ class TennisScoreEngine(
                 player1PointsCurrentGame = "0",
                 player2PointsCurrentGame = "0",
                 currentServerId = nextServerId,
+                serveState = ServeState.FIRST_SERVE,
                 isTieBreak = true,
                 isSuperTieBreak = false
             )
@@ -131,6 +141,7 @@ class TennisScoreEngine(
             player1PointsCurrentGame = "0",
             player2PointsCurrentGame = "0",
             currentServerId = nextServerId,
+            serveState = ServeState.FIRST_SERVE,
             isTieBreak = false,
             isSuperTieBreak = false
         )
@@ -182,7 +193,8 @@ class TennisScoreEngine(
         return state.copy(
             player1PointsCurrentGame = newP1Pts.toString(),
             player2PointsCurrentGame = newP2Pts.toString(),
-            currentServerId = nextServer
+            currentServerId = nextServer,
+            serveState = ServeState.FIRST_SERVE
         )
     }
 
@@ -209,6 +221,7 @@ class TennisScoreEngine(
                 player1SetsWon = newP1SetsWon,
                 player2SetsWon = newP2SetsWon,
                 completedSetScores = updatedCompletedSets,
+                serveState = ServeState.FIRST_SERVE,
                 isFinished = true,
                 isTieBreak = false,
                 isSuperTieBreak = false,
@@ -234,6 +247,7 @@ class TennisScoreEngine(
             player2SetsWon = newP2SetsWon,
             completedSetScores = updatedCompletedSets,
             currentServerId = nextServerId,
+            serveState = ServeState.FIRST_SERVE,
             isTieBreak = isNextSetSuperTieBreak,
             isSuperTieBreak = isNextSetSuperTieBreak
         )

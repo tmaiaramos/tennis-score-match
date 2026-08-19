@@ -1,5 +1,6 @@
 package com.tennis.matchscore.ui.match
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,6 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -38,12 +40,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.tennis.matchscore.domain.model.ServeState
+import com.tennis.matchscore.ui.match.setup.ScoringMode
 
 private fun formatPlayerName(fullName: String): String {
     val parts = fullName.trim().split("\\s+".toRegex())
@@ -59,9 +64,10 @@ private fun formatPlayerName(fullName: String): String {
 fun MatchScreen(
     viewModel: MatchViewModel = hiltViewModel(),
     onCloseClick: () -> Unit,
-    ) {
+) {
     val uiState by viewModel.uiState.collectAsState()
-    var showExitConfirmationDialog by remember { mutableStateOf(value = false) }
+    var showExitConfirmationDialog by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
     Scaffold(
         topBar = {
@@ -75,7 +81,7 @@ fun MatchScreen(
                             else -> "Placar"
                         },
                         fontWeight = FontWeight.Bold,
-                        )
+                    )
                 },
                 navigationIcon = {
                     IconButton(
@@ -108,106 +114,52 @@ fun MatchScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-// Seção Superior: Cartão do Placar + Botão de Desfazer
+            // Seção Superior: Cartão do Placar + Botão de Desfazer
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-// Cartão de Placar Principal
+                // Cartão de Placar Principal
                 ScoreBoardCard(uiState = uiState)
 
-// Botão "Desfazer Ponto" posicionado logo abaixo do placar
+                // Botão "Desfazer Ponto" posicionado logo abaixo do placar
                 if (!uiState.isMatchFinished) {
                     Spacer(modifier = Modifier.height(12.dp))
                     OutlinedButton(
                         onClick = { viewModel.undoLastPoint() },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("↩ Desfazer Ponto")
+                        Text("↩ Desfazer Ponto / Jogada")
                     }
                 }
             }
 
-// Seção Inferior: Controles de Pontuação
+            // Seção Inferior: Controles de Pontuação de acordo com o Tipo de Marcação
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 if (!uiState.isMatchFinished) {
-// Banner indicando o Sacador Atual
-                    val currentServerName = if (uiState.currentServerId == uiState.player1Id) {
-                        uiState.player1Name
+                    if (uiState.scoringMode == ScoringMode.INTERMEDIATE) {
+                        // LAYOUT DE MARCAÇÃO INTERMEDIÁRIA
+                        IntermediateScoringControls(
+                            uiState = uiState,
+                            onAceClick = viewModel::onAceClicked,
+                            onFaultClick = viewModel::onFaultClicked,
+                            onBallInPlayClick = {
+                                Toast.makeText(context, "Bola em Jogo clicado!", Toast.LENGTH_SHORT).show()
+                            }
+                        )
                     } else {
-                        uiState.player2Name
-                    }
-
-                    Surface(
-                        color = MaterialTheme.colorScheme.secondaryContainer,
-                        shape = RoundedCornerShape(8.dp),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 16.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Text(
-                                text = "🎾 Saque: ",
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSecondaryContainer
-                            )
-                            Text(
-                                text = currentServerName,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSecondaryContainer
-                            )
-                        }
-                    }
-
-                    Text(
-                        text = "Registrar Ponto",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Medium,
-                        modifier = Modifier.padding(bottom = 12.dp)
-                    )
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceEvenly
-                    ) {
-                        Button(
-                            onClick = { viewModel.onPlayer1Scored() },
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(56.dp)
-                                .padding(end = 8.dp)
-                        ) {
-                            Text(
-                                text = "+ Ponto ${formatPlayerName(uiState.player1Name)}",
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
-
-                        Button(
-                            onClick = { viewModel.onPlayer2Scored() },
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(56.dp)
-                                .padding(start = 8.dp)
-                        ) {
-                            Text(
-                                text = "+ Ponto ${formatPlayerName(uiState.player2Name)}",
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
+                        // LAYOUT DE MARCAÇÃO BÁSICA/SIMPLIFICADA
+                        BasicScoringControls(
+                            uiState = uiState,
+                            onPlayer1Scored = viewModel::onPlayer1Scored,
+                            onPlayer2Scored = viewModel::onPlayer2Scored
+                        )
                     }
                 } else {
-// Botão para sair quando encerrado
+                    // Botão para sair quando encerrado
                     Button(
                         onClick = onCloseClick,
                         modifier = Modifier
@@ -221,7 +173,23 @@ fun MatchScreen(
         }
     }
 
-// Diálogo de confirmação para sair/abandonar partida em andamento
+    // Modal de Confirmação Pós Registro (ACE / Dupla Falta)
+    uiState.lastRegisteredEventMessage?.let { message ->
+        AlertDialog(
+            onDismissRequest = { viewModel.clearConfirmationMessage() },
+            title = { Text("Ponto Registrado 🎾") },
+            text = { Text(message) },
+            confirmButton = {
+                Button(
+                    onClick = { viewModel.clearConfirmationMessage() }
+                ) {
+                    Text("Continuar")
+                }
+            }
+        )
+    }
+
+    // Diálogo de confirmação para sair/abandonar partida em andamento
     if (showExitConfirmationDialog) {
         AlertDialog(
             onDismissRequest = { showExitConfirmationDialog = false },
@@ -245,7 +213,7 @@ fun MatchScreen(
         )
     }
 
-// Diálogo exibido ao finalizar a partida
+    // Diálogo exibido ao finalizar a partida
     if (uiState.isMatchFinished && uiState.winnerName != null) {
         AlertDialog(
             onDismissRequest = { },
@@ -266,6 +234,206 @@ fun MatchScreen(
 }
 
 @Composable
+private fun BasicScoringControls(
+    uiState: MatchUiState,
+    onPlayer1Scored: () -> Unit,
+    onPlayer2Scored: () -> Unit
+) {
+    val currentServerName = if (uiState.currentServerId == uiState.player1Id) {
+        uiState.player1Name
+    } else {
+        uiState.player2Name
+    }
+
+    Surface(
+        color = MaterialTheme.colorScheme.secondaryContainer,
+        shape = RoundedCornerShape(8.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 16.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = "🎾 Saque: ",
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSecondaryContainer
+            )
+            Text(
+                text = currentServerName,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSecondaryContainer
+            )
+        }
+    }
+
+    Text(
+        text = "Registrar Ponto",
+        fontSize = 18.sp,
+        fontWeight = FontWeight.Medium,
+        modifier = Modifier.padding(bottom = 12.dp)
+    )
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceEvenly
+    ) {
+        Button(
+            onClick = onPlayer1Scored,
+            modifier = Modifier
+                .weight(1f)
+                .height(56.dp)
+                .padding(end = 8.dp)
+        ) {
+            Text(
+                text = "+ Ponto ${formatPlayerName(uiState.player1Name)}",
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+
+        Button(
+            onClick = onPlayer2Scored,
+            modifier = Modifier
+                .weight(1f)
+                .height(56.dp)
+                .padding(start = 8.dp)
+        ) {
+            Text(
+                text = "+ Ponto ${formatPlayerName(uiState.player2Name)}",
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+    }
+}
+
+@Composable
+private fun IntermediateScoringControls(
+    uiState: MatchUiState,
+    onAceClick: () -> Unit,
+    onFaultClick: () -> Unit,
+    onBallInPlayClick: () -> Unit
+) {
+    val isP1Server = uiState.currentServerId == uiState.player1Id
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        // Duas colunas principais (Esq: Jogador 1, Dir: Jogador 2)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            // Coluna Jogador 1 (Esquerda)
+            Column(
+                modifier = Modifier.weight(1f),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = formatPlayerName(uiState.player1Name),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+
+                if (isP1Server) {
+                    Text(
+                        text = if (uiState.serveState == ServeState.FIRST_SERVE) "1º Saque" else "1º Saque  2º Saque",
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 13.sp,
+                        modifier = Modifier.padding(vertical = 4.dp)
+                    )
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Button(
+                        onClick = onAceClick,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("ACE")
+                    }
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    OutlinedButton(
+                        onClick = onFaultClick,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(if (uiState.serveState == ServeState.FIRST_SERVE) "Falta" else "Dupla Falta")
+                    }
+                } else {
+                    Spacer(modifier = Modifier.height(84.dp))
+                }
+            }
+
+            // Coluna Jogador 2 (Direita)
+            Column(
+                modifier = Modifier.weight(1f),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = formatPlayerName(uiState.player2Name),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+
+                if (!isP1Server) {
+                    Text(
+                        text = if (uiState.serveState == ServeState.FIRST_SERVE) "1º Saque" else "1º Saque  2º Saque",
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 13.sp,
+                        modifier = Modifier.padding(vertical = 4.dp)
+                    )
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Button(
+                        onClick = onAceClick,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("ACE")
+                    }
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    OutlinedButton(
+                        onClick = onFaultClick,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(if (uiState.serveState == ServeState.FIRST_SERVE) "Falta" else "Dupla Falta")
+                    }
+                } else {
+                    Spacer(modifier = Modifier.height(84.dp))
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Botão Maior de Bola em Jogo Ocupando Ambas as Colunas
+        Button(
+            onClick = onBallInPlayClick,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.secondary
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp)
+        ) {
+            Text("🎾 Bola em Jogo", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        }
+    }
+}
+
+@Composable
 private fun ScoreBoardCard(uiState: MatchUiState) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -276,7 +444,7 @@ private fun ScoreBoardCard(uiState: MatchUiState) {
             modifier = Modifier.padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-// Cabeçalho da Tabela Dinâmico
+            // Cabeçalho da Tabela Dinâmico
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -287,7 +455,7 @@ private fun ScoreBoardCard(uiState: MatchUiState) {
                     fontWeight = FontWeight.Bold
                 )
 
-// Colunas para Sets Finalizados (S1, S2, ...)
+                // Colunas para Sets Finalizados (S1, S2, ...)
                 uiState.completedSets.forEach { completedSet ->
                     Text(
                         text = "S${completedSet.setNumber}",
@@ -297,7 +465,7 @@ private fun ScoreBoardCard(uiState: MatchUiState) {
                     )
                 }
 
-// Colunas de Games e Pontos (somente se a partida NÃO estiver encerrada)
+                // Colunas de Games e Pontos (somente se a partida NÃO estiver encerrada)
                 if (!uiState.isMatchFinished) {
                     Text(
                         text = "G",
@@ -317,7 +485,7 @@ private fun ScoreBoardCard(uiState: MatchUiState) {
 
             Spacer(modifier = Modifier.height(12.dp))
 
-// Jogador 1
+            // Jogador 1
             PlayerScoreRow(
                 playerName = formatPlayerName(uiState.player1Name),
                 playerId = uiState.player1Id,
@@ -331,7 +499,7 @@ private fun ScoreBoardCard(uiState: MatchUiState) {
 
             Spacer(modifier = Modifier.height(8.dp))
 
-// Jogador 2
+            // Jogador 2
             PlayerScoreRow(
                 playerName = formatPlayerName(uiState.player2Name),
                 playerId = uiState.player2Id,
@@ -361,7 +529,7 @@ private fun PlayerScoreRow(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
-// Nome e Indicador de Saque
+        // Nome e Indicador de Saque
         Row(
             modifier = Modifier.weight(2.5f),
             verticalAlignment = Alignment.CenterVertically
@@ -379,7 +547,7 @@ private fun PlayerScoreRow(
             }
         }
 
-// Placar dos Sets Finalizados (Congelados com Sobrescrito de Tiebreak)
+        // Placar dos Sets Finalizados (Congelados com Sobrescrito de Tiebreak)
         completedSets.forEach { set ->
             val games = if (isPlayer1) set.player1Games else set.player2Games
             val opponentGames = if (isPlayer1) set.player2Games else set.player1Games
@@ -387,7 +555,6 @@ private fun PlayerScoreRow(
             val opponentTbPoints = if (isPlayer1) set.tieBreakPointsPlayer2 else set.tieBreakPointsPlayer1
 
             val isWinner = set.winnerPlayerId == playerId || (set.winnerPlayerId == null && games > opponentGames)
-            val isLoser = !isWinner
             val hasTieBreak = myTbPoints != null && opponentTbPoints != null
 
             val displayScore = if (set.isSuperTieBreak && myTbPoints != null) {
@@ -402,7 +569,6 @@ private fun PlayerScoreRow(
                     .height(24.dp),
                 contentAlignment = Alignment.Center
             ) {
-// Dígito principal dos games (ancorado no centro exato)
                 Text(
                     text = displayScore,
                     fontSize = 16.sp,
@@ -410,8 +576,7 @@ private fun PlayerScoreRow(
                     textAlign = TextAlign.Center
                 )
 
-// Ponto do tiebreak posicionado no canto superior direito do número (Padrão ATP)
-                if (!set.isSuperTieBreak && hasTieBreak && isLoser && myTbPoints != null) {
+                if (!set.isSuperTieBreak && hasTieBreak && !isWinner && myTbPoints != null) {
                     Text(
                         text = myTbPoints.toString(),
                         fontSize = 10.sp,
@@ -424,7 +589,7 @@ private fun PlayerScoreRow(
             }
         }
 
-// Games e Pontos atuais (Ocultos se o jogo acabou)
+        // Games e Pontos atuais (Ocultos se o jogo acabou)
         if (!isMatchFinished) {
             Text(
                 text = currentGames.toString(),

@@ -27,7 +27,7 @@ object DatabaseModule {
             AppDatabase::class.java,
             "tennis_match_score_v3" // Incrementado para forçar a criação com as novas regras
         )
-            .fallbackToDestructiveMigration()
+            .fallbackToDestructiveMigration(false)
             .addCallback(object : RoomDatabase.Callback() {
                 override fun onCreate(db: SupportSQLiteDatabase) {
                     super.onCreate(db)
@@ -36,10 +36,10 @@ object DatabaseModule {
                     db.execSQL(
                         """
                         INSERT INTO match_formats (
-                            id, name, numberOfSets, gamesPerSet, tieBreakAt, 
+                            id, name, numberOfSets, gamesPerSet, tieBreakAt, hasAdvantage,
                             hasSuperTieBreakInFinalSet, superTieBreakPoints, isDefault
                         ) VALUES (
-                            4, 'Melhor de 3 c/ Super Tie', 3, 6, 6, 1, 10, 1
+                            4, 'Melhor de 3 c/ Super Tie', 3, 6, 6, 1, 1, 10, 1
                         )
                         """.trimIndent()
                     )
@@ -48,10 +48,10 @@ object DatabaseModule {
                     db.execSQL(
                         """
                         INSERT INTO match_formats (
-                            id, name, numberOfSets, gamesPerSet, tieBreakAt, 
+                            id, name, numberOfSets, gamesPerSet, tieBreakAt, hasAdvantage,
                             hasSuperTieBreakInFinalSet, superTieBreakPoints, isDefault
                         ) VALUES (
-                            2, 'Set Pro (8 Games)', 1, 8, 8, 0, 10, 0
+                            2, 'Set Pro (8 Games)', 1, 8, 8, 1, 0, 10, 0
                         )
                         """.trimIndent()
                     )
@@ -60,10 +60,10 @@ object DatabaseModule {
                     db.execSQL(
                         """
                         INSERT INTO match_formats (
-                            id, name, numberOfSets, gamesPerSet, tieBreakAt, 
+                            id, name, numberOfSets, gamesPerSet, tieBreakAt, hasAdvantage, 
                             hasSuperTieBreakInFinalSet, superTieBreakPoints, isDefault
                         ) VALUES (
-                            3, 'Set Único (6 Games)', 1, 6, 6, 0, 10, 0
+                            3, 'Set Único (6 Games)', 1, 6, 6, 1, 0, 10, 0
                         )
                         """.trimIndent()
                     )
@@ -72,10 +72,10 @@ object DatabaseModule {
                     db.execSQL(
                         """
                         INSERT INTO match_formats (
-                            id, name, numberOfSets, gamesPerSet, tieBreakAt, 
+                            id, name, numberOfSets, gamesPerSet, tieBreakAt, hasAdvantage,
                             hasSuperTieBreakInFinalSet, superTieBreakPoints, isDefault
                         ) VALUES (
-                            1, 'Melhor de 3 Sets', 3, 6, 6, 0, 10, 0
+                            1, 'Melhor de 3 Sets', 3, 6, 6, 1, 0, 10, 0
                         )
                         """.trimIndent()
                     )

@@ -4,6 +4,8 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.tennis.matchscore.domain.model.MatchEventType
+import com.tennis.matchscore.domain.model.ServeState
 
 @Entity(
     tableName = "point_history",
@@ -26,7 +28,11 @@ data class PointHistoryEntity(
     val pointWinnerId: Long,
     val serverId: Long,
 
-    // Placar antes deste ponto (usado para desfazer jogadas)
+    // Suporte ao modo Intermediário / Desfazer Falta
+    val eventType: MatchEventType = MatchEventType.REGULAR_POINT,
+    val serveStateBefore: ServeState = ServeState.FIRST_SERVE,
+
+    // Placar antes deste evento (usado para desfazer jogadas)
     val scoreP1Before: String,
     val scoreP2Before: String,
     val gamesP1Before: Int,

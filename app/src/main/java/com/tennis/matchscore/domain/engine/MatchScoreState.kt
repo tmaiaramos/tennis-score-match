@@ -1,5 +1,7 @@
 package com.tennis.matchscore.domain.engine
 
+import com.tennis.matchscore.domain.model.ServeState
+
 data class MatchScoreState(
     val currentSet: Int = 1,
     val player1GamesCurrentSet: Int = 0,
@@ -11,6 +13,7 @@ data class MatchScoreState(
     val currentServerId: Long,
     val player1Id: Long,
     val player2Id: Long,
+    val serveState: ServeState = ServeState.FIRST_SERVE, // Controle do 1º ou 2º saque
     val isTieBreak: Boolean = false,
     val isSuperTieBreak: Boolean = false,
     val isFinished: Boolean = false,

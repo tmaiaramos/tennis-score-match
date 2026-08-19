@@ -11,11 +11,16 @@ import com.tennis.matchscore.data.local.entity.SetScoreEntity
 import com.tennis.matchscore.data.local.relation.MatchWithDetails
 import com.tennis.matchscore.domain.engine.MatchScoreState
 import com.tennis.matchscore.domain.engine.TennisScoreEngine
+import com.tennis.matchscore.domain.model.CourtType
+import com.tennis.matchscore.domain.model.MatchEventType
 import com.tennis.matchscore.domain.model.MatchStatus
+import com.tennis.matchscore.domain.model.ServeState
 import com.tennis.matchscore.domain.repository.MatchRepository
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class MatchRepositoryImpl @Inject constructor(
     private val matchDao: MatchDao,
     private val matchFormatDao: MatchFormatDao,
@@ -27,7 +32,7 @@ class MatchRepositoryImpl @Inject constructor(
         player2Id: Long,
         matchFormatId: Long,
         initialServerId: Long,
-        courtType: com.tennis.matchscore.domain.model.CourtType,
+        courtType: CourtType,
         createdAt: Long,
     ): Long {
         val match = MatchEntity(
@@ -54,21 +59,27 @@ class MatchRepositoryImpl @Inject constructor(
         return matchDao.getAllMatchesWithDetails()
     }
 
-    // --- REGISTRO DE PONTO E ATUALIZAÇÃO VIA TENNIS SCORE ENGINE ---
-    override suspend fun scorePoint(matchId: Long, pointWinnerId: Long) {
+    override suspend fun recordFault(matchId: Long) {
         val matchDetails = matchDao.getMatchWithDetailsById(matchId) ?: return
         val match = matchDetails.match
         val format = matchDetails.format
 
         if (match.status == MatchStatus.FINISHED) return
+        if (match.serveState == ServeState.SECOND_SERVE) return
 
-        // 1. Grava no histórico o estado ANTES do ponto (para permitir Undo)
+        val engine = TennisScoreEngine(format)
+        val currentState = mapToEngineState(match)
+        val newState = engine.processFault(currentState)
+
+        // Salva histórico da falta
         val historyEntry = PointHistoryEntity(
             matchId = matchId,
             setNumber = match.currentSet,
             gameNumber = match.player1GamesCurrentSet + match.player2GamesCurrentSet + 1,
-            pointWinnerId = pointWinnerId,
+            pointWinnerId = 0L,
             serverId = match.currentServerId,
+            eventType = MatchEventType.UNFORCED_ERROR,
+            serveStateBefore = match.serveState,
             scoreP1Before = match.player1PointsCurrentGame,
             scoreP2Before = match.player2PointsCurrentGame,
             gamesP1Before = match.player1GamesCurrentSet,
@@ -76,47 +87,49 @@ class MatchRepositoryImpl @Inject constructor(
         )
         matchDao.insertPointHistory(historyEntry)
 
-        // 2. Mapeia o estado atual do banco de dados para a engine
-        val currentState = MatchScoreState(
-            currentSet = match.currentSet,
-            player1GamesCurrentSet = match.player1GamesCurrentSet,
-            player2GamesCurrentSet = match.player2GamesCurrentSet,
-            player1PointsCurrentGame = match.player1PointsCurrentGame,
-            player2PointsCurrentGame = match.player2PointsCurrentGame,
-            player1SetsWon = matchDetails.sets.count { it.winnerPlayerId == match.player1Id },
-            player2SetsWon = matchDetails.sets.count { it.winnerPlayerId == match.player2Id },
-            currentServerId = match.currentServerId,
-            player1Id = match.player1Id,
-            player2Id = match.player2Id,
-            isTieBreak = match.isTieBreak,
-            isFinished = false,
-            winnerId = match.winnerId,
-            completedSetScores = matchDetails.sets.map { Pair(it.player1Games, it.player2Games) }
-        )
+        matchDao.updateMatch(match.copy(serveState = newState.serveState))
+    }
 
-        // 3. Processa a lógica de regras de tênis através da TennisScoreEngine
+    override suspend fun scorePoint(matchId: Long, pointWinnerId: Long, eventType: MatchEventType) {
+        val matchDetails = matchDao.getMatchWithDetailsById(matchId) ?: return
+        val match = matchDetails.match
+        val format = matchDetails.format
+
+        if (match.status == MatchStatus.FINISHED) return
+
+        // 1. Grava histórico
+        val historyEntry = PointHistoryEntity(
+            matchId = matchId,
+            setNumber = match.currentSet,
+            gameNumber = match.player1GamesCurrentSet + match.player2GamesCurrentSet + 1,
+            pointWinnerId = pointWinnerId,
+            serverId = match.currentServerId,
+            eventType = eventType,
+            serveStateBefore = match.serveState,
+            scoreP1Before = match.player1PointsCurrentGame,
+            scoreP2Before = match.player2PointsCurrentGame,
+            gamesP1Before = match.player1GamesCurrentSet,
+            gamesP2Before = match.player2GamesCurrentSet,
+        )
+        matchDao.insertPointHistory(historyEntry)
+
+        // 2. Processa com a Engine
         val engine = TennisScoreEngine(format)
+        val currentState = mapToEngineState(match)
         val newState = engine.processPoint(currentState, pointWinnerId)
 
-        // 4. Se um set foi concluído ou a partida terminou, registra o resultado na tabela SetScore
+        // 3. Registra Set se concluído
         if ((newState.currentSet > currentState.currentSet) || newState.isFinished) {
             val lastCompletedSetIndex = currentState.currentSet - 1
             if (newState.completedSetScores.size > lastCompletedSetIndex) {
                 val (p1Games, p2Games) = newState.completedSetScores[lastCompletedSetIndex]
                 val setWinnerId = if (p1Games > p2Games) match.player1Id else match.player2Id
 
-                val wasTieBreakSet = currentState.isTieBreak ||
-                        format.isTieBreakSet(p1Games, p2Games, setNumber = currentState.currentSet)
+                val wasTieBreakSet = currentState.isTieBreak || 
+                    format.isTieBreakSet(p1Games, p2Games, setNumber = currentState.currentSet)
 
-                val tbP1 = if (wasTieBreakSet) {
-                    if (pointWinnerId == match.player1Id) currentState.player1PointsCurrentGame.toIntOrNull()?.plus(1)
-                    else currentState.player1PointsCurrentGame.toIntOrNull()
-                } else null
-
-                val tbP2 = if (wasTieBreakSet) {
-                    if (pointWinnerId == match.player2Id) currentState.player2PointsCurrentGame.toIntOrNull()?.plus(1)
-                    else currentState.player2PointsCurrentGame.toIntOrNull()
-                } else null
+                val tbP1 = if (wasTieBreakSet) currentState.player1PointsCurrentGame.toIntOrNull() else null
+                val tbP2 = if (wasTieBreakSet) currentState.player2PointsCurrentGame.toIntOrNull() else null
 
                 val setScore = SetScoreEntity(
                     matchId = matchId,
@@ -131,15 +144,19 @@ class MatchRepositoryImpl @Inject constructor(
             }
         }
 
-        // 5. Persiste as alterações no banco de dados
+        // 4. Atualiza Partida
         val updatedMatch = match.copy(
             currentSet = newState.currentSet,
             player1GamesCurrentSet = newState.player1GamesCurrentSet,
             player2GamesCurrentSet = newState.player2GamesCurrentSet,
             player1PointsCurrentGame = newState.player1PointsCurrentGame,
             player2PointsCurrentGame = newState.player2PointsCurrentGame,
+            player1SetsWon = newState.player1SetsWon,
+            player2SetsWon = newState.player2SetsWon,
             currentServerId = newState.currentServerId,
+            serveState = newState.serveState,
             isTieBreak = newState.isTieBreak,
+            isSuperTieBreak = newState.isSuperTieBreak,
             status = if (newState.isFinished) MatchStatus.FINISHED else match.status,
             winnerId = newState.winnerId,
             finishedAt = if (newState.isFinished) System.currentTimeMillis() else null
@@ -148,23 +165,36 @@ class MatchRepositoryImpl @Inject constructor(
         matchDao.updateMatch(updatedMatch)
     }
 
-    // --- LÓGICA DE DESFAZER PONTO (UNDO) ---
+    private fun mapToEngineState(match: MatchEntity) = MatchScoreState(
+        currentSet = match.currentSet,
+        player1GamesCurrentSet = match.player1GamesCurrentSet,
+        player2GamesCurrentSet = match.player2GamesCurrentSet,
+        player1PointsCurrentGame = match.player1PointsCurrentGame,
+        player2PointsCurrentGame = match.player2PointsCurrentGame,
+        player1SetsWon = match.player1SetsWon,
+        player2SetsWon = match.player2SetsWon,
+        currentServerId = match.currentServerId,
+        player1Id = match.player1Id,
+        player2Id = match.player2Id,
+        serveState = match.serveState,
+        isTieBreak = match.isTieBreak,
+        isSuperTieBreak = match.isSuperTieBreak,
+        isFinished = match.status == MatchStatus.FINISHED,
+        winnerId = match.winnerId,
+        completedSetScores = emptyList() // Not strictly needed for processPoint/processFault
+    )
+
     override suspend fun undoLastPoint(matchId: Long): Boolean {
         val lastPoint = matchDao.getLastPoint(matchId) ?: return false
         val matchDetails = matchDao.getMatchWithDetailsById(matchId) ?: return false
         val match = matchDetails.match
-        val format = matchDetails.format
-
-        // Se o ponto a desfecho for de um set que havia sido concluído, apaga o registro desse set
+        
+        // Se o ponto a desfazer for de um set concluído, apaga o registro desse set
         if (lastPoint.setNumber < match.currentSet || match.status == MatchStatus.FINISHED) {
             matchDao.deleteSetScoreBySetNumber(matchId, lastPoint.setNumber)
         }
 
-        // Recalcula se o estado restaurado corresponde a um Tie-Break
-        val isRestoredTieBreak = (lastPoint.gamesP1Before == format.tieBreakAt && lastPoint.gamesP2Before == format.tieBreakAt) ||
-                (format.hasSuperTieBreakInFinalSet && lastPoint.setNumber == format.numberOfSets)
-
-        // Restaura o placar exato gravado na PointHistoryEntity
+        // Restaura o estado exato gravado na PointHistoryEntity
         val restoredMatch = match.copy(
             currentSet = lastPoint.setNumber,
             player1GamesCurrentSet = lastPoint.gamesP1Before,
@@ -172,15 +202,20 @@ class MatchRepositoryImpl @Inject constructor(
             player1PointsCurrentGame = lastPoint.scoreP1Before,
             player2PointsCurrentGame = lastPoint.scoreP2Before,
             currentServerId = lastPoint.serverId,
-            isTieBreak = isRestoredTieBreak,
+            serveState = lastPoint.serveStateBefore,
             status = MatchStatus.IN_PROGRESS,
             winnerId = null,
             finishedAt = null
         )
+        
+        // Recalcula sets vencidos baseado na tabela set_scores agora que o atual foi removido se necessário
+        val updatedMatchWithSets = restoredMatch.copy(
+            player1SetsWon = matchDao.getSetScoresForMatchSync(matchId).count { it.winnerPlayerId == match.player1Id },
+            player2SetsWon = matchDao.getSetScoresForMatchSync(matchId).count { it.winnerPlayerId == match.player2Id }
+        )
 
-        matchDao.updateMatch(restoredMatch)
+        matchDao.updateMatch(updatedMatchWithSets)
         matchDao.deletePointHistory(lastPoint.id)
-
         return true
     }
 
@@ -193,7 +228,6 @@ class MatchRepositoryImpl @Inject constructor(
         matchDao.updateMatch(updated)
     }
 
-    // --- GERENCIAMENTO DE FORMATOS E JOGADORES ---
     override fun observeAllMatchFormats(): Flow<List<MatchFormatEntity>> {
         return matchFormatDao.getAllFormats()
     }

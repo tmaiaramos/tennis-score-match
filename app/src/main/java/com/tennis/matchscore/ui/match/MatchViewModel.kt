@@ -2,7 +2,10 @@ package com.tennis.matchscore.ui.match
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.tennis.matchscore.domain.model.MatchEventType
+import com.tennis.matchscore.domain.model.ServeState
 import com.tennis.matchscore.domain.repository.MatchRepository
+import com.tennis.matchscore.ui.match.setup.ScoringMode
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,6 +32,8 @@ data class MatchUiState(
     val player1Id: Long = 0L,
     val player2Id: Long = 0L,
     val currentServerId: Long = 0L,
+    val serveState: ServeState = ServeState.FIRST_SERVE,
+    val scoringMode: ScoringMode = ScoringMode.BASIC,
     val player1Name: String = "Jogador 1",
     val player2Name: String = "Jogador 2",
     val player1Score: String = "0",
@@ -43,7 +48,8 @@ data class MatchUiState(
     val isSuperTieBreak: Boolean = false,
     val isMatchFinished: Boolean = false,
     val winnerName: String? = null,
-    val isSaving: Boolean = false
+    val isSaving: Boolean = false,
+    val lastRegisteredEventMessage: String? = null
 )
 
 @HiltViewModel
@@ -62,6 +68,7 @@ class MatchViewModel @Inject constructor(
         formatId: Long,
         initialServer: Int,
         surface: String,
+        scoringModeString: String = "BASIC",
         createdAt: Long = System.currentTimeMillis(),
         onMatchCreated: () -> Unit,
     ) {
@@ -74,6 +81,12 @@ class MatchViewModel @Inject constructor(
                     com.tennis.matchscore.domain.model.CourtType.valueOf(surface)
                 } catch (e: IllegalArgumentException) {
                     com.tennis.matchscore.domain.model.CourtType.CLAY
+                }
+
+                val mode = try {
+                    ScoringMode.valueOf(scoringModeString)
+                } catch (e: IllegalArgumentException) {
+                    ScoringMode.BASIC
                 }
 
                 val matchId = matchRepository.createMatch(
@@ -91,6 +104,7 @@ class MatchViewModel @Inject constructor(
                         player1Id = player1Id,
                         player2Id = player2Id,
                         currentServerId = initialServerId,
+                        scoringMode = mode,
                         isSaving = false
                     )
                 }
@@ -146,6 +160,7 @@ class MatchViewModel @Inject constructor(
                             player1Id = match.player1Id,
                             player2Id = match.player2Id,
                             currentServerId = match.currentServerId,
+                            serveState = match.serveState,
                             player1Name = p1FullName.ifBlank { "Jogador 1" },
                             player2Name = p2FullName.ifBlank { "Jogador 2" },
                             player1Score = match.player1PointsCurrentGame,
@@ -171,6 +186,45 @@ class MatchViewModel @Inject constructor(
         }
     }
 
+    // Ações da Marcação Intermediária
+    fun onAceClicked() {
+        val state = _uiState.value
+        val matchId = state.currentMatchId ?: return
+        if (state.isMatchFinished) return
+
+        viewModelScope.launch {
+            runCatching {
+                matchRepository.scorePoint(matchId, state.currentServerId, MatchEventType.ACE)
+                val serverName = if (state.currentServerId == state.player1Id) state.player1Name else state.player2Name
+                _uiState.update { it.copy(lastRegisteredEventMessage = "ACE registrado para $serverName!") }
+            }.onFailure { it.printStackTrace() }
+        }
+    }
+
+    fun onFaultClicked() {
+        val state = _uiState.value
+        val matchId = state.currentMatchId ?: return
+        if (state.isMatchFinished) return
+
+        viewModelScope.launch {
+            runCatching {
+                if (state.serveState == ServeState.FIRST_SERVE) {
+                    matchRepository.recordFault(matchId)
+                } else {
+                    // Dupla falta: Ponto para o recebedor
+                    val receiverId = if (state.currentServerId == state.player1Id) state.player2Id else state.player1Id
+                    val receiverName = if (receiverId == state.player1Id) state.player1Name else state.player2Name
+                    matchRepository.scorePoint(matchId, receiverId, MatchEventType.DOUBLE_FAULT)
+                    _uiState.update { it.copy(lastRegisteredEventMessage = "Dupla Falta! Ponto para $receiverName.") }
+                }
+            }.onFailure { it.printStackTrace() }
+        }
+    }
+
+    fun clearConfirmationMessage() {
+        _uiState.update { it.copy(lastRegisteredEventMessage = null) }
+    }
+
     fun onPlayer1Scored() {
         val state = _uiState.value
         val matchId = state.currentMatchId ?: return
@@ -178,7 +232,7 @@ class MatchViewModel @Inject constructor(
 
         viewModelScope.launch {
             runCatching {
-                matchRepository.scorePoint(matchId, state.player1Id)
+                matchRepository.scorePoint(matchId, state.player1Id, MatchEventType.REGULAR_POINT)
             }.onFailure { it.printStackTrace() }
         }
     }
@@ -190,7 +244,7 @@ class MatchViewModel @Inject constructor(
 
         viewModelScope.launch {
             runCatching {
-                matchRepository.scorePoint(matchId, state.player2Id)
+                matchRepository.scorePoint(matchId, state.player2Id, MatchEventType.REGULAR_POINT)
             }.onFailure { it.printStackTrace() }
         }
     }
