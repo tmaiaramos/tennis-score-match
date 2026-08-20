@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -49,6 +50,12 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.tennis.matchscore.domain.model.ServeState
 import com.tennis.matchscore.ui.match.setup.ScoringMode
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.unit.Dp
 
 private fun formatPlayerName(fullName: String): String {
     val parts = fullName.trim().split("\\s+".toRegex())
@@ -127,6 +134,7 @@ fun MatchScreen(
                     Spacer(modifier = Modifier.height(12.dp))
                     OutlinedButton(
                         onClick = { viewModel.undoLastPoint() },
+                        shape = RoundedCornerShape(12.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text("↩ Desfazer Ponto / Jogada")
@@ -137,7 +145,10 @@ fun MatchScreen(
             // Seção Inferior: Controles de Pontuação de acordo com o Tipo de Marcação
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f, fill = true)
+                    .padding(top = 12.dp)
             ) {
                 if (!uiState.isMatchFinished) {
                     if (uiState.scoringMode == ScoringMode.INTERMEDIATE) {
@@ -160,8 +171,10 @@ fun MatchScreen(
                     }
                 } else {
                     // Botão para sair quando encerrado
+                    Spacer(modifier = Modifier.weight(1f))
                     Button(
                         onClick = onCloseClick,
+                        shape = RoundedCornerShape(12.dp),
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(56.dp)
@@ -171,22 +184,6 @@ fun MatchScreen(
                 }
             }
         }
-    }
-
-    // Modal de Confirmação Pós Registro (ACE / Dupla Falta)
-    uiState.lastRegisteredEventMessage?.let { message ->
-        AlertDialog(
-            onDismissRequest = { viewModel.clearConfirmationMessage() },
-            title = { Text("Ponto Registrado 🎾") },
-            text = { Text(message) },
-            confirmButton = {
-                Button(
-                    onClick = { viewModel.clearConfirmationMessage() }
-                ) {
-                    Text("Continuar")
-                }
-            }
-        )
     }
 
     // Diálogo de confirmação para sair/abandonar partida em andamento
@@ -200,7 +197,8 @@ fun MatchScreen(
                     onClick = {
                         showExitConfirmationDialog = false
                         onCloseClick()
-                    }
+                    },
+                    shape = RoundedCornerShape(12.dp)
                 ) {
                     Text("Sair")
                 }
@@ -224,6 +222,7 @@ fun MatchScreen(
             confirmButton = {
                 Button(
                     onClick = onCloseClick,
+                    shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text("Fechar")
@@ -245,69 +244,76 @@ private fun BasicScoringControls(
         uiState.player2Name
     }
 
-    Surface(
-        color = MaterialTheme.colorScheme.secondaryContainer,
-        shape = RoundedCornerShape(8.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = 16.dp)
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Bottom
     ) {
+        Surface(
+            color = MaterialTheme.colorScheme.secondaryContainer,
+            shape = RoundedCornerShape(12.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp)
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = "🎾 Saque: ",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                )
+                Text(
+                    text = currentServerName,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                )
+            }
+        }
+
+        Text(
+            text = "Registrar Ponto",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.padding(bottom = 12.dp)
+        )
+
         Row(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            Text(
-                text = "🎾 Saque: ",
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSecondaryContainer
-            )
-            Text(
-                text = currentServerName,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSecondaryContainer
-            )
-        }
-    }
+            Button(
+                onClick = onPlayer1Scored,
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier
+                    .weight(1f)
+                    .height(56.dp)
+                    .padding(end = 8.dp)
+            ) {
+                Text(
+                    text = "+ Ponto ${formatPlayerName(uiState.player1Name)}",
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
 
-    Text(
-        text = "Registrar Ponto",
-        fontSize = 18.sp,
-        fontWeight = FontWeight.Medium,
-        modifier = Modifier.padding(bottom = 12.dp)
-    )
-
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceEvenly
-    ) {
-        Button(
-            onClick = onPlayer1Scored,
-            modifier = Modifier
-                .weight(1f)
-                .height(56.dp)
-                .padding(end = 8.dp)
-        ) {
-            Text(
-                text = "+ Ponto ${formatPlayerName(uiState.player1Name)}",
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-        }
-
-        Button(
-            onClick = onPlayer2Scored,
-            modifier = Modifier
-                .weight(1f)
-                .height(56.dp)
-                .padding(start = 8.dp)
-        ) {
-            Text(
-                text = "+ Ponto ${formatPlayerName(uiState.player2Name)}",
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
+            Button(
+                onClick = onPlayer2Scored,
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier
+                    .weight(1f)
+                    .height(56.dp)
+                    .padding(start = 8.dp)
+            ) {
+                Text(
+                    text = "+ Ponto ${formatPlayerName(uiState.player2Name)}",
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
         }
     }
 }
@@ -321,13 +327,15 @@ private fun IntermediateScoringControls(
 ) {
     val isP1Server = uiState.currentServerId == uiState.player1Id
 
-    Column(modifier = Modifier.fillMaxWidth()) {
-        // Duas colunas principais (Esq: Jogador 1, Dir: Jogador 2)
+    Column(modifier = Modifier.fillMaxSize()) {
+        // Nomes Fixos dos Jogadores e Indicador de Saque no Topo
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 10.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // Coluna Jogador 1 (Esquerda)
+            // Cabeçalho Jogador 1
             Column(
                 modifier = Modifier.weight(1f),
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -339,39 +347,17 @@ private fun IntermediateScoringControls(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-
-                if (isP1Server) {
-                    Text(
-                        text = if (uiState.serveState == ServeState.FIRST_SERVE) "1º Saque" else "1º Saque  2º Saque",
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 13.sp,
-                        modifier = Modifier.padding(vertical = 4.dp)
-                    )
-
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    Button(
-                        onClick = onAceClick,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("ACE")
-                    }
-
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    OutlinedButton(
-                        onClick = onFaultClick,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(if (uiState.serveState == ServeState.FIRST_SERVE) "Falta" else "Dupla Falta")
-                    }
-                } else {
-                    Spacer(modifier = Modifier.height(84.dp))
-                }
+                Text(
+                    text = if (isP1Server) {
+                        if (uiState.serveState == ServeState.FIRST_SERVE) "1º Saque" else "2º Saque"
+                    } else " ",
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 13.sp
+                )
             }
 
-            // Coluna Jogador 2 (Direita)
+            // Cabeçalho Jogador 2
             Column(
                 modifier = Modifier.weight(1f),
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -383,52 +369,115 @@ private fun IntermediateScoringControls(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-
-                if (!isP1Server) {
-                    Text(
-                        text = if (uiState.serveState == ServeState.FIRST_SERVE) "1º Saque" else "1º Saque  2º Saque",
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 13.sp,
-                        modifier = Modifier.padding(vertical = 4.dp)
-                    )
-
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    Button(
-                        onClick = onAceClick,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("ACE")
-                    }
-
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    OutlinedButton(
-                        onClick = onFaultClick,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(if (uiState.serveState == ServeState.FIRST_SERVE) "Falta" else "Dupla Falta")
-                    }
-                } else {
-                    Spacer(modifier = Modifier.height(84.dp))
-                }
+                Text(
+                    text = if (!isP1Server) {
+                        if (uiState.serveState == ServeState.FIRST_SERVE) "1º Saque" else "2º Saque"
+                    } else " ",
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 13.sp
+                )
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Botão Maior de Bola em Jogo Ocupando Ambas as Colunas
-        Button(
-            onClick = onBallInPlayClick,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.secondary
-            ),
+        // Layout de Botões com Proporção Equilibrada de Altura (weights idênticos para os 3 botões)
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(56.dp)
+                .weight(1f),
+            verticalArrangement = Arrangement.spacedBy(18.dp)
         ) {
-            Text("🎾 Bola em Jogo", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            // Linha 1: Botão ACE (Equivalente a 1/3 da área útil)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .padding(vertical = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
+                    if (isP1Server) {
+                        Button(
+                            onClick = onAceClick,
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            Text("ACE", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
+
+                Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
+                    if (!isP1Server) {
+                        Button(
+                            onClick = onAceClick,
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            Text("ACE", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
+            }
+
+            // Linha 2: Botão Falta / Dupla Falta (Equivalente a 1/3 da área útil)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .padding(vertical = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
+                    if (isP1Server) {
+                        OutlinedButton(
+                            onClick = onFaultClick,
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            Text(
+                                text = if (uiState.serveState == ServeState.FIRST_SERVE) "Falta" else "Dupla Falta",
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
+
+                Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
+                    if (!isP1Server) {
+                        OutlinedButton(
+                            onClick = onFaultClick,
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            Text(
+                                text = if (uiState.serveState == ServeState.FIRST_SERVE) "Falta" else "Dupla Falta",
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Linha 3: Botão Bola em Jogo (Equivalente a 1/3 da área útil)
+            Button(
+                onClick = onBallInPlayClick,
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.secondary
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .padding(vertical = 4.dp)
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    TennisBallIcon(size = 16.dp, modifier = Modifier.padding(end = 8.dp))
+                    Text("Bola em Jogo", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                }
+            }
         }
     }
 }
@@ -437,6 +486,7 @@ private fun IntermediateScoringControls(
 private fun ScoreBoardCard(uiState: MatchUiState) {
     Card(
         modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {
@@ -613,5 +663,54 @@ private fun PlayerScoreRow(
                 )
             }
         }
+    }
+}
+
+@Composable
+fun TennisBallIcon(
+    size: Dp = 16.dp,
+    modifier: Modifier = Modifier
+) {
+    Canvas(modifier = modifier.size(size)) {
+        val radius = this.size.minDimension / 2f
+        val center = this.center
+
+        // Cor amarela/esverdeada clássica de bola de tênis (Optic Yellow)
+        drawCircle(
+            color = Color(0xFFCCFF00),
+            radius = radius
+        )
+
+        // Linhas/Costuras brancas arredondadas
+        val strokeWidth = radius * 0.18f
+        val linePaint = Color.White
+
+        // Curva Esquerda
+        val leftPath = Path().apply {
+            moveTo(center.x - radius * 0.3f, center.y - radius * 0.95f)
+            quadraticTo(
+                center.x - radius * 0.95f, center.y,
+                center.x - radius * 0.3f, center.y + radius * 0.95f
+            )
+        }
+        drawPath(
+            path = leftPath,
+            color = linePaint,
+            style = Stroke(width = strokeWidth)
+        )
+
+        // Curva Direita
+        val rightPath = Path().apply {
+            moveTo(center.x + radius * 0.3f, center.y - radius * 0.95f)
+            quadraticTo(
+                center.x + radius * 0.95f, center.y,
+                center.x + radius * 0.3f, center.y + radius * 0.95f
+            )
+        }
+        drawPath(
+            path = rightPath,
+            color = linePaint,
+            style = Stroke(width = strokeWidth)
+        )
     }
 }

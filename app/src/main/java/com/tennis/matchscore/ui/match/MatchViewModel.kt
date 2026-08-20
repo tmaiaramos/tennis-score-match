@@ -186,7 +186,6 @@ class MatchViewModel @Inject constructor(
         }
     }
 
-    // Ações da Marcação Intermediária
     fun onAceClicked() {
         val state = _uiState.value
         val matchId = state.currentMatchId ?: return
@@ -195,8 +194,6 @@ class MatchViewModel @Inject constructor(
         viewModelScope.launch {
             runCatching {
                 matchRepository.scorePoint(matchId, state.currentServerId, MatchEventType.ACE)
-                val serverName = if (state.currentServerId == state.player1Id) state.player1Name else state.player2Name
-                _uiState.update { it.copy(lastRegisteredEventMessage = "ACE registrado para $serverName!") }
             }.onFailure { it.printStackTrace() }
         }
     }
@@ -211,11 +208,8 @@ class MatchViewModel @Inject constructor(
                 if (state.serveState == ServeState.FIRST_SERVE) {
                     matchRepository.recordFault(matchId)
                 } else {
-                    // Dupla falta: Ponto para o recebedor
                     val receiverId = if (state.currentServerId == state.player1Id) state.player2Id else state.player1Id
-                    val receiverName = if (receiverId == state.player1Id) state.player1Name else state.player2Name
                     matchRepository.scorePoint(matchId, receiverId, MatchEventType.DOUBLE_FAULT)
-                    _uiState.update { it.copy(lastRegisteredEventMessage = "Dupla Falta! Ponto para $receiverName.") }
                 }
             }.onFailure { it.printStackTrace() }
         }
