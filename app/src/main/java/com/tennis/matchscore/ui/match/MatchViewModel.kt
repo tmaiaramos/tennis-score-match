@@ -47,6 +47,7 @@ data class MatchUiState(
     val isTieBreak: Boolean = false,
     val isSuperTieBreak: Boolean = false,
     val isMatchFinished: Boolean = false,
+    val isInRally: Boolean = false,
     val winnerName: String? = null,
     val isSaving: Boolean = false,
     val lastRegisteredEventMessage: String? = null
@@ -213,6 +214,49 @@ class MatchViewModel @Inject constructor(
                 }
             }.onFailure { it.printStackTrace() }
         }
+    }
+
+    fun onBallInPlayClicked() {
+        _uiState.update { it.copy(isInRally = true) }
+    }
+
+    fun onWinnerClicked(playerId: Long) {
+        val state = _uiState.value
+        val matchId = state.currentMatchId ?: return
+        viewModelScope.launch {
+            runCatching {
+                matchRepository.scorePoint(matchId, playerId, MatchEventType.WINNER)
+                _uiState.update { it.copy(isInRally = false) }
+            }.onFailure { it.printStackTrace() }
+        }
+    }
+
+    fun onForcedErrorClicked(playerId: Long) {
+        val state = _uiState.value
+        val matchId = state.currentMatchId ?: return
+        val opponentId = if (playerId == state.player1Id) state.player2Id else state.player1Id
+        viewModelScope.launch {
+            runCatching {
+                matchRepository.scorePoint(matchId, opponentId, MatchEventType.FORCED_ERROR)
+                _uiState.update { it.copy(isInRally = false) }
+            }.onFailure { it.printStackTrace() }
+        }
+    }
+
+    fun onUnforcedErrorClicked(playerId: Long) {
+        val state = _uiState.value
+        val matchId = state.currentMatchId ?: return
+        val opponentId = if (playerId == state.player1Id) state.player2Id else state.player1Id
+        viewModelScope.launch {
+            runCatching {
+                matchRepository.scorePoint(matchId, opponentId, MatchEventType.UNFORCED_ERROR)
+                _uiState.update { it.copy(isInRally = false) }
+            }.onFailure { it.printStackTrace() }
+        }
+    }
+
+    fun onCancelRally() {
+        _uiState.update { it.copy(isInRally = false) }
     }
 
     fun clearConfirmationMessage() {

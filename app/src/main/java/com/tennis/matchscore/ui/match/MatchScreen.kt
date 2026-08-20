@@ -1,6 +1,5 @@
 package com.tennis.matchscore.ui.match
 
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -74,7 +73,6 @@ fun MatchScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var showExitConfirmationDialog by remember { mutableStateOf(false) }
-    val context = LocalContext.current
 
     Scaffold(
         topBar = {
@@ -153,14 +151,22 @@ fun MatchScreen(
                 if (!uiState.isMatchFinished) {
                     if (uiState.scoringMode == ScoringMode.INTERMEDIATE) {
                         // LAYOUT DE MARCAÇÃO INTERMEDIÁRIA
-                        IntermediateScoringControls(
-                            uiState = uiState,
-                            onAceClick = viewModel::onAceClicked,
-                            onFaultClick = viewModel::onFaultClicked,
-                            onBallInPlayClick = {
-                                Toast.makeText(context, "Bola em Jogo clicado!", Toast.LENGTH_SHORT).show()
-                            }
-                        )
+                        if (uiState.isInRally) {
+                            RallyScoringControls(
+                                uiState = uiState,
+                                onWinnerClick = viewModel::onWinnerClicked,
+                                onForcedErrorClick = viewModel::onForcedErrorClicked,
+                                onUnforcedErrorClick = viewModel::onUnforcedErrorClicked,
+                                onCancelClick = viewModel::onCancelRally
+                            )
+                        } else {
+                            IntermediateScoringControls(
+                                uiState = uiState,
+                                onAceClick = viewModel::onAceClicked,
+                                onFaultClick = viewModel::onFaultClicked,
+                                onBallInPlayClick = viewModel::onBallInPlayClicked
+                            )
+                        }
                     } else {
                         // LAYOUT DE MARCAÇÃO BÁSICA/SIMPLIFICADA
                         BasicScoringControls(
@@ -661,6 +667,154 @@ private fun PlayerScoreRow(
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp
                 )
+            }
+        }
+    }
+}
+
+@Composable
+private fun RallyScoringControls(
+    uiState: MatchUiState,
+    onWinnerClick: (Long) -> Unit,
+    onForcedErrorClick: (Long) -> Unit,
+    onUnforcedErrorClick: (Long) -> Unit,
+    onCancelClick: () -> Unit
+) {
+    Column(modifier = Modifier.fillMaxSize()) {
+        // Nomes dos Jogadores no Topo
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 10.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Column(
+                modifier = Modifier.weight(1f),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = formatPlayerName(uiState.player1Name),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+            Column(
+                modifier = Modifier.weight(1f),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = formatPlayerName(uiState.player2Name),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        }
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            // Winner
+            Row(
+                modifier = Modifier.fillMaxWidth().weight(1f),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Button(
+                    onClick = { onWinnerClick(uiState.player1Id) },
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                    modifier = Modifier.weight(1f).fillMaxHeight()
+                ) {
+                    Text("Winner", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                }
+                Button(
+                    onClick = { onWinnerClick(uiState.player2Id) },
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                    modifier = Modifier.weight(1f).fillMaxHeight()
+                ) {
+                    Text("Winner", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+
+            // Erro Forçado
+            Row(
+                modifier = Modifier.fillMaxWidth().weight(1f),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                OutlinedButton(
+                    onClick = { onForcedErrorClick(uiState.player1Id) },
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.weight(1f).fillMaxHeight()
+                ) {
+                    Text(
+                        text = "Erro\nForçado",
+                        textAlign = TextAlign.Center,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        lineHeight = 22.sp
+                    )
+                }
+                OutlinedButton(
+                    onClick = { onForcedErrorClick(uiState.player2Id) },
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.weight(1f).fillMaxHeight()
+                ) {
+                    Text(
+                        text = "Erro\nForçado",
+                        textAlign = TextAlign.Center,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        lineHeight = 22.sp
+                    )
+                }
+            }
+
+            // Erro Não Forçado
+            Row(
+                modifier = Modifier.fillMaxWidth().weight(1f),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                OutlinedButton(
+                    onClick = { onUnforcedErrorClick(uiState.player1Id) },
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.weight(1f).fillMaxHeight()
+                ) {
+                    Text(
+                        text = "Erro\nNÃO\nForçado",
+                        textAlign = TextAlign.Center,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        lineHeight = 20.sp
+                    )
+                }
+                OutlinedButton(
+                    onClick = { onUnforcedErrorClick(uiState.player2Id) },
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.weight(1f).fillMaxHeight()
+                ) {
+                    Text(
+                        text = "Erro\nNÃO\nForçado",
+                        textAlign = TextAlign.Center,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        lineHeight = 20.sp
+                    )
+                }
+            }
+
+            // Botão Cancelar
+            TextButton(
+                onClick = onCancelClick,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Cancelar / Voltar", color = MaterialTheme.colorScheme.error)
             }
         }
     }
