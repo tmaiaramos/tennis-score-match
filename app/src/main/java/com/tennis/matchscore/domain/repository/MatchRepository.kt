@@ -3,7 +3,10 @@ package com.tennis.matchscore.domain.repository
 import com.tennis.matchscore.data.local.entity.MatchFormatEntity
 import com.tennis.matchscore.data.local.entity.PlayerEntity
 import com.tennis.matchscore.data.local.relation.MatchWithDetails
+import com.tennis.matchscore.domain.model.CourtPosition
+import com.tennis.matchscore.domain.model.HitHand
 import com.tennis.matchscore.domain.model.MatchEventType
+import com.tennis.matchscore.domain.model.ShotType
 import kotlinx.coroutines.flow.Flow
 
 interface MatchRepository {
@@ -27,10 +30,20 @@ interface MatchRepository {
         matchId: Long,
         pointWinnerId: Long,
         eventType: MatchEventType = MatchEventType.REGULAR_POINT
-    )
+    ): Long
+
     suspend fun recordFault(matchId: Long)
     suspend fun undoLastPoint(matchId: Long): Boolean
     suspend fun finishMatch(matchId: Long)
+
+    // --- Estatísticas Avançadas ---
+    suspend fun updatePointStats(
+        pointId: Long,
+        winnerPosition: CourtPosition? = null,
+        winnerHitHand: HitHand? = null,
+        winnerShotType: ShotType? = null,
+        loserPosition: CourtPosition? = null
+    )
 
     // --- Formatos de Partida ---
     fun observeAllMatchFormats(): Flow<List<MatchFormatEntity>>

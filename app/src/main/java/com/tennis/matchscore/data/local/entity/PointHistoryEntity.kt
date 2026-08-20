@@ -4,8 +4,11 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.tennis.matchscore.domain.model.CourtPosition
+import com.tennis.matchscore.domain.model.HitHand
 import com.tennis.matchscore.domain.model.MatchEventType
 import com.tennis.matchscore.domain.model.ServeState
+import com.tennis.matchscore.domain.model.ShotType
 
 @Entity(
     tableName = "point_history",
@@ -37,6 +40,12 @@ data class PointHistoryEntity(
     val scoreP2Before: String,
     val gamesP1Before: Int,
     val gamesP2Before: Int,
+
+    // Detalhamento estatístico (Modo Avançado)
+    val winnerPosition: CourtPosition? = null,
+    val winnerHitHand: HitHand? = null,
+    val winnerShotType: ShotType? = null,
+    val loserPosition: CourtPosition? = null,
 
     val timestamp: Long = System.currentTimeMillis()
 )

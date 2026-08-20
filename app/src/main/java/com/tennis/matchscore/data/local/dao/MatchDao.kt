@@ -42,6 +42,12 @@ interface MatchDao {
     @Query("SELECT * FROM point_history WHERE matchId = :matchId ORDER BY id DESC LIMIT 1")
     suspend fun getLastPoint(matchId: Long): PointHistoryEntity?
 
+    @Query("SELECT * FROM point_history WHERE id = :pointId")
+    suspend fun getPointHistoryById(pointId: Long): PointHistoryEntity?
+
+    @Update
+    suspend fun updatePointHistory(point: PointHistoryEntity)
+
     @Query("DELETE FROM point_history WHERE id = :pointId")
     suspend fun deletePointHistory(pointId: Long)
 

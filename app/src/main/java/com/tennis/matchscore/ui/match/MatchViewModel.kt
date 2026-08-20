@@ -2,8 +2,11 @@ package com.tennis.matchscore.ui.match
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.tennis.matchscore.domain.model.CourtPosition
+import com.tennis.matchscore.domain.model.HitHand
 import com.tennis.matchscore.domain.model.MatchEventType
 import com.tennis.matchscore.domain.model.ServeState
+import com.tennis.matchscore.domain.model.ShotType
 import com.tennis.matchscore.domain.repository.MatchRepository
 import com.tennis.matchscore.ui.match.setup.ScoringMode
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -50,7 +53,15 @@ data class MatchUiState(
     val isInRally: Boolean = false,
     val winnerName: String? = null,
     val isSaving: Boolean = false,
-    val lastRegisteredEventMessage: String? = null
+    val lastRegisteredEventMessage: String? = null,
+
+    // Detalhamento estatístico (Modo Avançado)
+    val detailingPointId: Long? = null,
+    val winnerDetailingPlayerId: Long? = null,
+    val selectedWinnerPosition: CourtPosition? = null,
+    val selectedWinnerHitHand: HitHand? = null,
+    val selectedWinnerShotType: ShotType? = null,
+    val selectedLoserPosition: CourtPosition? = null
 )
 
 @HiltViewModel
@@ -216,6 +227,44 @@ class MatchViewModel @Inject constructor(
         }
     }
 
+    // Ações de Devolução (Modo Avançado)
+    fun onReturnWinnerClicked() {
+        val state = _uiState.value
+        val matchId = state.currentMatchId ?: return
+        if (state.isMatchFinished) return
+
+        val receiverId = if (state.currentServerId == state.player1Id) state.player2Id else state.player1Id
+        viewModelScope.launch {
+            runCatching {
+                val pointId = matchRepository.scorePoint(matchId, receiverId, MatchEventType.WINNER)
+                if (state.scoringMode == ScoringMode.ADVANCED) {
+                    _uiState.update {
+                        it.copy(
+                            detailingPointId = pointId,
+                            winnerDetailingPlayerId = receiverId,
+                            selectedWinnerPosition = null,
+                            selectedWinnerHitHand = null,
+                            selectedWinnerShotType = null,
+                            selectedLoserPosition = null
+                        )
+                    }
+                }
+            }.onFailure { it.printStackTrace() }
+        }
+    }
+
+    fun onReturnErrorClicked() {
+        val state = _uiState.value
+        val matchId = state.currentMatchId ?: return
+        if (state.isMatchFinished) return
+
+        viewModelScope.launch {
+            runCatching {
+                matchRepository.scorePoint(matchId, state.currentServerId, MatchEventType.UNFORCED_ERROR)
+            }.onFailure { it.printStackTrace() }
+        }
+    }
+
     fun onBallInPlayClicked() {
         _uiState.update { it.copy(isInRally = true) }
     }
@@ -225,8 +274,22 @@ class MatchViewModel @Inject constructor(
         val matchId = state.currentMatchId ?: return
         viewModelScope.launch {
             runCatching {
-                matchRepository.scorePoint(matchId, playerId, MatchEventType.WINNER)
-                _uiState.update { it.copy(isInRally = false) }
+                val pointId = matchRepository.scorePoint(matchId, playerId, MatchEventType.WINNER)
+                if (state.scoringMode == ScoringMode.ADVANCED) {
+                    _uiState.update {
+                        it.copy(
+                            isInRally = false,
+                            detailingPointId = pointId,
+                            winnerDetailingPlayerId = playerId,
+                            selectedWinnerPosition = null,
+                            selectedWinnerHitHand = null,
+                            selectedWinnerShotType = null,
+                            selectedLoserPosition = null
+                        )
+                    }
+                } else {
+                    _uiState.update { it.copy(isInRally = false) }
+                }
             }.onFailure { it.printStackTrace() }
         }
     }
@@ -251,6 +314,45 @@ class MatchViewModel @Inject constructor(
             runCatching {
                 matchRepository.scorePoint(matchId, opponentId, MatchEventType.UNFORCED_ERROR)
                 _uiState.update { it.copy(isInRally = false) }
+            }.onFailure { it.printStackTrace() }
+        }
+    }
+
+    // Ações de Detalhamento (Modo Avançado)
+    fun onWinnerPositionSelected(position: CourtPosition) {
+        _uiState.update { it.copy(selectedWinnerPosition = position) }
+    }
+
+    fun onWinnerHitHandSelected(hand: HitHand) {
+        _uiState.update { it.copy(selectedWinnerHitHand = hand) }
+    }
+
+    fun onWinnerShotTypeSelected(shotType: ShotType) {
+        _uiState.update { it.copy(selectedWinnerShotType = shotType) }
+    }
+
+    fun onLoserPositionSelected(position: CourtPosition) {
+        _uiState.update { it.copy(selectedLoserPosition = position) }
+    }
+
+    fun onConfirmStats() {
+        val state = _uiState.value
+        val pointId = state.detailingPointId ?: return
+        viewModelScope.launch {
+            runCatching {
+                matchRepository.updatePointStats(
+                    pointId = pointId,
+                    winnerPosition = state.selectedWinnerPosition,
+                    winnerHitHand = state.selectedWinnerHitHand,
+                    winnerShotType = state.selectedWinnerShotType,
+                    loserPosition = state.selectedLoserPosition
+                )
+                _uiState.update {
+                    it.copy(
+                        detailingPointId = null,
+                        winnerDetailingPlayerId = null
+                    )
+                }
             }.onFailure { it.printStackTrace() }
         }
     }
