@@ -22,6 +22,9 @@ interface MatchDao {
     @Update
     suspend fun updateMatch(match: MatchEntity)
 
+    @Query("DELETE FROM matches WHERE id = :matchId")
+    suspend fun deleteMatchById(matchId: Long)
+
     // --- Gerenciamento dos Sets ---
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertSetScore(setScore: SetScoreEntity): Long

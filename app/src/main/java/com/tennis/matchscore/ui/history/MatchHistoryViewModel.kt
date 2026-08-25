@@ -8,18 +8,24 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class MatchHistoryViewModel @Inject constructor(
-    matchRepository: MatchRepository
+    private val matchRepository: MatchRepository
 ) : ViewModel() {
 
-    // Assumindo que o repositório possui uma chamada para listar todas as partidas gravadas
     val matches: StateFlow<List<MatchWithDetails>> = matchRepository.observeAllMatches()
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
+
+    fun deleteMatch(matchId: Long) {
+        viewModelScope.launch {
+            matchRepository.deleteMatch(matchId)
+        }
+    }
 }

@@ -7,6 +7,7 @@ import com.tennis.matchscore.domain.model.CourtPosition
 import com.tennis.matchscore.domain.model.HitHand
 import com.tennis.matchscore.domain.model.MatchEventType
 import com.tennis.matchscore.domain.model.ShotType
+import com.tennis.matchscore.domain.model.TrackingLevel
 import kotlinx.coroutines.flow.Flow
 
 interface MatchRepository {
@@ -18,12 +19,14 @@ interface MatchRepository {
         matchFormatId: Long,
         initialServerId: Long,
         courtType: com.tennis.matchscore.domain.model.CourtType = com.tennis.matchscore.domain.model.CourtType.CLAY,
+        trackingLevel: TrackingLevel = TrackingLevel.BASIC,
         createdAt: Long = System.currentTimeMillis()
     ): Long
 
     fun observeMatchWithDetails(matchId: Long): Flow<MatchWithDetails?>
     suspend fun getMatchWithDetails(matchId: Long): MatchWithDetails?
     fun observeAllMatches(): Flow<List<MatchWithDetails>>
+    suspend fun deleteMatch(matchId: Long)
 
     // --- Lógica de Placar e Ações da Partida ---
     suspend fun scorePoint(

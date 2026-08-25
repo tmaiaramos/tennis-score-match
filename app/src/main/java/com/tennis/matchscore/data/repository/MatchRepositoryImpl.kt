@@ -18,6 +18,7 @@ import com.tennis.matchscore.domain.model.MatchEventType
 import com.tennis.matchscore.domain.model.MatchStatus
 import com.tennis.matchscore.domain.model.ServeState
 import com.tennis.matchscore.domain.model.ShotType
+import com.tennis.matchscore.domain.model.TrackingLevel
 import com.tennis.matchscore.domain.repository.MatchRepository
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
@@ -36,6 +37,7 @@ class MatchRepositoryImpl @Inject constructor(
         matchFormatId: Long,
         initialServerId: Long,
         courtType: CourtType,
+        trackingLevel: TrackingLevel,
         createdAt: Long,
     ): Long {
         val match = MatchEntity(
@@ -44,6 +46,7 @@ class MatchRepositoryImpl @Inject constructor(
             matchFormatId = matchFormatId,
             currentServerId = initialServerId,
             courtType = courtType,
+            trackingLevel = trackingLevel,
             status = MatchStatus.IN_PROGRESS,
             createdAt = createdAt,
         )
@@ -60,6 +63,10 @@ class MatchRepositoryImpl @Inject constructor(
 
     override fun observeAllMatches(): Flow<List<MatchWithDetails>> {
         return matchDao.getAllMatchesWithDetails()
+    }
+
+    override suspend fun deleteMatch(matchId: Long) {
+        matchDao.deleteMatchById(matchId)
     }
 
     override suspend fun recordFault(matchId: Long) {

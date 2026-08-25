@@ -54,6 +54,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.tennis.matchscore.domain.model.CourtPosition
 import com.tennis.matchscore.domain.model.HitHand
+import com.tennis.matchscore.domain.model.MatchEventType
 import com.tennis.matchscore.domain.model.ServeState
 import com.tennis.matchscore.domain.model.ShotType
 import com.tennis.matchscore.ui.match.setup.ScoringMode
@@ -554,10 +555,11 @@ private fun AdvancedWinnerDetailingControls(
 ) {
     val winnerId = uiState.winnerDetailingPlayerId
     val isP1Winner = winnerId == uiState.player1Id
+    val positionEnabled = !uiState.isReturnDetailing
 
     Column(modifier = Modifier.fillMaxSize()) {
         Text(
-            text = "Detalhamento do Winner",
+            text = if (uiState.detailingEventType == MatchEventType.WINNER) "Detalhamento do Winner" else "Detalhamento do Ponto",
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier
@@ -581,7 +583,8 @@ private fun AdvancedWinnerDetailingControls(
                     selectedShotType = uiState.selectedWinnerShotType,
                     onPositionSelected = onWinnerPositionSelected,
                     onHitHandSelected = onWinnerHitHandSelected,
-                    onShotTypeSelected = onWinnerShotTypeSelected
+                    onShotTypeSelected = onWinnerShotTypeSelected,
+                    positionEnabled = positionEnabled
                 )
 
                 // Jogador 2 (Perdedor) na Direita
@@ -589,7 +592,8 @@ private fun AdvancedWinnerDetailingControls(
                     modifier = Modifier.weight(0.8f),
                     playerName = formatPlayerName(uiState.player2Name),
                     selectedPosition = uiState.selectedLoserPosition,
-                    onPositionSelected = onLoserPositionSelected
+                    onPositionSelected = onLoserPositionSelected,
+                    positionEnabled = positionEnabled
                 )
             } else {
                 // Jogador 1 (Perdedor) na Esquerda
@@ -597,7 +601,8 @@ private fun AdvancedWinnerDetailingControls(
                     modifier = Modifier.weight(0.8f),
                     playerName = formatPlayerName(uiState.player1Name),
                     selectedPosition = uiState.selectedLoserPosition,
-                    onPositionSelected = onLoserPositionSelected
+                    onPositionSelected = onLoserPositionSelected,
+                    positionEnabled = positionEnabled
                 )
 
                 // Jogador 2 (Vencedor) na Direita
@@ -609,7 +614,8 @@ private fun AdvancedWinnerDetailingControls(
                     selectedShotType = uiState.selectedWinnerShotType,
                     onPositionSelected = onWinnerPositionSelected,
                     onHitHandSelected = onWinnerHitHandSelected,
-                    onShotTypeSelected = onWinnerShotTypeSelected
+                    onShotTypeSelected = onWinnerShotTypeSelected,
+                    positionEnabled = positionEnabled
                 )
             }
         }
@@ -637,7 +643,8 @@ private fun WinnerDetailingColumn(
     selectedShotType: ShotType?,
     onPositionSelected: (CourtPosition) -> Unit,
     onHitHandSelected: (HitHand) -> Unit,
-    onShotTypeSelected: (ShotType) -> Unit
+    onShotTypeSelected: (ShotType) -> Unit,
+    positionEnabled: Boolean
 ) {
     Column(modifier = modifier) {
         Text(
@@ -648,13 +655,14 @@ private fun WinnerDetailingColumn(
         )
 
         // Posicionamento
-        Text("Posição:", fontSize = 12.sp, fontWeight = FontWeight.Medium)
+        Text("Posição:", fontSize = 12.sp, fontWeight = FontWeight.Medium, color = if (positionEnabled) Color.Unspecified else Color.Gray)
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             CourtPosition.entries.forEach { pos ->
                 val selected = selectedPosition == pos
                 OutlinedButton(
                     onClick = { onPositionSelected(pos) },
                     modifier = Modifier.weight(1f).height(36.dp),
+                    enabled = positionEnabled,
                     shape = RoundedCornerShape(8.dp),
                     contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp),
                     colors = if (selected) ButtonDefaults.outlinedButtonColors(containerColor = MaterialTheme.colorScheme.primaryContainer) else ButtonDefaults.outlinedButtonColors()
@@ -719,7 +727,8 @@ private fun LoserDetailingColumn(
     modifier: Modifier,
     playerName: String,
     selectedPosition: CourtPosition?,
-    onPositionSelected: (CourtPosition) -> Unit
+    onPositionSelected: (CourtPosition) -> Unit,
+    positionEnabled: Boolean
 ) {
     Column(modifier = modifier) {
         Text(
@@ -728,11 +737,12 @@ private fun LoserDetailingColumn(
             fontSize = 14.sp,
             modifier = Modifier.padding(bottom = 4.dp)
         )
-        Text("Posição Oponente:", fontSize = 12.sp, fontWeight = FontWeight.Medium)
+        Text("Posição Oponente:", fontSize = 12.sp, fontWeight = FontWeight.Medium, color = if (positionEnabled) Color.Unspecified else Color.Gray)
         CourtPosition.entries.forEach { pos ->
             val selected = selectedPosition == pos
             OutlinedButton(
                 onClick = { onPositionSelected(pos) },
+                enabled = positionEnabled,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 4.dp)

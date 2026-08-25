@@ -80,7 +80,11 @@ class MainActivity : ComponentActivity() {
                         )
                         "history" -> MatchHistoryScreen(
                             viewModel = matchHistoryViewModel,
-                            onBackClick = { currentScreen = "home" }
+                            onBackClick = { currentScreen = "home" },
+                            onMatchClick = { matchId ->
+                                matchViewModel.resumeExistingMatch(matchId)
+                                currentScreen = "match"
+                            }
                         )
                     }
                 }
