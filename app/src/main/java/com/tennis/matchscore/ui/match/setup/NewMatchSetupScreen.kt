@@ -171,7 +171,7 @@ fun NewMatchSetupScreen(
                     )
                 }
 
-                Text("Tipo de Piso", style = MaterialTheme.typography.bodyMedium)
+                Text("Tipo de Quadra", style = MaterialTheme.typography.bodyMedium)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     CourtSurface.entries.forEach { surface ->
                         FilterChip(

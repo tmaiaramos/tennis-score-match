@@ -16,8 +16,7 @@ enum class DominantHand(val displayName: String) {
 // Tipo de Quadra
 enum class CourtType(val displayName: String) {
     HARD("Quadra Rápida"),
-    CLAY("Saibro"),
-    GRASS("Grama")
+    CLAY("Saibro")
 }
 
 // Estado do Saque (Utilizado no modo Intermediário)

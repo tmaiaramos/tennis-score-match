@@ -51,6 +51,7 @@ data class MatchUiState(
     val isSuperTieBreak: Boolean = false,
     val isMatchFinished: Boolean = false,
     val isInRally: Boolean = false,
+    val isDetalingActive: Boolean = false, // Evita race condition no último ponto
     val winnerName: String? = null,
     val isSaving: Boolean = false,
     val lastRegisteredEventMessage: String? = null,
@@ -272,6 +273,7 @@ class MatchViewModel @Inject constructor(
 
         val receiverId = if (state.currentServerId == state.player1Id) state.player2Id else state.player1Id
         viewModelScope.launch {
+            _uiState.update { it.copy(isDetalingActive = true) }
             runCatching {
                 val pointId = matchRepository.scorePoint(matchId, receiverId, MatchEventType.WINNER, isReturnEvent = true)
                 if (state.scoringMode == ScoringMode.ADVANCED) {
@@ -287,8 +289,13 @@ class MatchViewModel @Inject constructor(
                             selectedLoserPosition = null
                         )
                     }
+                } else {
+                    _uiState.update { it.copy(isDetalingActive = false) }
                 }
-            }.onFailure { it.printStackTrace() }
+            }.onFailure { 
+                it.printStackTrace()
+                _uiState.update { it.copy(isDetalingActive = false) }
+            }
         }
     }
 
@@ -299,6 +306,7 @@ class MatchViewModel @Inject constructor(
 
         val receiverId = if (state.currentServerId == state.player1Id) state.player2Id else state.player1Id
         viewModelScope.launch {
+            _uiState.update { it.copy(isDetalingActive = true) }
             runCatching {
                 val pointId = matchRepository.scorePoint(matchId, state.currentServerId, MatchEventType.UNFORCED_ERROR, isReturnEvent = true)
                 if (state.scoringMode == ScoringMode.ADVANCED) {
@@ -314,8 +322,13 @@ class MatchViewModel @Inject constructor(
                             selectedLoserPosition = null
                         )
                     }
+                } else {
+                    _uiState.update { it.copy(isDetalingActive = false) }
                 }
-            }.onFailure { it.printStackTrace() }
+            }.onFailure { 
+                it.printStackTrace()
+                _uiState.update { it.copy(isDetalingActive = false) }
+            }
         }
     }
 
@@ -327,6 +340,7 @@ class MatchViewModel @Inject constructor(
         val state = _uiState.value
         val matchId = state.currentMatchId ?: return
         viewModelScope.launch {
+            _uiState.update { it.copy(isDetalingActive = true) }
             runCatching {
                 val pointId = matchRepository.scorePoint(matchId, playerId, MatchEventType.WINNER, isReturnEvent = false)
                 if (state.scoringMode == ScoringMode.ADVANCED) {
@@ -344,9 +358,12 @@ class MatchViewModel @Inject constructor(
                         )
                     }
                 } else {
-                    _uiState.update { it.copy(isInRally = false) }
+                    _uiState.update { it.copy(isInRally = false, isDetalingActive = false) }
                 }
-            }.onFailure { it.printStackTrace() }
+            }.onFailure { 
+                it.printStackTrace()
+                _uiState.update { it.copy(isDetalingActive = false) }
+            }
         }
     }
 
@@ -355,6 +372,7 @@ class MatchViewModel @Inject constructor(
         val matchId = state.currentMatchId ?: return
         val opponentId = if (playerId == state.player1Id) state.player2Id else state.player1Id
         viewModelScope.launch {
+            _uiState.update { it.copy(isDetalingActive = true) }
             runCatching {
                 val pointId = matchRepository.scorePoint(matchId, opponentId, MatchEventType.FORCED_ERROR, isReturnEvent = false)
                 if (state.scoringMode == ScoringMode.ADVANCED) {
@@ -372,9 +390,12 @@ class MatchViewModel @Inject constructor(
                         )
                     }
                 } else {
-                    _uiState.update { it.copy(isInRally = false) }
+                    _uiState.update { it.copy(isInRally = false, isDetalingActive = false) }
                 }
-            }.onFailure { it.printStackTrace() }
+            }.onFailure { 
+                it.printStackTrace()
+                _uiState.update { it.copy(isDetalingActive = false) }
+            }
         }
     }
 
@@ -383,6 +404,7 @@ class MatchViewModel @Inject constructor(
         val matchId = state.currentMatchId ?: return
         val opponentId = if (playerId == state.player1Id) state.player2Id else state.player1Id
         viewModelScope.launch {
+            _uiState.update { it.copy(isDetalingActive = true) }
             runCatching {
                 val pointId = matchRepository.scorePoint(matchId, opponentId, MatchEventType.UNFORCED_ERROR, isReturnEvent = false)
                 if (state.scoringMode == ScoringMode.ADVANCED) {
@@ -400,9 +422,12 @@ class MatchViewModel @Inject constructor(
                         )
                     }
                 } else {
-                    _uiState.update { it.copy(isInRally = false) }
+                    _uiState.update { it.copy(isInRally = false, isDetalingActive = false) }
                 }
-            }.onFailure { it.printStackTrace() }
+            }.onFailure { 
+                it.printStackTrace()
+                _uiState.update { it.copy(isDetalingActive = false) }
+            }
         }
     }
 
@@ -438,7 +463,11 @@ class MatchViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(
                         detailingPointId = null,
-                        winnerDetailingPlayerId = null
+                        detailingEventType = null,
+                        winnerDetailingPlayerId = null,
+                        isDetalingActive = false,
+                        isInRally = false,
+                        isReturnDetailing = false
                     )
                 }
             }.onFailure { it.printStackTrace() }
@@ -482,6 +511,18 @@ class MatchViewModel @Inject constructor(
         viewModelScope.launch {
             runCatching {
                 matchRepository.undoLastPoint(matchId)
+                // Se o desfazer for clicado durante o detalhamento, reseta o estado de detalhamento
+                // e garante que volta para a tela de botões principal
+                _uiState.update {
+                    it.copy(
+                        detailingPointId = null,
+                        detailingEventType = null,
+                        winnerDetailingPlayerId = null,
+                        isDetalingActive = false,
+                        isInRally = false,
+                        isReturnDetailing = false
+                    )
+                }
             }.onFailure { it.printStackTrace() }
         }
     }

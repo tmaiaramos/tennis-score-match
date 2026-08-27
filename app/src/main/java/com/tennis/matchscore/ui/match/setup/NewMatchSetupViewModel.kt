@@ -17,8 +17,7 @@ import javax.inject.Inject
 
 enum class CourtSurface(val displayName: String) {
     CLAY("Saibro"),
-    HARD("Rápida"),
-    GRASS("Grama")
+    HARD("Rápida")
 }
 
 enum class ScoringMode(val displayName: String) {

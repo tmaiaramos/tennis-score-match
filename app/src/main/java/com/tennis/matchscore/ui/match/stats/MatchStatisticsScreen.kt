@@ -16,6 +16,18 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.tennis.matchscore.domain.model.ShotType
 
+private fun formatShortName(fullName: String): String {
+    val parts = fullName.trim().split("\\s+".toRegex())
+    return when {
+        parts.isEmpty() -> ""
+        parts.size == 1 -> parts.first()
+        else -> "${parts.first().firstOrNull()?.uppercase() ?: ""}. ${parts.last()}"
+    }
+}
+
+private fun formatVal(v: Int): String = if (v == 0) "-" else v.toString()
+private fun formatPct(v: Int): String = if (v == 0) "-" else "$v%"
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MatchStatisticsScreen(
@@ -79,14 +91,6 @@ private fun StatisticsContent(stats: MatchStats, tabIndex: Int) {
         modifier = Modifier.fillMaxSize().padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        item {
-            Row(modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)) {
-                Spacer(modifier = Modifier.weight(1.5f))
-                Text(text = stats.p1.playerName, modifier = Modifier.weight(1f), textAlign = TextAlign.Center, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                Text(text = stats.p2.playerName, modifier = Modifier.weight(1f), textAlign = TextAlign.Center, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-            }
-        }
-
         when (tabIndex) {
             0 -> essentialTab(stats)
             1 -> detailedTab(stats)
@@ -96,53 +100,95 @@ private fun StatisticsContent(stats: MatchStats, tabIndex: Int) {
 }
 
 private fun androidx.compose.foundation.lazy.LazyListScope.essentialTab(stats: MatchStats) {
-    item { GroupHeader("1 - Service") }
-    item { StatRow("% 1st service", "${stats.p1.firstServePercentage}%", "${stats.p2.firstServePercentage}%") }
-    item { StatRow("Aces", stats.p1.aces.toString(), stats.p2.aces.toString()) }
-    item { StatRow("Double Faults", stats.p1.doubleFaults.toString(), stats.p2.doubleFaults.toString()) }
+    item { GroupHeader("1 - Service", stats) }
+    item { StatRow("% 1st service", formatPct(stats.p1.firstServePercentage), formatPct(stats.p2.firstServePercentage)) }
+    item { StatRow("Aces", formatVal(stats.p1.aces), formatVal(stats.p2.aces)) }
+    item { StatRow("Double Faults", formatVal(stats.p1.doubleFaults), formatVal(stats.p2.doubleFaults)) }
 
-    item { GroupHeader("2 - Points") }
-    item { StatRow("Total points won", stats.p1.totalPointsWon.toString(), stats.p2.totalPointsWon.toString()) }
-    item { StatRow("Winners (BH / FH)", "${stats.p1.winnersBH} / ${stats.p1.winnersFH}", "${stats.p2.winnersBH} / ${stats.p2.winnersFH}") }
-    item { StatRow("Unforced Errors (BH / FH)", "${stats.p1.unforcedErrorsBH} / ${stats.p1.unforcedErrorsFH}", "${stats.p2.unforcedErrorsBH} / ${stats.p2.unforcedErrorsFH}") }
-    item { StatRow("Aggressive Margin", stats.p1.aggressiveMargin.toString(), stats.p2.aggressiveMargin.toString()) }
+    item { GroupHeader("2 - Points", stats) }
+    item { StatRow("Total points won", formatVal(stats.p1.totalPointsWon), formatVal(stats.p2.totalPointsWon)) }
+    item { 
+        ComplexStatRow(
+            label = "Winners",
+            p1Total = stats.p1.winnersBH + stats.p1.winnersFH, p1BH = stats.p1.winnersBH, p1FH = stats.p1.winnersFH,
+            p2Total = stats.p2.winnersBH + stats.p2.winnersFH, p2BH = stats.p2.winnersBH, p2FH = stats.p2.winnersFH
+        )
+    }
+    item { 
+        ComplexStatRow(
+            label = "Unforced Errors",
+            p1Total = stats.p1.unforcedErrorsBH + stats.p1.unforcedErrorsFH, p1BH = stats.p1.unforcedErrorsBH, p1FH = stats.p1.unforcedErrorsFH,
+            p2Total = stats.p2.unforcedErrorsBH + stats.p2.unforcedErrorsFH, p2BH = stats.p2.unforcedErrorsBH, p2FH = stats.p2.unforcedErrorsFH
+        )
+    }
+    item { StatRow("Agressive Margin", formatVal(stats.p1.aggressiveMargin), formatVal(stats.p2.aggressiveMargin)) }
 
-    item { GroupHeader("3 - Conversion") }
-    item { StatRow("Receiving pts won", stats.p1.receivingPointsWon.toString(), stats.p2.receivingPointsWon.toString()) }
-    item { StatRow("Break points", "${stats.p1.breakPointsWon}/${stats.p1.breakPointsTotal}", "${stats.p2.breakPointsWon}/${stats.p2.breakPointsTotal}") }
-    item { StatRow("1st service pts won", stats.p1.firstServesWon.toString(), stats.p2.firstServesWon.toString()) }
-    item { StatRow("Net points", stats.p1.netPointsWon.toString(), stats.p2.netPointsWon.toString()) }
+    item { GroupHeader("3 - Conversion", stats) }
+    item { StatRow("Receiving pts won", formatPct(stats.p1.receivingPointsWonPercentage), formatPct(stats.p2.receivingPointsWonPercentage)) }
+    item { StatRow("Break points", "${formatVal(stats.p1.breakPointsWon)}/${formatVal(stats.p1.breakPointsTotal)}", "${formatVal(stats.p2.breakPointsWon)}/${formatVal(stats.p2.breakPointsTotal)}") }
+    item { StatRow("1st service pts won", formatPct(stats.p1.firstServePointsWonPercentage), formatPct(stats.p2.firstServePointsWonPercentage)) }
+    item { StatRow("Net points", "${formatVal(stats.p1.netPointsWon)}/${formatVal(stats.p1.netPointsTotal)}", "${formatVal(stats.p2.netPointsWon)}/${formatVal(stats.p2.netPointsTotal)}") }
 }
 
 private fun androidx.compose.foundation.lazy.LazyListScope.detailedTab(stats: MatchStats) {
-    item { GroupHeader("1 - Service") }
-    item { StatRow("Total Services", stats.p1.totalServes.toString(), stats.p2.totalServes.toString()) }
-    item { StatRow("% 1st service", "${stats.p1.firstServePercentage}%", "${stats.p2.firstServePercentage}%") }
-    item { StatRow("Aces", stats.p1.aces.toString(), stats.p2.aces.toString()) }
-    item { StatRow("Double Faults", stats.p1.doubleFaults.toString(), stats.p2.doubleFaults.toString()) }
-    item { StatRow("1st services in", stats.p1.firstServesIn.toString(), stats.p2.firstServesIn.toString()) }
-    item { StatRow("2nd services", (stats.p1.totalServes - stats.p1.firstServesIn).toString(), (stats.p2.totalServes - stats.p2.firstServesIn).toString()) }
+    item { GroupHeader("1 - Service", stats) }
+    item { StatRow("Total Services", formatVal(stats.p1.totalServes), formatVal(stats.p2.totalServes)) }
+    item { StatRow("% 1st service", formatPct(stats.p1.firstServePercentage), formatPct(stats.p2.firstServePercentage)) }
+    item { StatRow("Aces", formatVal(stats.p1.aces), formatVal(stats.p2.aces)) }
+    item { StatRow("Double Faults", formatVal(stats.p1.doubleFaults), formatVal(stats.p2.doubleFaults)) }
+    item { StatRow("1st services in", formatVal(stats.p1.firstServesIn), formatVal(stats.p2.firstServesIn)) }
+    item { StatRow("2nd services", formatVal(stats.p1.totalServes - stats.p1.firstServesIn), formatVal(stats.p2.totalServes - stats.p2.firstServesIn)) }
 
-    item { GroupHeader("2 - Return") }
-    item { StatRow("Return errors (BH / FH)", "${stats.p1.returnErrorsBH} / ${stats.p1.returnErrorsFH}", "${stats.p2.returnErrorsBH} / ${stats.p2.returnErrorsFH}") }
-    item { StatRow("Return winners (BH / FH)", "${stats.p1.returnWinnersBH} / ${stats.p1.returnWinnersFH}", "${stats.p2.returnWinnersBH} / ${stats.p2.returnWinnersFH}") }
-    item { StatRow("Unreturned 1st serv.", stats.p1.unreturnedFirstServes.toString(), stats.p2.unreturnedFirstServes.toString()) }
-    item { StatRow("Unreturned 2nd serv.", stats.p1.unreturnedSecondServes.toString(), stats.p2.unreturnedSecondServes.toString()) }
+    item { GroupHeader("2 - Return", stats) }
+    item { 
+        ComplexStatRow(
+            label = "Return errors",
+            p1Total = stats.p1.returnErrorsBH + stats.p1.returnErrorsFH, p1BH = stats.p1.returnErrorsBH, p1FH = stats.p1.returnErrorsFH,
+            p2Total = stats.p2.returnErrorsBH + stats.p2.returnErrorsFH, p2BH = stats.p2.returnErrorsBH, p2FH = stats.p2.returnErrorsFH
+        )
+    }
+    item { 
+        ComplexStatRow(
+            label = "Return winners",
+            p1Total = stats.p1.returnWinnersBH + stats.p1.returnWinnersFH, p1BH = stats.p1.returnWinnersBH, p1FH = stats.p1.returnWinnersFH,
+            p2Total = stats.p2.returnWinnersBH + stats.p2.returnWinnersFH, p2BH = stats.p2.returnWinnersBH, p2FH = stats.p2.returnWinnersFH
+        )
+    }
+    item { StatRow("Unreturned 1st serv.", formatVal(stats.p1.unreturnedFirstServes), formatVal(stats.p2.unreturnedFirstServes)) }
+    item { StatRow("Unreturned 2nd serv.", formatVal(stats.p1.unreturnedSecondServes), formatVal(stats.p2.unreturnedSecondServes)) }
 
-    item { GroupHeader("3 - Points") }
-    item { StatRow("Total points won", stats.p1.totalPointsWon.toString(), stats.p2.totalPointsWon.toString()) }
-    item { StatRow("Winners (BH / FH)", "${stats.p1.winnersBH} / ${stats.p1.winnersFH}", "${stats.p2.winnersBH} / ${stats.p2.winnersFH}") }
-    item { StatRow("Unforced Erros (BH / FH)", "${stats.p1.unforcedErrorsBH} / ${stats.p1.unforcedErrorsFH}", "${stats.p2.unforcedErrorsBH} / ${stats.p2.unforcedErrorsFH}") }
-    item { StatRow("Forced Erros (BH / FH)", "${stats.p1.forcedErrorsBH} / ${stats.p1.forcedErrorsFH}", "${stats.p2.forcedErrorsBH} / ${stats.p2.forcedErrorsFH}") }
-    item { StatRow("Aggressive margin", stats.p1.aggressiveMargin.toString(), stats.p2.aggressiveMargin.toString()) }
+    item { GroupHeader("3 - Points", stats) }
+    item { StatRow("Total points won", formatVal(stats.p1.totalPointsWon), formatVal(stats.p2.totalPointsWon)) }
+    item { 
+        ComplexStatRow(
+            label = "Winners",
+            p1Total = stats.p1.winnersBH + stats.p1.winnersFH, p1BH = stats.p1.winnersBH, p1FH = stats.p1.winnersFH,
+            p2Total = stats.p2.winnersBH + stats.p2.winnersFH, p2BH = stats.p2.winnersBH, p2FH = stats.p2.winnersFH
+        )
+    }
+    item { 
+        ComplexStatRow(
+            label = "Unforced Erros",
+            p1Total = stats.p1.unforcedErrorsBH + stats.p1.unforcedErrorsFH, p1BH = stats.p1.unforcedErrorsBH, p1FH = stats.p1.unforcedErrorsFH,
+            p2Total = stats.p2.unforcedErrorsBH + stats.p2.unforcedErrorsFH, p2BH = stats.p2.unforcedErrorsBH, p2FH = stats.p2.unforcedErrorsFH
+        )
+    }
+    item { 
+        ComplexStatRow(
+            label = "Forced Erros",
+            p1Total = stats.p1.forcedErrorsBH + stats.p1.forcedErrorsFH, p1BH = stats.p1.forcedErrorsBH, p1FH = stats.p1.forcedErrorsFH,
+            p2Total = stats.p2.forcedErrorsBH + stats.p2.forcedErrorsFH, p2BH = stats.p2.forcedErrorsBH, p2FH = stats.p2.forcedErrorsFH
+        )
+    }
+    item { StatRow("Agressive margin", formatVal(stats.p1.aggressiveMargin), formatVal(stats.p2.aggressiveMargin)) }
 
-    item { GroupHeader("4 - Conversion") }
-    item { StatRow("2nd service pts won", stats.p1.secondServesWon.toString(), stats.p2.secondServesWon.toString()) }
-    item { StatRow("1st service pts won", stats.p1.firstServesWon.toString(), stats.p2.firstServesWon.toString()) }
-    item { StatRow("Receiving pts won", stats.p1.receivingPointsWon.toString(), stats.p2.receivingPointsWon.toString()) }
-    item { StatRow("Break points", "${stats.p1.breakPointsWon}/${stats.p1.breakPointsTotal}", "${stats.p2.breakPointsWon}/${stats.p2.breakPointsTotal}") }
-    item { StatRow("Net Points", stats.p1.netPointsWon.toString(), stats.p2.netPointsWon.toString()) }
-    item { StatRow("Approach points", stats.p1.approachPointsWon.toString(), stats.p2.approachPointsWon.toString()) }
+    item { GroupHeader("4 - Conversion", stats) }
+    item { StatRow("2nd service pts won", formatPct(stats.p1.secondServePointsWonPercentage), formatPct(stats.p2.secondServePointsWonPercentage)) }
+    item { StatRow("1st service pts won", formatPct(stats.p1.firstServePointsWonPercentage), formatPct(stats.p2.firstServePointsWonPercentage)) }
+    item { StatRow("Receiving pts won", formatPct(stats.p1.receivingPointsWonPercentage), formatPct(stats.p2.receivingPointsWonPercentage)) }
+    item { StatRow("Break points", "${formatVal(stats.p1.breakPointsWon)}/${formatVal(stats.p1.breakPointsTotal)}", "${formatVal(stats.p2.breakPointsWon)}/${formatVal(stats.p2.breakPointsTotal)}") }
+    item { StatRow("Net Points", "${formatVal(stats.p1.netPointsWon)}/${formatVal(stats.p1.netPointsTotal)}", "${formatVal(stats.p2.netPointsWon)}/${formatVal(stats.p2.netPointsTotal)}") }
+    item { StatRow("Approach points", "${formatVal(stats.p1.approachPointsWon)}/${formatVal(stats.p1.approachPointsTotal)}", "${formatVal(stats.p2.approachPointsWon)}/${formatVal(stats.p2.approachPointsTotal)}") }
 }
 
 private fun androidx.compose.foundation.lazy.LazyListScope.byShotTab(stats: MatchStats) {
@@ -157,38 +203,104 @@ private fun androidx.compose.foundation.lazy.LazyListScope.byShotTab(stats: Matc
     )
 
     shots.forEachIndexed { index, (label, type) ->
-        item { GroupHeader("${index + 1} - $label") }
+        item { GroupHeader("${index + 1} - $label", stats) }
         val s1 = stats.p1.shotStats[type] ?: ShotTypeStats()
         val s2 = stats.p2.shotStats[type] ?: ShotTypeStats()
-        item { StatRow("Winners (BH / FH)", "${s1.winnersBH} / ${s1.winnersFH}", "${s2.winnersBH} / ${s2.winnersFH}") }
-        item { StatRow("Forced errors (BH / FH)", "${s1.forcedErrorsBH} / ${s1.forcedErrorsFH}", "${s2.forcedErrorsBH} / ${s2.forcedErrorsFH}") }
-        item { StatRow("Unforced errors (BH / FH)", "${s1.unforcedErrorsBH} / ${s1.unforcedErrorsFH}", "${s2.unforcedErrorsBH} / ${s2.unforcedErrorsFH}") }
+        item { 
+            ComplexStatRow(
+                label = "Winners",
+                p1Total = s1.winnersBH + s1.winnersFH, p1BH = s1.winnersBH, p1FH = s1.winnersFH,
+                p2Total = s2.winnersBH + s2.winnersFH, p2BH = s2.winnersBH, p2FH = s2.winnersFH
+            )
+        }
+        item { 
+            ComplexStatRow(
+                label = "Forced errors",
+                p1Total = s1.forcedErrorsBH + s1.forcedErrorsFH, p1BH = s1.forcedErrorsBH, p1FH = s1.forcedErrorsFH,
+                p2Total = s2.forcedErrorsBH + s2.forcedErrorsFH, p2BH = s2.forcedErrorsBH, p2FH = s2.forcedErrorsFH
+            )
+        }
+        item { 
+            ComplexStatRow(
+                label = "Unforced errors",
+                p1Total = s1.unforcedErrorsBH + s1.unforcedErrorsFH, p1BH = s1.unforcedErrorsBH, p1FH = s1.unforcedErrorsFH,
+                p2Total = s2.unforcedErrorsBH + s2.unforcedErrorsFH, p2BH = s2.unforcedErrorsBH, p2FH = s2.unforcedErrorsFH
+            )
+        }
     }
 }
 
 @Composable
-private fun GroupHeader(title: String) {
-    Surface(
-        color = MaterialTheme.colorScheme.primaryContainer,
-        shape = RoundedCornerShape(4.dp),
-        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
-    ) {
-        Text(
-            text = title,
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-            fontWeight = FontWeight.Bold,
-            fontSize = 15.sp,
-            color = MaterialTheme.colorScheme.onPrimaryContainer
-        )
+private fun GroupHeader(title: String, stats: MatchStats) {
+    Column(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
+        Surface(
+            color = MaterialTheme.colorScheme.primaryContainer,
+            shape = RoundedCornerShape(4.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = title,
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                fontWeight = FontWeight.Bold,
+                fontSize = 15.sp,
+                color = MaterialTheme.colorScheme.onPrimaryContainer
+            )
+        }
+        Row(modifier = Modifier.fillMaxWidth().padding(top = 4.dp, bottom = 2.dp)) {
+            Spacer(modifier = Modifier.weight(1.5f))
+            Text(text = formatShortName(stats.p1.playerName), modifier = Modifier.weight(1f), textAlign = TextAlign.Center, fontWeight = FontWeight.ExtraBold, fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
+            Text(text = formatShortName(stats.p2.playerName), modifier = Modifier.weight(1f), textAlign = TextAlign.Center, fontWeight = FontWeight.ExtraBold, fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
+        }
     }
 }
 
 @Composable
 private fun StatRow(label: String, v1: String, v2: String) {
-    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp), verticalAlignment = Alignment.CenterVertically) {
-        Text(text = label, modifier = Modifier.weight(1.5f), fontSize = 13.sp)
+    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+        Text(text = label, modifier = Modifier.weight(1.5f), fontSize = 13.sp, fontWeight = FontWeight.Medium)
         Text(text = v1, modifier = Modifier.weight(1f), textAlign = TextAlign.Center, fontSize = 14.sp)
         Text(text = v2, modifier = Modifier.weight(1f), textAlign = TextAlign.Center, fontSize = 14.sp)
     }
     HorizontalDivider(thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+}
+
+@Composable
+private fun ComplexStatRow(label: String, p1Total: Int, p1BH: Int, p1FH: Int, p2Total: Int, p2BH: Int, p2FH: Int) {
+    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+        Text(text = label, modifier = Modifier.weight(1.5f), fontSize = 13.sp, fontWeight = FontWeight.Medium)
+        Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+            ComplexStatCell(total = p1Total, bh = p1BH, fh = p1FH)
+        }
+        Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+            ComplexStatCell(total = p2Total, bh = p2BH, fh = p2FH)
+        }
+    }
+    HorizontalDivider(thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+}
+
+@Composable
+private fun ComplexStatCell(total: Int, bh: Int, fh: Int) {
+    if (total == 0) {
+        Text("-", fontSize = 14.sp)
+        return
+    }
+    Row(verticalAlignment = Alignment.Bottom) {
+        Text(
+            text = formatVal(bh),
+            fontSize = 9.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(bottom = 2.dp, end = 2.dp)
+        )
+        Text(
+            text = total.toString(),
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold
+        )
+        Text(
+            text = formatVal(fh),
+            fontSize = 9.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(bottom = 2.dp, start = 2.dp)
+        )
+    }
 }

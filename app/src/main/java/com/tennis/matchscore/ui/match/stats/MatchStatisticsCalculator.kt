@@ -39,12 +39,13 @@ data class PlayerStats(
     val winnersBH: Int,
     val unforcedErrorsFH: Int,
     val unforcedErrorsBH: Int,
-    val forcedErrorsFH: Int, // Committed by this player
-    val forcedErrorsBH: Int, // Committed by this player
-    val inducedForcedErrors: Int, // Induced on opponent
+    val forcedErrorsFH: Int, 
+    val forcedErrorsBH: Int, 
+    val inducedForcedErrors: Int, 
     
     // Conversion
     val receivingPointsWon: Int,
+    val totalPointsReceived: Int,
     val breakPointsWon: Int,
     val breakPointsTotal: Int,
     val netPointsWon: Int,
@@ -58,6 +59,9 @@ data class PlayerStats(
     val firstServePercentage: Int get() = if (totalServes > 0) (firstServesIn * 100) / totalServes else 0
     val firstServePointsWonPercentage: Int get() = if (firstServesIn > 0) (firstServesWon * 100) / firstServesIn else 0
     val secondServePointsWonPercentage: Int get() = if (totalServes - firstServesIn > 0) (secondServesWon * 100) / (totalServes - firstServesIn) else 0
+    val receivingPointsWonPercentage: Int get() = if (totalPointsReceived > 0) (receivingPointsWon * 100) / totalPointsReceived else 0
+    val netPointsWonPercentage: Int get() = if (netPointsTotal > 0) (netPointsWon * 100) / netPointsTotal else 0
+    val approachPointsWonPercentage: Int get() = if (approachPointsTotal > 0) (approachPointsWon * 100) / approachPointsTotal else 0
     val aggressiveMargin: Int get() = (winnersFH + winnersBH + inducedForcedErrors) - (unforcedErrorsFH + unforcedErrorsBH)
 }
 
@@ -81,12 +85,14 @@ class MatchStatisticsCalculator(
         val p1Raw = calculateForPlayer(p1Id, p1Name, p2Id)
         val p2Raw = calculateForPlayer(p2Id, p2Name, p1Id)
         
-        // Add cross-player stats (like induced errors)
+        // Add cross-player stats
         val p1 = p1Raw.copy(
-            inducedForcedErrors = p2Raw.forcedErrorsFH + p2Raw.forcedErrorsBH
+            inducedForcedErrors = p2Raw.forcedErrorsFH + p2Raw.forcedErrorsBH,
+            totalPointsReceived = p2Raw.totalPointsServed
         )
         val p2 = p2Raw.copy(
-            inducedForcedErrors = p1Raw.forcedErrorsFH + p1Raw.forcedErrorsBH
+            inducedForcedErrors = p1Raw.forcedErrorsFH + p1Raw.forcedErrorsBH,
+            totalPointsReceived = p1Raw.totalPointsServed
         )
         
         return MatchStats(p1, p2)
@@ -151,7 +157,6 @@ class MatchStatisticsCalculator(
                     else unreturnedSecondServes++
                 }
             } else {
-                // Return Stats
                 if (point.pointWinnerId != 0L) {
                     if (point.isReturnEvent) {
                         if (wonPoint && point.eventType == MatchEventType.WINNER) {
@@ -231,7 +236,7 @@ class MatchStatisticsCalculator(
             unreturnedFirstServes = unreturnedFirstServes, unreturnedSecondServes = unreturnedSecondServes,
             totalPointsWon = totalPointsWon, winnersFH = winnersFH, winnersBH = winnersBH,
             unforcedErrorsFH = unforcedErrorsFH, unforcedErrorsBH = unforcedErrorsBH, forcedErrorsFH = forcedErrorsFH, forcedErrorsBH = forcedErrorsBH, inducedForcedErrors = 0,
-            receivingPointsWon = receivingPointsWon, breakPointsWon = breakPointsWon, breakPointsTotal = breakPointsTotal,
+            receivingPointsWon = receivingPointsWon, totalPointsReceived = 0, breakPointsWon = breakPointsWon, breakPointsTotal = breakPointsTotal,
             netPointsWon = netPointsWon, netPointsTotal = netPointsTotal, approachPointsWon = approachPointsWon, approachPointsTotal = approachPointsTotal,
             shotStats = shotStats
         )
