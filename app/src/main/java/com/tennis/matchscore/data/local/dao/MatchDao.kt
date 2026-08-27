@@ -54,6 +54,12 @@ interface MatchDao {
     @Query("DELETE FROM point_history WHERE id = :pointId")
     suspend fun deletePointHistory(pointId: Long)
 
+    @Query("SELECT * FROM point_history WHERE matchId = :matchId ORDER BY id ASC")
+    fun getPointsForMatch(matchId: Long): Flow<List<PointHistoryEntity>>
+
+    @Query("SELECT * FROM point_history WHERE matchId = :matchId ORDER BY id ASC")
+    suspend fun getPointsForMatchSync(matchId: Long): List<PointHistoryEntity>
+
     // --- Consultas Agregadas ---
     @Transaction
     @Query("SELECT * FROM matches WHERE id = :matchId")

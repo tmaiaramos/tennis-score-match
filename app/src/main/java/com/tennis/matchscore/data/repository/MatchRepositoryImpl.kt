@@ -69,6 +69,14 @@ class MatchRepositoryImpl @Inject constructor(
         matchDao.deleteMatchById(matchId)
     }
 
+    override fun observePointsForMatch(matchId: Long): Flow<List<PointHistoryEntity>> {
+        return matchDao.getPointsForMatch(matchId)
+    }
+
+    override suspend fun getPointsForMatch(matchId: Long): List<PointHistoryEntity> {
+        return matchDao.getPointsForMatchSync(matchId)
+    }
+
     override suspend fun recordFault(matchId: Long) {
         val matchDetails = matchDao.getMatchWithDetailsById(matchId) ?: return
         val match = matchDetails.match
@@ -94,13 +102,19 @@ class MatchRepositoryImpl @Inject constructor(
             scoreP2Before = match.player2PointsCurrentGame,
             gamesP1Before = match.player1GamesCurrentSet,
             gamesP2Before = match.player2GamesCurrentSet,
+            isReturnEvent = false
         )
         matchDao.insertPointHistory(historyEntry)
 
         matchDao.updateMatch(match.copy(serveState = newState.serveState))
     }
 
-    override suspend fun scorePoint(matchId: Long, pointWinnerId: Long, eventType: MatchEventType): Long {
+    override suspend fun scorePoint(
+        matchId: Long,
+        pointWinnerId: Long,
+        eventType: MatchEventType,
+        isReturnEvent: Boolean
+    ): Long {
         val matchDetails = matchDao.getMatchWithDetailsById(matchId) ?: return 0L
         val match = matchDetails.match
         val format = matchDetails.format
@@ -120,6 +134,7 @@ class MatchRepositoryImpl @Inject constructor(
             scoreP2Before = match.player2PointsCurrentGame,
             gamesP1Before = match.player1GamesCurrentSet,
             gamesP2Before = match.player2GamesCurrentSet,
+            isReturnEvent = isReturnEvent
         )
         val historyId = matchDao.insertPointHistory(historyEntry)
 

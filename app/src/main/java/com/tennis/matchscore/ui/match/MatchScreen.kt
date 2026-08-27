@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -73,6 +74,7 @@ private fun formatPlayerName(fullName: String): String {
 fun MatchScreen(
     viewModel: MatchViewModel = hiltViewModel(),
     onCloseClick: () -> Unit,
+    onViewStatsClick: (Long) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var showExitConfirmationDialog by remember { mutableStateOf(false) }
@@ -151,20 +153,20 @@ fun MatchScreen(
                     .weight(1f, fill = true)
                     .padding(top = 12.dp)
             ) {
-                if (!uiState.isMatchFinished) {
-                    when {
-                        uiState.detailingPointId != null -> {
-                            // TELA DE DETALHAMENTO (MODO AVANÇADO)
-                            AdvancedWinnerDetailingControls(
-                                uiState = uiState,
-                                onWinnerPositionSelected = viewModel::onWinnerPositionSelected,
-                                onWinnerHitHandSelected = viewModel::onWinnerHitHandSelected,
-                                onWinnerShotTypeSelected = viewModel::onWinnerShotTypeSelected,
-                                onLoserPositionSelected = viewModel::onLoserPositionSelected,
-                                onConfirmClick = viewModel::onConfirmStats
-                            )
-                        }
-                        uiState.isInRally -> {
+                when {
+                    uiState.detailingPointId != null -> {
+                        // TELA DE DETALHAMENTO (MODO AVANÇADO) - Prioridade Máxima
+                        AdvancedWinnerDetailingControls(
+                            uiState = uiState,
+                            onWinnerPositionSelected = viewModel::onWinnerPositionSelected,
+                            onWinnerHitHandSelected = viewModel::onWinnerHitHandSelected,
+                            onWinnerShotTypeSelected = viewModel::onWinnerShotTypeSelected,
+                            onLoserPositionSelected = viewModel::onLoserPositionSelected,
+                            onConfirmClick = viewModel::onConfirmStats
+                        )
+                    }
+                    !uiState.isMatchFinished -> {
+                        if (uiState.isInRally) {
                             RallyScoringControls(
                                 uiState = uiState,
                                 onWinnerClick = viewModel::onWinnerClicked,
@@ -172,8 +174,7 @@ fun MatchScreen(
                                 onUnforcedErrorClick = viewModel::onUnforcedErrorClicked,
                                 onCancelClick = viewModel::onCancelRally
                             )
-                        }
-                        uiState.scoringMode == ScoringMode.INTERMEDIATE || uiState.scoringMode == ScoringMode.ADVANCED -> {
+                        } else if (uiState.scoringMode == ScoringMode.INTERMEDIATE || uiState.scoringMode == ScoringMode.ADVANCED) {
                             IntermediateScoringControls(
                                 uiState = uiState,
                                 onAceClick = viewModel::onAceClicked,
@@ -182,8 +183,7 @@ fun MatchScreen(
                                 onReturnErrorClick = viewModel::onReturnErrorClicked,
                                 onBallInPlayClick = viewModel::onBallInPlayClicked
                             )
-                        }
-                        else -> {
+                        } else {
                             BasicScoringControls(
                                 uiState = uiState,
                                 onPlayer1Scored = viewModel::onPlayer1Scored,
@@ -191,16 +191,34 @@ fun MatchScreen(
                             )
                         }
                     }
-                } else {
-                    Spacer(modifier = Modifier.weight(1f))
-                    Button(
-                        onClick = onCloseClick,
-                        shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(56.dp)
-                    ) {
-                        Text("Voltar ao Menu Principal", fontSize = 16.sp)
+                    else -> {
+                        Spacer(modifier = Modifier.weight(1f))
+                        
+                        if (uiState.scoringMode == ScoringMode.ADVANCED) {
+                            Button(
+                                onClick = { uiState.currentMatchId?.let { onViewStatsClick(it) } },
+                                shape = RoundedCornerShape(12.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(56.dp)
+                                    .padding(bottom = 8.dp)
+                            ) {
+                                Icon(Icons.Default.BarChart, contentDescription = null)
+                                Spacer(Modifier.width(8.dp))
+                                Text("Ver Estatísticas", fontSize = 16.sp)
+                            }
+                        }
+
+                        Button(
+                            onClick = onCloseClick,
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(56.dp)
+                        ) {
+                            Text("Voltar ao Menu Principal", fontSize = 16.sp)
+                        }
                     }
                 }
             }
@@ -232,7 +250,7 @@ fun MatchScreen(
         )
     }
 
-    if (uiState.isMatchFinished && uiState.winnerName != null) {
+    if (uiState.isMatchFinished && uiState.winnerName != null && uiState.detailingPointId == null) {
         AlertDialog(
             onDismissRequest = { },
             title = { Text("Fim de Jogo! 🏆") },
@@ -240,12 +258,24 @@ fun MatchScreen(
                 Text("Vencedor: ${uiState.winnerName}\n\nA partida foi salva automaticamente no histórico!")
             },
             confirmButton = {
-                Button(
-                    onClick = onCloseClick,
-                    shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Fechar")
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    if (uiState.scoringMode == ScoringMode.ADVANCED) {
+                        Button(
+                            onClick = { uiState.currentMatchId?.let { onViewStatsClick(it) } },
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("Ver Estatísticas")
+                        }
+                    }
+                    Button(
+                        onClick = onCloseClick,
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Fechar")
+                    }
                 }
             }
         )
@@ -626,10 +656,17 @@ private fun AdvancedWinnerDetailingControls(
             onClick = onConfirmClick,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(48.dp),
-            shape = RoundedCornerShape(12.dp)
+                .height(56.dp),
+            shape = RoundedCornerShape(12.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary
+            )
         ) {
-            Text("Confirmar Estatísticas", fontWeight = FontWeight.Bold)
+            Text(
+                text = if (uiState.isMatchFinished) "Confirmar e Finalizar Partida" else "Confirmar e Continuar",
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp
+            )
         }
     }
 }
@@ -695,25 +732,36 @@ private fun WinnerDetailingColumn(
 
         // Tipo de Golpe
         Text("Golpe:", fontSize = 12.sp, fontWeight = FontWeight.Medium)
-        val shotRows = listOf(
-            ShotType.entries.take(3),
-            ShotType.entries.drop(3).take(3),
-            ShotType.entries.drop(6)
-        )
-        shotRows.forEach { row ->
-            Row(modifier = Modifier.fillMaxWidth().padding(top = 4.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        val shots = ShotType.entries
+        val chunkedShots = shots.chunked(3)
+        
+        chunkedShots.forEach { row ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
                 row.forEach { type ->
                     val selected = selectedShotType == type
                     OutlinedButton(
                         onClick = { onShotTypeSelected(type) },
-                        modifier = Modifier.weight(1f).height(36.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(36.dp),
                         shape = RoundedCornerShape(8.dp),
                         contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp),
                         colors = if (selected) ButtonDefaults.outlinedButtonColors(containerColor = MaterialTheme.colorScheme.primaryContainer) else ButtonDefaults.outlinedButtonColors()
                     ) {
-                        Text(type.name.lowercase().capitalize(), fontSize = 9.sp, maxLines = 1)
+                        Text(
+                            text = type.name.lowercase().capitalize(),
+                            fontSize = 9.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
                     }
                 }
+                // Preenchimento para manter alinhamento
                 if (row.size < 3) {
                     repeat(3 - row.size) { Spacer(modifier = Modifier.weight(1f)) }
                 }

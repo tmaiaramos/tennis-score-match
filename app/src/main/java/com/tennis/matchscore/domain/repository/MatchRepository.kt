@@ -2,6 +2,7 @@ package com.tennis.matchscore.domain.repository
 
 import com.tennis.matchscore.data.local.entity.MatchFormatEntity
 import com.tennis.matchscore.data.local.entity.PlayerEntity
+import com.tennis.matchscore.data.local.entity.PointHistoryEntity
 import com.tennis.matchscore.data.local.relation.MatchWithDetails
 import com.tennis.matchscore.domain.model.CourtPosition
 import com.tennis.matchscore.domain.model.HitHand
@@ -28,11 +29,15 @@ interface MatchRepository {
     fun observeAllMatches(): Flow<List<MatchWithDetails>>
     suspend fun deleteMatch(matchId: Long)
 
+    fun observePointsForMatch(matchId: Long): Flow<List<PointHistoryEntity>>
+    suspend fun getPointsForMatch(matchId: Long): List<PointHistoryEntity>
+
     // --- Lógica de Placar e Ações da Partida ---
     suspend fun scorePoint(
         matchId: Long,
         pointWinnerId: Long,
-        eventType: MatchEventType = MatchEventType.REGULAR_POINT
+        eventType: MatchEventType = MatchEventType.REGULAR_POINT,
+        isReturnEvent: Boolean = false
     ): Long
 
     suspend fun recordFault(matchId: Long)

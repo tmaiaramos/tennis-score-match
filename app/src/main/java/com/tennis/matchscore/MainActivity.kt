@@ -20,6 +20,7 @@ import com.tennis.matchscore.ui.home.HomeScreen
 import com.tennis.matchscore.ui.match.MatchScreen
 import com.tennis.matchscore.ui.match.MatchViewModel
 import com.tennis.matchscore.ui.match.setup.NewMatchSetupScreen
+import com.tennis.matchscore.ui.match.stats.MatchStatisticsScreen
 import com.tennis.matchscore.ui.player.PlayerScreen
 import com.tennis.matchscore.ui.player.PlayerViewModel
 import com.tennis.matchscore.ui.theme.TennisMatchScoreTheme
@@ -42,6 +43,7 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background,
                 ) {
                     var currentScreen by remember { mutableStateOf("home") }
+                    var selectedMatchIdForStats by remember { mutableStateOf<Long?>(null) }
 
                     when (currentScreen) {
                         "home" -> HomeScreen(
@@ -68,7 +70,11 @@ class MainActivity : ComponentActivity() {
                         )
                         "match" -> MatchScreen(
                             viewModel = matchViewModel,
-                            onCloseClick = { currentScreen = "home" }
+                            onCloseClick = { currentScreen = "home" },
+                            onViewStatsClick = { matchId ->
+                                selectedMatchIdForStats = matchId
+                                currentScreen = "statistics"
+                            }
                         )
                         "players" -> PlayerScreen(
                             viewModel = playerViewModel,
@@ -84,6 +90,16 @@ class MainActivity : ComponentActivity() {
                             onMatchClick = { matchId ->
                                 matchViewModel.resumeExistingMatch(matchId)
                                 currentScreen = "match"
+                            },
+                            onViewStatsClick = { matchId ->
+                                selectedMatchIdForStats = matchId
+                                currentScreen = "statistics"
+                            }
+                        )
+                        "statistics" -> MatchStatisticsScreen(
+                            matchId = selectedMatchIdForStats ?: 0L,
+                            onBackClick = {
+                                currentScreen = "history"
                             }
                         )
                     }

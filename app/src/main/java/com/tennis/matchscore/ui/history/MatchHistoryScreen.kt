@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.PlayArrow
@@ -20,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.tennis.matchscore.data.local.relation.MatchWithDetails
+import com.tennis.matchscore.ui.match.setup.ScoringMode
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -30,6 +32,7 @@ fun MatchHistoryScreen(
     viewModel: MatchHistoryViewModel = hiltViewModel(),
     onBackClick: () -> Unit,
     onMatchClick: (Long) -> Unit,
+    onViewStatsClick: (Long) -> Unit
 ) {
     val matches by viewModel.matches.collectAsState()
     var matchToDelete by remember { mutableStateOf<Long?>(null) }
@@ -78,7 +81,8 @@ fun MatchHistoryScreen(
                         MatchHistoryCard(
                             matchDetails = matchDetails,
                             onResumeClick = { onMatchClick(it.match.id) },
-                            onDeleteClick = { matchToDelete = it.match.id }
+                            onDeleteClick = { matchToDelete = it.match.id },
+                            onViewStatsClick = { onViewStatsClick(it.match.id) }
                         )
                     }
                 }
@@ -115,7 +119,8 @@ fun MatchHistoryScreen(
 private fun MatchHistoryCard(
     matchDetails: MatchWithDetails,
     onResumeClick: (MatchWithDetails) -> Unit,
-    onDeleteClick: (MatchWithDetails) -> Unit
+    onDeleteClick: (MatchWithDetails) -> Unit,
+    onViewStatsClick: (MatchWithDetails) -> Unit
 ) {
     val match = matchDetails.match
     val p1Name = "${matchDetails.player1.firstName} ${matchDetails.player1.lastName}".trim().ifBlank { "Jogador 1" }
@@ -240,7 +245,6 @@ private fun MatchHistoryCard(
                             )
                         }
                         
-                        // Pontuação do Game (Pts)
                         Box(
                             modifier = Modifier
                                 .width(36.dp)
@@ -308,7 +312,6 @@ private fun MatchHistoryCard(
                             )
                         }
 
-                        // Pontuação do Game (Pts)
                         Box(
                             modifier = Modifier
                                 .width(36.dp)
@@ -358,8 +361,21 @@ private fun MatchHistoryCard(
             } else {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
+                    if (match.trackingLevel == com.tennis.matchscore.domain.model.TrackingLevel.ADVANCED) {
+                        TextButton(
+                            onClick = { onViewStatsClick(matchDetails) },
+                            colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.tertiary)
+                        ) {
+                            Icon(Icons.Default.BarChart, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Estatísticas")
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                    }
+                    
                     IconButton(onClick = { onDeleteClick(matchDetails) }) {
                         Icon(
                             imageVector = Icons.Default.Delete,

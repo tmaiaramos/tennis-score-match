@@ -31,11 +31,9 @@ data class PointHistoryEntity(
     val pointWinnerId: Long,
     val serverId: Long,
 
-    // Suporte ao modo Intermediário / Desfazer Falta
     val eventType: MatchEventType = MatchEventType.REGULAR_POINT,
     val serveStateBefore: ServeState = ServeState.FIRST_SERVE,
 
-    // Placar antes deste evento (usado para desfazer jogadas)
     val scoreP1Before: String,
     val scoreP2Before: String,
     val gamesP1Before: Int,
@@ -46,6 +44,7 @@ data class PointHistoryEntity(
     val winnerHitHand: HitHand? = null,
     val winnerShotType: ShotType? = null,
     val loserPosition: CourtPosition? = null,
+    val isReturnEvent: Boolean = false,
 
     val timestamp: Long = System.currentTimeMillis()
 )
