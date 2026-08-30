@@ -1,5 +1,6 @@
 package com.tennis.matchscore
 
+import androidx.compose.ui.graphics.Color
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -37,10 +38,13 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            TennisMatchScoreTheme {
+            TennisMatchScoreTheme(
+                darkTheme = false, // Força sempre o tema claro
+                dynamicColor = false // Desativa cores dinâmicas para manter a unidade visual
+            ) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background,
+                    color = Color.White,
                 ) {
                     var currentScreen by remember { mutableStateOf("home") }
                     var selectedMatchIdForStats by remember { mutableStateOf<Long?>(null) }

@@ -156,17 +156,19 @@ private fun MatchHistoryCard(
                     text = "${match.player1.firstName} ${match.player1.lastName}",
                     modifier = Modifier.weight(1f),
                     fontWeight = if (match.match.winnerId == match.player1.id) FontWeight.Bold else FontWeight.Normal,
-                    fontSize = 16.sp
+                    fontSize = 16.sp,
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                 )
                 Row {
                     match.sets.sortedBy { it.setNumber }.forEach { set ->
                         SetScoreItem(set.player1Games, set.player2Games, set.tieBreakPointsPlayer1, match.match.winnerId == match.player1.id && set.winnerPlayerId == match.player1.id, false)
                     }
                 }
-                if (match.match.winnerId == match.player1.id) {
-                    Text(text = "🏆", modifier = Modifier.padding(start = 8.dp))
-                } else {
-                    Spacer(modifier = Modifier.width(24.dp))
+                Box(modifier = Modifier.width(32.dp), contentAlignment = Alignment.Center) {
+                    if (match.match.winnerId == match.player1.id) {
+                        Text(text = "🏆", fontSize = 14.sp)
+                    }
                 }
             }
 
@@ -181,17 +183,19 @@ private fun MatchHistoryCard(
                     text = "${match.player2.firstName} ${match.player2.lastName}",
                     modifier = Modifier.weight(1f),
                     fontWeight = if (match.match.winnerId == match.player2.id) FontWeight.Bold else FontWeight.Normal,
-                    fontSize = 16.sp
+                    fontSize = 16.sp,
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                 )
                 Row {
                     match.sets.sortedBy { it.setNumber }.forEach { set ->
                         SetScoreItem(set.player2Games, set.player1Games, set.tieBreakPointsPlayer2, match.match.winnerId == match.player2.id && set.winnerPlayerId == match.player2.id, false)
                     }
                 }
-                if (match.match.winnerId == match.player2.id) {
-                    Text(text = "🏆", modifier = Modifier.padding(start = 8.dp))
-                } else {
-                    Spacer(modifier = Modifier.width(24.dp))
+                Box(modifier = Modifier.width(32.dp), contentAlignment = Alignment.Center) {
+                    if (match.match.winnerId == match.player2.id) {
+                        Text(text = "🏆", fontSize = 14.sp)
+                    }
                 }
             }
 
