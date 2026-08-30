@@ -1,5 +1,6 @@
 package com.tennis.matchscore.ui.match.setup
 
+import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -40,10 +41,22 @@ fun NewMatchSetupScreen(
     val dateFormatter = remember { SimpleDateFormat("dd/MM/yyyy", Locale("pt", "BR")) }
 
     Scaffold(
+        containerColor = Color.White,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text("Nova Partida") },
+                title = {
+                    Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                        Icon(
+                            painter = androidx.compose.ui.res.painterResource(id = com.tennis.matchscore.R.drawable.ic_app_logo_png),
+                            contentDescription = null,
+                            tint = Color.Unspecified,
+                            modifier = Modifier.size(32.dp)
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text("Nova Partida")
+                    }
+                },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
@@ -93,72 +106,62 @@ fun NewMatchSetupScreen(
 
                 HorizontalDivider()
 
-                Text("Sacador Inicial", style = MaterialTheme.typography.titleMedium)
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    val p1Name = uiState.player1?.let { "${it.firstName} ${it.lastName}".trim() } ?: "Jogador 1"
-                    val p2Name = uiState.player2?.let { "${it.firstName} ${it.lastName}".trim() } ?: "Jogador 2"
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text("Sacador Inicial", style = MaterialTheme.typography.titleSmall)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        val p1Name = uiState.player1?.let { "${it.firstName} ${it.lastName}".trim() } ?: "Jogador 1"
+                        val p2Name = uiState.player2?.let { "${it.firstName} ${it.lastName}".trim() } ?: "Jogador 2"
 
-                    FilterChip(
-                        selected = uiState.initialServer == 1,
-                        onClick = { viewModel.onInitialServerChanged(1) },
-                        label = { Text("🎾 $p1Name") },
-                        modifier = Modifier.weight(1f)
-                    )
-
-                    FilterChip(
-                        selected = uiState.initialServer == 2,
-                        onClick = { viewModel.onInitialServerChanged(2) },
-                        label = { Text("🎾 $p2Name") },
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-
-                HorizontalDivider()
-
-                Text("Tipo de Marcação de Pontos", style = MaterialTheme.typography.titleMedium)
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    ScoringMode.entries.forEach { mode ->
                         FilterChip(
-                            selected = uiState.scoringMode == mode,
-                            onClick = { viewModel.onScoringModeChanged(mode) },
-                            label = { Text(mode.displayName) },
+                            selected = uiState.initialServer == 1,
+                            onClick = { viewModel.onInitialServerChanged(1) },
+                            label = { 
+                                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = androidx.compose.ui.Alignment.Center) {
+                                    Text("🎾 $p1Name", maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis, fontSize = 11.sp)
+                                }
+                            },
+                            modifier = Modifier.weight(1f)
+                        )
+                        FilterChip(
+                            selected = uiState.initialServer == 2,
+                            onClick = { viewModel.onInitialServerChanged(2) },
+                            label = { 
+                                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = androidx.compose.ui.Alignment.Center) {
+                                    Text("🎾 $p2Name", maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis, fontSize = 11.sp)
+                                }
+                            },
                             modifier = Modifier.weight(1f)
                         )
                     }
                 }
 
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text("Tipo de Marcação", style = MaterialTheme.typography.titleSmall)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        ScoringMode.entries.forEach { mode ->
+                            FilterChip(
+                                selected = uiState.scoringMode == mode,
+                                onClick = { viewModel.onScoringModeChanged(mode) },
+                                label = { 
+                                    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = androidx.compose.ui.Alignment.Center) {
+                                        Text(mode.displayName, fontSize = 11.sp) 
+                                    }
+                                },
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    }
+                }
+
                 HorizontalDivider()
-
-                Text("Regras e Data da Partida", style = MaterialTheme.typography.titleMedium)
-
-                OutlinedTextField(
-                    value = dateFormatter.format(Date(selectedDateMillis)),
-                    onValueChange = {},
-                    readOnly = true,
-                    enabled = false,
-                    label = { Text("Data da Partida") },
-                    trailingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.CalendarToday,
-                            contentDescription = "Selecionar Data"
-                        )
-                    },
-                    colors = OutlinedTextFieldDefaults.colors(
-                        disabledTextColor = MaterialTheme.colorScheme.onSurface,
-                        disabledBorderColor = MaterialTheme.colorScheme.outline,
-                        disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                        disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant
-                    ),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { showDatePicker = true }
-                )
 
                 FormatDropdown(
                     formats = uiState.formats,
@@ -175,14 +178,58 @@ fun NewMatchSetupScreen(
                     )
                 }
 
-                Text("Tipo de Quadra", style = MaterialTheme.typography.bodyMedium)
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    CourtSurface.entries.forEach { surface ->
-                        FilterChip(
-                            selected = uiState.surface == surface,
-                            onClick = { viewModel.onSurfaceChanged(surface) },
-                            label = { Text(surface.displayName) }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(24.dp), // Ajustado para 24dp
+                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1.3f)) {
+                        OutlinedTextField(
+                            value = dateFormatter.format(Date(selectedDateMillis)),
+                            onValueChange = {},
+                            readOnly = true,
+                            enabled = false,
+                            label = { Text("Data da Partida") },
+                            trailingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.CalendarToday,
+                                    contentDescription = "Selecionar Data",
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            },
+                            colors = OutlinedTextFieldDefaults.colors(
+                                disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                                disabledBorderColor = MaterialTheme.colorScheme.outline,
+                                disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant
+                            ),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(60.dp)
+                                .clickable { showDatePicker = true }
                         )
+                    }
+
+                    Column(
+                        modifier = Modifier.weight(0.7f),
+                        horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
+                    ) {
+                        Text("Tipo de Quadra", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Spacer(modifier = Modifier.height(8.dp)) // Aumentado para 8dp
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) { // Aumentado para 8dp
+                            CourtSurface.entries.forEach { surface ->
+                                FilterChip(
+                                    selected = uiState.surface == surface,
+                                    onClick = { viewModel.onSurfaceChanged(surface) },
+                                    label = { 
+                                        Box(modifier = Modifier.fillMaxWidth(), contentAlignment = androidx.compose.ui.Alignment.Center) {
+                                            Text(surface.displayName, fontSize = 11.sp) 
+                                        }
+                                    },
+                                    modifier = Modifier.width(110.dp).height(32.dp) // Largura reduzida para 110.dp
+                                )
+                            }
+                        }
                     }
                 }
 

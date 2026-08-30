@@ -50,18 +50,28 @@ fun MatchScreen(
     var showExitConfirmationDialog by remember { mutableStateOf(false) }
 
     Scaffold(
+        containerColor = Color.White,
         topBar = {
             TopAppBar(
                 title = {
-                    Text(
-                        text = when {
-                            uiState.isMatchFinished && !uiState.isDetalingActive -> "Placar"
-                            uiState.isSuperTieBreak -> "Placar (SUPER TIE-BREAK)"
-                            uiState.isTieBreak -> "Placar (TIE-BREAK)"
-                            else -> "Placar"
-                        },
-                        fontWeight = FontWeight.Bold,
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            painter = androidx.compose.ui.res.painterResource(id = com.tennis.matchscore.R.drawable.ic_app_logo_png),
+                            contentDescription = null,
+                            tint = Color.Unspecified,
+                            modifier = Modifier.size(32.dp)
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            text = when {
+                                uiState.isMatchFinished && !uiState.isDetalingActive -> "Placar"
+                                uiState.isSuperTieBreak -> "Placar (SUPER TIE-BREAK)"
+                                uiState.isTieBreak -> "Placar (TIE-BREAK)"
+                                else -> "Placar"
+                            },
+                            fontWeight = FontWeight.Bold,
+                        )
+                    }
                 },
                 navigationIcon = {
                     IconButton(

@@ -22,7 +22,7 @@ enum class CourtSurface(val displayName: String) {
 
 enum class ScoringMode(val displayName: String) {
     BASIC("Básica"),
-    INTERMEDIATE("Intermediária"),
+    INTERMEDIATE("Intermed."),
     ADVANCED("Avançada")
 }
 

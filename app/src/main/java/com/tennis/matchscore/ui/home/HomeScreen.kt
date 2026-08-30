@@ -29,6 +29,7 @@ fun HomeScreen(
     onNavigateToHistory: () -> Unit,
 ) {
     Scaffold(
+        containerColor = Color.White,
         topBar = {
             TopAppBar(
                 title = {
@@ -68,7 +69,7 @@ fun HomeScreen(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(100.dp)
+                    .height(130.dp) // Aumentado de 100.dp para 130.dp
                     .clickable { onNavigateToNewMatch() },
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
                 shape = RoundedCornerShape(16.dp)
