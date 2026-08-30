@@ -305,15 +305,17 @@ class MatchViewModel @Inject constructor(
         if (state.isMatchFinished) return
 
         val receiverId = if (state.currentServerId == state.player1Id) state.player2Id else state.player1Id
+        val eventType = if (state.serveState == ServeState.FIRST_SERVE) MatchEventType.FORCED_ERROR else MatchEventType.UNFORCED_ERROR
+        
         viewModelScope.launch {
             _uiState.update { it.copy(isDetalingActive = true) }
             runCatching {
-                val pointId = matchRepository.scorePoint(matchId, state.currentServerId, MatchEventType.UNFORCED_ERROR, isReturnEvent = true)
+                val pointId = matchRepository.scorePoint(matchId, state.currentServerId, eventType, isReturnEvent = true)
                 if (state.scoringMode == ScoringMode.ADVANCED) {
                     _uiState.update {
                         it.copy(
                             detailingPointId = pointId,
-                            detailingEventType = MatchEventType.UNFORCED_ERROR,
+                            detailingEventType = eventType,
                             winnerDetailingPlayerId = receiverId,
                             isReturnDetailing = true,
                             selectedWinnerPosition = null,

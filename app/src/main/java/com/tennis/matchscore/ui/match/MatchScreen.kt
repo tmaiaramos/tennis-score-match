@@ -21,6 +21,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.TextStyle
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.tennis.matchscore.domain.model.CourtPosition
 import com.tennis.matchscore.domain.model.HitHand
@@ -353,7 +354,10 @@ private fun IntermediateScoringControls(
 ) {
     val isP1Server = uiState.currentServerId == uiState.player1Id
     val isAdvanced = uiState.scoringMode == ScoringMode.ADVANCED
-    val lightBlue = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
+    
+    // Azul clareado baseado no Winner (Primary), mas menos vivo
+    val customBlue = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+    val discreteRed = Color(0xFFCF6679) // Vermelho mais discreto
 
     Column(modifier = Modifier.fillMaxSize()) {
         // Cabeçalhos dos Jogadores
@@ -478,8 +482,8 @@ private fun IntermediateScoringControls(
                             shape = RoundedCornerShape(12.dp), 
                             modifier = Modifier.fillMaxSize(),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = lightBlue,
-                                contentColor = MaterialTheme.colorScheme.primary
+                                containerColor = customBlue,
+                                contentColor = Color.White
                             )
                         ) {
                             Text(text = if (isFirst) "Falta" else "Dupla\nFalta", textAlign = TextAlign.Center, fontSize = 20.sp, fontWeight = FontWeight.Bold, lineHeight = 22.sp)
@@ -489,7 +493,7 @@ private fun IntermediateScoringControls(
                             onClick = onReturnErrorClick, 
                             shape = RoundedCornerShape(12.dp), 
                             modifier = Modifier.fillMaxSize(),
-                            colors = ButtonDefaults.buttonColors(containerColor = lightBlue, contentColor = MaterialTheme.colorScheme.primary)
+                            colors = ButtonDefaults.buttonColors(containerColor = customBlue, contentColor = Color.White)
                         ) {
                             Text("Erro\nDevolução", textAlign = TextAlign.Center, fontSize = 18.sp, fontWeight = FontWeight.Bold, lineHeight = 20.sp)
                         }
@@ -505,8 +509,8 @@ private fun IntermediateScoringControls(
                             shape = RoundedCornerShape(12.dp), 
                             modifier = Modifier.fillMaxSize(),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = lightBlue,
-                                contentColor = MaterialTheme.colorScheme.primary
+                                containerColor = customBlue,
+                                contentColor = Color.White
                             )
                         ) {
                             Text(text = if (isFirst) "Falta" else "Dupla\nFalta", textAlign = TextAlign.Center, fontSize = 20.sp, fontWeight = FontWeight.Bold, lineHeight = 22.sp)
@@ -516,7 +520,7 @@ private fun IntermediateScoringControls(
                             onClick = onReturnErrorClick, 
                             shape = RoundedCornerShape(12.dp), 
                             modifier = Modifier.fillMaxSize(),
-                            colors = ButtonDefaults.buttonColors(containerColor = lightBlue, contentColor = MaterialTheme.colorScheme.primary)
+                            colors = ButtonDefaults.buttonColors(containerColor = customBlue, contentColor = Color.White)
                         ) {
                             Text("Erro\nDevolução", textAlign = TextAlign.Center, fontSize = 18.sp, fontWeight = FontWeight.Bold, lineHeight = 20.sp)
                         }
@@ -548,7 +552,7 @@ private fun RallyScoringControls(
     onUnforcedErrorClick: (Long) -> Unit,
     onCancelClick: () -> Unit
 ) {
-    val lightBlue = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
+    val customBlue = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
     Column(modifier = Modifier.fillMaxSize()) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp),
@@ -580,7 +584,7 @@ private fun RallyScoringControls(
                     onClick = { onForcedErrorClick(uiState.player1Id) }, 
                     shape = RoundedCornerShape(12.dp), 
                     modifier = Modifier.weight(1f).fillMaxHeight(),
-                    colors = ButtonDefaults.buttonColors(containerColor = lightBlue, contentColor = MaterialTheme.colorScheme.primary)
+                    colors = ButtonDefaults.buttonColors(containerColor = customBlue, contentColor = Color.White)
                 ) {
                     Text(text = "Forced\nError", textAlign = TextAlign.Center, fontSize = 20.sp, fontWeight = FontWeight.Bold, lineHeight = 22.sp)
                 }
@@ -588,7 +592,7 @@ private fun RallyScoringControls(
                     onClick = { onForcedErrorClick(uiState.player2Id) }, 
                     shape = RoundedCornerShape(12.dp), 
                     modifier = Modifier.weight(1f).fillMaxHeight(),
-                    colors = ButtonDefaults.buttonColors(containerColor = lightBlue, contentColor = MaterialTheme.colorScheme.primary)
+                    colors = ButtonDefaults.buttonColors(containerColor = customBlue, contentColor = Color.White)
                 ) {
                     Text(text = "Forced\nError", textAlign = TextAlign.Center, fontSize = 20.sp, fontWeight = FontWeight.Bold, lineHeight = 22.sp)
                 }
@@ -599,17 +603,17 @@ private fun RallyScoringControls(
                     onClick = { onUnforcedErrorClick(uiState.player1Id) }, 
                     shape = RoundedCornerShape(12.dp), 
                     modifier = Modifier.weight(1f).fillMaxHeight(),
-                    colors = ButtonDefaults.buttonColors(containerColor = lightBlue, contentColor = MaterialTheme.colorScheme.primary)
+                    colors = ButtonDefaults.buttonColors(containerColor = customBlue, contentColor = Color.White)
                 ) {
-                    Text(text = "Unforced\nError", textAlign = TextAlign.Center, fontSize = 18.sp, fontWeight = FontWeight.Bold, lineHeight = 20.sp)
+                    Text(text = "Unforced\nError", textAlign = TextAlign.Center, fontSize = 20.sp, fontWeight = FontWeight.Bold, lineHeight = 22.sp)
                 }
                 Button(
                     onClick = { onUnforcedErrorClick(uiState.player2Id) }, 
                     shape = RoundedCornerShape(12.dp), 
                     modifier = Modifier.weight(1f).fillMaxHeight(),
-                    colors = ButtonDefaults.buttonColors(containerColor = lightBlue, contentColor = MaterialTheme.colorScheme.primary)
+                    colors = ButtonDefaults.buttonColors(containerColor = customBlue, contentColor = Color.White)
                 ) {
-                    Text(text = "Unforced\nError", textAlign = TextAlign.Center, fontSize = 18.sp, fontWeight = FontWeight.Bold, lineHeight = 20.sp)
+                    Text(text = "Unforced\nError", textAlign = TextAlign.Center, fontSize = 20.sp, fontWeight = FontWeight.Bold, lineHeight = 22.sp)
                 }
             }
 
@@ -642,7 +646,7 @@ private fun AdvancedWinnerDetailingControls(
         }
         
         Surface(
-            color = MaterialTheme.colorScheme.tertiaryContainer,
+            color = Color(0xFF90CAF9), // Azul Médio (Blue 200)
             shape = RoundedCornerShape(16.dp),
             modifier = Modifier.align(Alignment.CenterHorizontally).padding(bottom = 8.dp)
         ) {
@@ -651,18 +655,9 @@ private fun AdvancedWinnerDetailingControls(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
                 fontWeight = FontWeight.ExtraBold,
                 fontSize = 14.sp,
-                color = MaterialTheme.colorScheme.onTertiaryContainer
+                color = Color(0xFF0D47A1) // Azul Escuro
             )
         }
-
-        Text(
-            text = "Detalhamento do Ponto",
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier
-                .padding(bottom = 12.dp)
-                .align(Alignment.CenterHorizontally)
-        )
 
         Row(
             modifier = Modifier
@@ -671,6 +666,7 @@ private fun AdvancedWinnerDetailingControls(
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             if (isP1Winner) {
+                // Jogador 1 (Vencedor) na Esquerda
                 WinnerDetailingColumn(
                     modifier = Modifier.weight(1.2f),
                     playerName = formatPlayerName(uiState.player1Name),
@@ -682,6 +678,8 @@ private fun AdvancedWinnerDetailingControls(
                     onShotTypeSelected = onWinnerShotTypeSelected,
                     positionEnabled = positionEnabled
                 )
+
+                // Jogador 2 (Perdedor) na Direita
                 LoserDetailingColumn(
                     modifier = Modifier.weight(0.8f),
                     playerName = formatPlayerName(uiState.player2Name),
@@ -690,6 +688,7 @@ private fun AdvancedWinnerDetailingControls(
                     positionEnabled = positionEnabled
                 )
             } else {
+                // Jogador 1 (Perdedor) na Esquerda
                 LoserDetailingColumn(
                     modifier = Modifier.weight(0.8f),
                     playerName = formatPlayerName(uiState.player1Name),
@@ -697,6 +696,8 @@ private fun AdvancedWinnerDetailingControls(
                     onPositionSelected = onLoserPositionSelected,
                     positionEnabled = positionEnabled
                 )
+
+                // Jogador 2 (Vencedor) na Direita
                 WinnerDetailingColumn(
                     modifier = Modifier.weight(1.2f),
                     playerName = formatPlayerName(uiState.player2Name),
@@ -744,90 +745,117 @@ private fun WinnerDetailingColumn(
     onShotTypeSelected: (ShotType) -> Unit,
     positionEnabled: Boolean
 ) {
+    val customBlue = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
     Column(modifier = modifier) {
         Text(
             text = playerName,
             fontWeight = FontWeight.Bold,
             fontSize = 14.sp,
-            modifier = Modifier.padding(bottom = 4.dp)
+            modifier = Modifier.padding(bottom = 8.dp)
         )
 
         // Posicionamento
-        Text("Posição:", fontSize = 12.sp, fontWeight = FontWeight.Medium, color = if (positionEnabled) Color.Unspecified else Color.Gray)
+        Text("Posição:", fontSize = 12.sp, fontWeight = FontWeight.Normal, color = if (positionEnabled) Color.Unspecified else Color.Gray)
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             CourtPosition.entries.forEach { pos ->
                 val selected = selectedPosition == pos
-                OutlinedButton(
+                Button(
                     onClick = { onPositionSelected(pos) },
-                    modifier = Modifier.weight(1f).height(36.dp),
+                    modifier = Modifier.weight(1f).height(40.dp),
                     enabled = positionEnabled,
-                    shape = RoundedCornerShape(8.dp),
+                    shape = RoundedCornerShape(10.dp),
                     contentPadding = PaddingValues(0.dp),
-                    colors = if (selected) ButtonDefaults.outlinedButtonColors(containerColor = MaterialTheme.colorScheme.primaryContainer) else ButtonDefaults.outlinedButtonColors()
+                    colors = if (selected) ButtonDefaults.buttonColors(containerColor = customBlue, contentColor = Color.White) 
+                             else ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant, contentColor = MaterialTheme.colorScheme.onSurfaceVariant),
+                    elevation = null
                 ) {
-                    Text(pos.name.take(1) + pos.name.drop(1).lowercase(), fontSize = 10.sp)
+                    Text(
+                        text = pos.name.take(1) + pos.name.drop(1).lowercase(), 
+                        fontSize = 11.sp,
+                        style = TextStyle(letterSpacing = 0.9.sp)
+                    )
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
         // Lado do Golpe
-        Text("Lado:", fontSize = 12.sp, fontWeight = FontWeight.Medium)
+        Text("Lado:", fontSize = 12.sp, fontWeight = FontWeight.Normal)
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             HitHand.entries.forEach { hand ->
                 val selected = selectedHitHand == hand
-                OutlinedButton(
+                Button(
                     onClick = { onHitHandSelected(hand) },
-                    modifier = Modifier.weight(1f).height(36.dp),
-                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier.weight(1f).height(40.dp),
+                    shape = RoundedCornerShape(10.dp),
                     contentPadding = PaddingValues(0.dp),
-                    colors = if (selected) ButtonDefaults.outlinedButtonColors(containerColor = MaterialTheme.colorScheme.primaryContainer) else ButtonDefaults.outlinedButtonColors()
+                    colors = if (selected) ButtonDefaults.buttonColors(containerColor = customBlue, contentColor = Color.White) 
+                             else ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant, contentColor = MaterialTheme.colorScheme.onSurfaceVariant),
+                    elevation = null
                 ) {
-                    Text(hand.name.lowercase().capitalize(), fontSize = 10.sp)
+                    Text(
+                        text = hand.name.lowercase().capitalize(), 
+                        fontSize = 11.sp,
+                        style = TextStyle(letterSpacing = 0.9.sp)
+                    )
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
         // Tipo de Golpe
-        Text("Golpe:", fontSize = 12.sp, fontWeight = FontWeight.Medium)
-        val shots = ShotType.entries
-        val chunkedShots = shots.chunked(3)
+        Text("Golpe:", fontSize = 12.sp, fontWeight = FontWeight.Normal)
         
-        chunkedShots.forEach { row ->
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 4.dp),
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                row.forEach { type ->
-                    val selected = selectedShotType == type
-                    OutlinedButton(
-                        onClick = { onShotTypeSelected(type) },
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(36.dp),
-                        shape = RoundedCornerShape(8.dp),
-                        contentPadding = PaddingValues(0.dp),
-                        colors = if (selected) ButtonDefaults.outlinedButtonColors(containerColor = MaterialTheme.colorScheme.primaryContainer) else ButtonDefaults.outlinedButtonColors()
-                    ) {
-                        Text(
-                            text = type.name.lowercase().capitalize(),
-                            fontSize = 9.sp,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
-                }
-                // Preenchimento para manter alinhamento
-                if (row.size < 3) {
-                    repeat(3 - row.size) { Spacer(modifier = Modifier.weight(1f)) }
-                }
+        val row1 = listOf(ShotType.GROUND, ShotType.SLICE, ShotType.VOLLEY)
+        val row2 = listOf(ShotType.DROP, ShotType.LOB, ShotType.SMASH, ShotType.SWING)
+
+        // Primeira linha: 3 botões
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            row1.forEach { type ->
+                ShotTypeButton(type, selectedShotType == type, customBlue, onShotTypeSelected)
             }
         }
+
+        // Segunda linha: 4 botões
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            row2.forEach { type ->
+                ShotTypeButton(type, selectedShotType == type, customBlue, onShotTypeSelected)
+            }
+        }
+    }
+}
+
+@Composable
+private fun RowScope.ShotTypeButton(
+    type: ShotType,
+    selected: Boolean,
+    customBlue: Color,
+    onShotTypeSelected: (ShotType) -> Unit
+) {
+    Button(
+        onClick = { onShotTypeSelected(type) },
+        modifier = Modifier.weight(1f).height(40.dp),
+        shape = RoundedCornerShape(10.dp),
+        contentPadding = PaddingValues(0.dp),
+        colors = if (selected) ButtonDefaults.buttonColors(containerColor = customBlue, contentColor = Color.White) 
+                 else ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant, contentColor = MaterialTheme.colorScheme.onSurfaceVariant),
+        elevation = null
+    ) {
+        Text(
+            text = type.name.lowercase().capitalize(),
+            fontSize = 11.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            style = TextStyle(letterSpacing = 0.7.sp)
+        )
     }
 }
 
@@ -839,27 +867,34 @@ private fun LoserDetailingColumn(
     onPositionSelected: (CourtPosition) -> Unit,
     positionEnabled: Boolean
 ) {
+    val customBlue = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
     Column(modifier = modifier) {
         Text(
             text = playerName,
             fontWeight = FontWeight.Bold,
             fontSize = 14.sp,
-            modifier = Modifier.padding(bottom = 4.dp)
+            modifier = Modifier.padding(bottom = 8.dp)
         )
-        Text("Posição Oponente:", fontSize = 12.sp, fontWeight = FontWeight.Medium, color = if (positionEnabled) Color.Unspecified else Color.Gray)
+        Text("Posição Oponente:", fontSize = 12.sp, fontWeight = FontWeight.Normal, color = if (positionEnabled) Color.Unspecified else Color.Gray)
         CourtPosition.entries.forEach { pos ->
             val selected = selectedPosition == pos
-            OutlinedButton(
+            Button(
                 onClick = { onPositionSelected(pos) },
                 enabled = positionEnabled,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 4.dp)
-                    .height(36.dp),
-                shape = RoundedCornerShape(8.dp),
-                colors = if (selected) ButtonDefaults.outlinedButtonColors(containerColor = MaterialTheme.colorScheme.secondaryContainer) else ButtonDefaults.outlinedButtonColors()
+                    .height(38.dp),
+                shape = RoundedCornerShape(10.dp),
+                colors = if (selected) ButtonDefaults.buttonColors(containerColor = customBlue, contentColor = Color.White) 
+                         else ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant, contentColor = MaterialTheme.colorScheme.onSurfaceVariant),
+                elevation = null
             ) {
-                Text(pos.name.lowercase().capitalize(), fontSize = 10.sp)
+                Text(
+                    text = pos.name.lowercase().capitalize(), 
+                    fontSize = 11.sp,
+                    style = TextStyle(letterSpacing = 0.8.sp)
+                )
             }
         }
     }
@@ -867,6 +902,10 @@ private fun LoserDetailingColumn(
 
 @Composable
 private fun ScoreBoardCard(uiState: MatchUiState) {
+    val showGames = !uiState.isMatchFinished && 
+        !(uiState.isDetalingActive && uiState.completedSets.isNotEmpty() && 
+          uiState.completedSets.last().let { it.player1Games == uiState.player1Games && it.player2Games == uiState.player2Games })
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
@@ -879,21 +918,27 @@ private fun ScoreBoardCard(uiState: MatchUiState) {
                 uiState.completedSets.forEach { completedSet ->
                     Text(text = "S${completedSet.setNumber}", modifier = Modifier.weight(1f), textAlign = TextAlign.Center, fontWeight = FontWeight.Bold)
                 }
-                if (!uiState.isMatchFinished || uiState.isDetalingActive) {
+                
+                // Só mostra coluna de Games se necessário
+                if (showGames) {
                     Text(text = "G", modifier = Modifier.weight(0.8f), textAlign = TextAlign.Center, fontWeight = FontWeight.Bold)
+                }
+                
+                // Pts continua visível
+                if (!uiState.isMatchFinished || uiState.isDetalingActive) {
                     Text(text = "Pts", modifier = Modifier.weight(1.2f), textAlign = TextAlign.Center, fontWeight = FontWeight.Bold)
                 }
             }
             Spacer(modifier = Modifier.height(12.dp))
-            PlayerScoreRow(formatPlayerName(uiState.player1Name), uiState.player1Id, uiState.completedSets, uiState.player1Games, uiState.player1Score, uiState.currentServerId == uiState.player1Id, true, uiState.isMatchFinished && !uiState.isDetalingActive)
+            PlayerScoreRow(formatPlayerName(uiState.player1Name), uiState.player1Id, uiState.completedSets, uiState.player1Games, uiState.player1Score, uiState.currentServerId == uiState.player1Id, true, uiState.isMatchFinished, uiState.isDetalingActive, showGames)
             Spacer(modifier = Modifier.height(8.dp))
-            PlayerScoreRow(formatPlayerName(uiState.player2Name), uiState.player2Id, uiState.completedSets, uiState.player2Games, uiState.player2Score, uiState.currentServerId == uiState.player2Id, false, uiState.isMatchFinished && !uiState.isDetalingActive)
+            PlayerScoreRow(formatPlayerName(uiState.player2Name), uiState.player2Id, uiState.completedSets, uiState.player2Games, uiState.player2Score, uiState.currentServerId == uiState.player2Id, false, uiState.isMatchFinished, uiState.isDetalingActive, showGames)
         }
     }
 }
 
 @Composable
-private fun PlayerScoreRow(playerName: String, playerId: Long, completedSets: List<CompletedSetUiState>, currentGames: Int, points: String, isServing: Boolean, isPlayer1: Boolean, isMatchFinished: Boolean) {
+private fun PlayerScoreRow(playerName: String, playerId: Long, completedSets: List<CompletedSetUiState>, currentGames: Int, points: String, isServing: Boolean, isPlayer1: Boolean, isMatchFinished: Boolean, isDetaling: Boolean, showGames: Boolean) {
     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Row(modifier = Modifier.weight(2.5f), verticalAlignment = Alignment.CenterVertically) {
             Text(text = playerName, fontSize = 15.sp, fontWeight = if (isServing && !isMatchFinished) FontWeight.Bold else FontWeight.Normal, maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -914,8 +959,14 @@ private fun PlayerScoreRow(playerName: String, playerId: Long, completedSets: Li
                 }
             }
         }
-        if (!isMatchFinished) {
+        
+        // Coluna Games - Escondida se finalizada ou redundante
+        if (showGames) {
             Text(text = currentGames.toString(), modifier = Modifier.weight(0.8f), textAlign = TextAlign.Center, fontSize = 16.sp)
+        }
+
+        // Coluna Pontos
+        if (!isMatchFinished || isDetaling) {
             Box(modifier = Modifier.weight(1.2f).background(MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(4.dp)).padding(vertical = 4.dp), contentAlignment = Alignment.Center) {
                 Text(text = points, color = MaterialTheme.colorScheme.onPrimary, fontWeight = FontWeight.Bold, fontSize = 16.sp)
             }

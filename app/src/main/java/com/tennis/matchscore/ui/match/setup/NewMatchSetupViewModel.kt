@@ -16,8 +16,8 @@ import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
 enum class CourtSurface(val displayName: String) {
-    CLAY("Saibro"),
-    HARD("Rápida")
+    HARD("Rápida"),
+    CLAY("Saibro")
 }
 
 enum class ScoringMode(val displayName: String) {
@@ -33,8 +33,8 @@ data class NewMatchSetupUiState(
     val player2: PlayerEntity? = null,
     val selectedFormat: MatchFormatEntity? = null,
     val initialServer: Int = 1, // 1 para Player 1, 2 para Player 2
-    val surface: CourtSurface = CourtSurface.CLAY,
-    val scoringMode: ScoringMode = ScoringMode.BASIC,
+    val surface: CourtSurface = CourtSurface.HARD,
+    val scoringMode: ScoringMode = ScoringMode.ADVANCED,
     val isLoading: Boolean = true
 ) {
     val isValid: Boolean
