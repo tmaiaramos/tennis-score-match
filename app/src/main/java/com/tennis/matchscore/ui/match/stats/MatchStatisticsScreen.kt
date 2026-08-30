@@ -111,8 +111,8 @@ fun MatchStatisticsScreen(
 @Composable
 private fun StatisticsContent(stats: MatchStats, tabIndex: Int) {
     LazyColumn(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp) // Reduzido de 8.dp
     ) {
         when (tabIndex) {
             0 -> essentialTab(stats)
@@ -132,14 +132,14 @@ private fun androidx.compose.foundation.lazy.LazyListScope.essentialTab(stats: M
     item { StatRow("Total points won", formatVal(stats.p1.totalPointsWon), formatVal(stats.p2.totalPointsWon)) }
     item { 
         ComplexStatRow(
-            label = "Winners (BH/FH)",
+            label = "Winners",
             p1Total = stats.p1.winnersBH + stats.p1.winnersFH, p1BH = stats.p1.winnersBH, p1FH = stats.p1.winnersFH,
             p2Total = stats.p2.winnersBH + stats.p2.winnersFH, p2BH = stats.p2.winnersBH, p2FH = stats.p2.winnersFH
         )
     }
     item { 
         ComplexStatRow(
-            label = "Unforced Errors (BH/FH)",
+            label = "Unforced Errors",
             p1Total = stats.p1.unforcedErrorsBH + stats.p1.unforcedErrorsFH, p1BH = stats.p1.unforcedErrorsBH, p1FH = stats.p1.unforcedErrorsFH,
             p2Total = stats.p2.unforcedErrorsBH + stats.p2.unforcedErrorsFH, p2BH = stats.p2.unforcedErrorsBH, p2FH = stats.p2.unforcedErrorsFH
         )
@@ -165,14 +165,14 @@ private fun androidx.compose.foundation.lazy.LazyListScope.detailedTab(stats: Ma
     item { GroupHeader("2 - Return", stats) }
     item { 
         ComplexStatRow(
-            label = "Return errors (BH/FH)",
+            label = "Return errors",
             p1Total = stats.p1.returnErrorsBH + stats.p1.returnErrorsFH, p1BH = stats.p1.returnErrorsBH, p1FH = stats.p1.returnErrorsFH,
             p2Total = stats.p2.returnErrorsBH + stats.p2.returnErrorsFH, p2BH = stats.p2.returnErrorsBH, p2FH = stats.p2.returnErrorsFH
         )
     }
     item { 
         ComplexStatRow(
-            label = "Return winners (BH/FH)",
+            label = "Return winners",
             p1Total = stats.p1.returnWinnersBH + stats.p1.returnWinnersFH, p1BH = stats.p1.returnWinnersBH, p1FH = stats.p1.returnWinnersFH,
             p2Total = stats.p2.returnWinnersBH + stats.p2.returnWinnersFH, p2BH = stats.p2.returnWinnersBH, p2FH = stats.p2.returnWinnersFH
         )
@@ -184,21 +184,21 @@ private fun androidx.compose.foundation.lazy.LazyListScope.detailedTab(stats: Ma
     item { StatRow("Total points won", formatVal(stats.p1.totalPointsWon), formatVal(stats.p2.totalPointsWon)) }
     item { 
         ComplexStatRow(
-            label = "Winners (BH/FH)",
+            label = "Winners",
             p1Total = stats.p1.winnersBH + stats.p1.winnersFH, p1BH = stats.p1.winnersBH, p1FH = stats.p1.winnersFH,
             p2Total = stats.p2.winnersBH + stats.p2.winnersFH, p2BH = stats.p2.winnersBH, p2FH = stats.p2.winnersFH
         )
     }
     item { 
         ComplexStatRow(
-            label = "Unforced Errors (BH/FH)",
+            label = "Unforced Errors",
             p1Total = stats.p1.unforcedErrorsBH + stats.p1.unforcedErrorsFH, p1BH = stats.p1.unforcedErrorsBH, p1FH = stats.p1.unforcedErrorsFH,
             p2Total = stats.p2.unforcedErrorsBH + stats.p2.unforcedErrorsFH, p2BH = stats.p2.unforcedErrorsBH, p2FH = stats.p2.unforcedErrorsFH
         )
     }
     item { 
         ComplexStatRow(
-            label = "Forced Errors (BH/FH)",
+            label = "Forced Errors",
             p1Total = stats.p1.forcedErrorsBH + stats.p1.forcedErrorsFH, p1BH = stats.p1.forcedErrorsBH, p1FH = stats.p1.forcedErrorsFH,
             p2Total = stats.p2.forcedErrorsBH + stats.p2.forcedErrorsFH, p2BH = stats.p2.forcedErrorsBH, p2FH = stats.p2.forcedErrorsFH
         )
@@ -231,21 +231,21 @@ private fun androidx.compose.foundation.lazy.LazyListScope.byShotTab(stats: Matc
         val s2 = stats.p2.shotStats[type] ?: ShotTypeStats()
         item { 
             ComplexStatRow(
-                label = "Winners (BH/FH)",
+                label = "Winners",
                 p1Total = s1.winnersBH + s1.winnersFH, p1BH = s1.winnersBH, p1FH = s1.winnersFH,
                 p2Total = s2.winnersBH + s2.winnersFH, p2BH = s2.winnersBH, p2FH = s2.winnersFH
             )
         }
         item { 
             ComplexStatRow(
-                label = "Forced Errors (BH/FH)",
+                label = "Forced Errors",
                 p1Total = s1.forcedErrorsBH + s1.forcedErrorsFH, p1BH = s1.forcedErrorsBH, p1FH = s1.forcedErrorsFH,
                 p2Total = s2.forcedErrorsBH + s2.forcedErrorsFH, p2BH = s2.forcedErrorsBH, p2FH = s2.forcedErrorsFH
             )
         }
         item { 
             ComplexStatRow(
-                label = "Unforced Errors (BH/FH)",
+                label = "Unforced Errors",
                 p1Total = s1.unforcedErrorsBH + s1.unforcedErrorsFH, p1BH = s1.unforcedErrorsBH, p1FH = s1.unforcedErrorsFH,
                 p2Total = s2.unforcedErrorsBH + s2.unforcedErrorsFH, p2BH = s2.unforcedErrorsBH, p2FH = s2.unforcedErrorsFH
             )
@@ -302,10 +302,10 @@ private fun GroupHeader(title: String, stats: MatchStats) {
     Surface(
         color = MaterialTheme.colorScheme.primaryContainer,
         shape = RoundedCornerShape(4.dp),
-        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+        modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
@@ -337,18 +337,27 @@ private fun GroupHeader(title: String, stats: MatchStats) {
 
 @Composable
 private fun StatRow(label: String, v1: String, v2: String) {
-    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp), verticalAlignment = Alignment.CenterVertically) {
         Text(text = label, modifier = Modifier.weight(1.2f), fontSize = 13.sp, fontWeight = FontWeight.Medium)
         Text(text = v1, modifier = Modifier.weight(1f), textAlign = TextAlign.Center, fontSize = 14.sp)
         Text(text = v2, modifier = Modifier.weight(1f), textAlign = TextAlign.Center, fontSize = 14.sp)
     }
-    HorizontalDivider(thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+    HorizontalDivider(thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
 }
 
 @Composable
 private fun ComplexStatRow(label: String, p1Total: Int, p1BH: Int, p1FH: Int, p2Total: Int, p2BH: Int, p2FH: Int) {
-    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-        Text(text = label, modifier = Modifier.weight(1.2f), fontSize = 13.sp, fontWeight = FontWeight.Medium)
+    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 1.dp), verticalAlignment = Alignment.CenterVertically) {
+        Column(modifier = Modifier.weight(1.2f)) {
+            Text(text = label, fontSize = 13.sp, fontWeight = FontWeight.Medium, lineHeight = 14.sp)
+            Text(
+                text = "BH   FH",
+                fontSize = 7.sp, // Ainda menor
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
+                fontWeight = FontWeight.Bold,
+                lineHeight = 8.sp
+            )
+        }
         Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
             ComplexStatCell(total = p1Total, bh = p1BH, fh = p1FH)
         }
@@ -356,7 +365,7 @@ private fun ComplexStatRow(label: String, p1Total: Int, p1BH: Int, p1FH: Int, p2
             ComplexStatCell(total = p2Total, bh = p2BH, fh = p2FH)
         }
     }
-    HorizontalDivider(thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+    HorizontalDivider(thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
 }
 
 @Composable
@@ -369,23 +378,23 @@ private fun ComplexStatCell(total: Int, bh: Int, fh: Int) {
         // Lado Esquerdo (Backhand)
         Text(
             text = formatVal(bh),
-            fontSize = 9.sp,
+            fontSize = 8.sp, 
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(end = 2.dp)
+            modifier = Modifier.padding(bottom = 0.dp)
         )
-        // Total (Centralizado e mais alto)
+        // Total (Elevado)
         Text(
             text = total.toString(),
-            fontSize = 15.sp,
+            fontSize = 14.sp,
             fontWeight = FontWeight.Normal,
-            modifier = Modifier.padding(bottom = 4.dp)
+            modifier = Modifier.padding(bottom = 3.5.dp, start = 0.5.dp, end = 0.5.dp) // Corrigido padding
         )
         // Lado Direito (Forehand)
         Text(
             text = formatVal(fh),
-            fontSize = 9.sp,
+            fontSize = 8.sp, 
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(start = 2.dp)
+            modifier = Modifier.padding(bottom = 0.dp)
         )
     }
 }
