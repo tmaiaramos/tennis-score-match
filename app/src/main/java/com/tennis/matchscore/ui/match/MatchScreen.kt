@@ -392,7 +392,7 @@ private fun IntermediateScoringControls(
                     val isSecondServe = uiState.serveState == ServeState.SECOND_SERVE
                     val label = if (isSecondServe) "2º Saque" else "1º Saque"
                     Surface(
-                        color = if (isSecondServe) Color(0xFFCF6679) else MaterialTheme.colorScheme.primary,
+                        color = if (isSecondServe) Color(0xFF2196F3) else MaterialTheme.colorScheme.primary, // Azul para 2º saque
                         shape = RoundedCornerShape(4.dp),
                         modifier = Modifier.padding(top = 2.dp)
                     ) {
@@ -424,7 +424,7 @@ private fun IntermediateScoringControls(
                     val isSecondServe = uiState.serveState == ServeState.SECOND_SERVE
                     val label = if (isSecondServe) "2º Saque" else "1º Saque"
                     Surface(
-                        color = if (isSecondServe) Color(0xFFCF6679) else MaterialTheme.colorScheme.primary,
+                        color = if (isSecondServe) Color(0xFF2196F3) else MaterialTheme.colorScheme.primary, // Azul para 2º saque
                         shape = RoundedCornerShape(4.dp),
                         modifier = Modifier.padding(top = 2.dp)
                     ) {
@@ -542,11 +542,15 @@ private fun IntermediateScoringControls(
             Button(
                 onClick = onBallInPlayClick,
                 shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                ),
+                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.5f)),
                 modifier = Modifier.fillMaxWidth().weight(1f).padding(vertical = 4.dp)
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    TennisBallIcon(size = 16.dp, modifier = Modifier.padding(end = 8.dp))
+                    TennisBallIcon(size = 16.dp, modifier = Modifier.padding(end = 8.dp), ballColor = MaterialTheme.colorScheme.onPrimaryContainer)
                     Text("Bola em Jogo", fontSize = 20.sp, fontWeight = FontWeight.Bold)
                 }
             }
@@ -656,7 +660,7 @@ private fun AdvancedWinnerDetailingControls(
         }
         
         Surface(
-            color = Color(0xFF90CAF9), // Azul Médio (Blue 200)
+            color = MaterialTheme.colorScheme.primaryContainer, // Laranja Claro
             shape = RoundedCornerShape(16.dp),
             modifier = Modifier.align(Alignment.CenterHorizontally).padding(bottom = 8.dp)
         ) {
@@ -665,7 +669,7 @@ private fun AdvancedWinnerDetailingControls(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
                 fontWeight = FontWeight.ExtraBold,
                 fontSize = 14.sp,
-                color = Color(0xFF0D47A1) // Azul Escuro
+                color = MaterialTheme.colorScheme.onPrimaryContainer // Laranja Escuro
             )
         }
 
@@ -929,9 +933,10 @@ private fun ScoreBoardCard(uiState: MatchUiState) {
                     Text(text = "S${completedSet.setNumber}", modifier = Modifier.weight(1f), textAlign = TextAlign.Center, fontWeight = FontWeight.Bold)
                 }
                 
-                // Só mostra coluna de Games se necessário
+                // Sempre mostra Games (S_atual) se não estiver finalizada
                 if (showGames) {
-                    Text(text = "G", modifier = Modifier.weight(0.8f), textAlign = TextAlign.Center, fontWeight = FontWeight.Bold)
+                    val currentSetNum = uiState.completedSets.size + 1
+                    Text(text = "S$currentSetNum", modifier = Modifier.weight(0.8f), textAlign = TextAlign.Center, fontWeight = FontWeight.Bold)
                 }
                 
                 // Pts continua visível
@@ -985,13 +990,13 @@ private fun PlayerScoreRow(playerName: String, playerId: Long, completedSets: Li
 }
 
 @Composable
-fun TennisBallIcon(size: Dp = 16.dp, modifier: Modifier = Modifier) {
+fun TennisBallIcon(size: Dp = 16.dp, modifier: Modifier = Modifier, ballColor: Color = Color(0xFFCCFF00)) {
     Canvas(modifier = modifier.size(size)) {
         val radius = this.size.minDimension / 2f
         val center = this.center
-        drawCircle(color = Color(0xFFCCFF00), radius = radius)
+        drawCircle(color = ballColor, radius = radius)
         val strokeWidth = radius * 0.18f
-        val linePaint = Color.White
+        val linePaint = if (ballColor == Color(0xFFCCFF00)) Color.White else Color.White.copy(alpha = 0.8f)
         val leftPath = Path().apply { moveTo(center.x - radius * 0.3f, center.y - radius * 0.95f); quadraticTo(center.x - radius * 0.95f, center.y, center.x - radius * 0.3f, center.y + radius * 0.95f) }
         drawPath(path = leftPath, color = linePaint, style = Stroke(width = strokeWidth))
         val rightPath = Path().apply { moveTo(center.x + radius * 0.3f, center.y - radius * 0.95f); quadraticTo(center.x + radius * 0.95f, center.y, center.x + radius * 0.3f, center.y + radius * 0.95f) }

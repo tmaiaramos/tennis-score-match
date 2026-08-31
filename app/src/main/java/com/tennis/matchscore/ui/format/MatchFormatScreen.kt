@@ -1,7 +1,11 @@
 package com.tennis.matchscore.ui.format
 
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -155,7 +159,7 @@ private fun FormatItemCard(
             Column(modifier = Modifier.weight(1f)) {
                 Text(text = format.name, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                 Text(
-                    text = "${format.numberOfSets} sets, ${format.gamesPerSet} games por set",
+                    text = "${format.numberOfSets} sets, ${format.gamesPerSet} games por set (TB in ${format.tieBreakAt})",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.secondary
                 )
@@ -171,7 +175,7 @@ private fun FormatItemCard(
                     Icon(Icons.Default.Edit, contentDescription = "Editar", tint = MaterialTheme.colorScheme.primary)
                 }
                 IconButton(onClick = onDeleteClick) {
-                    Icon(Icons.Default.Delete, contentDescription = "Excluir", tint = MaterialTheme.colorScheme.error)
+                    Icon(Icons.Default.Delete, contentDescription = "Excluir", tint = Color(0xFF1A237E))
                 }
             }
         }
@@ -193,13 +197,25 @@ private fun FormatFormDialog(
     var hasSuperTieBreak by remember { mutableStateOf(format?.hasSuperTieBreakInFinalSet ?: true) }
     var superTieBreakPoints by remember { mutableIntStateOf(format?.superTieBreakPoints ?: 10) }
 
+    val tbListState = rememberLazyListState()
+    val tbOptions = (2..10).toList()
+
+    LaunchedEffect(format) {
+        format?.let {
+            val index = tbOptions.indexOf(it.tieBreakAt)
+            if (index >= 0) {
+                tbListState.scrollToItem(index)
+            }
+        }
+    }
+
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(if (format == null) "Novo Formato" else "Editar Formato") },
         text = {
             Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 OutlinedTextField(
                     value = name,
@@ -208,29 +224,68 @@ private fun FormatFormDialog(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("Sets:", modifier = Modifier.weight(1f))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        RadioButton(selected = numSets == 1, onClick = { numSets = 1 })
-                        Text("1", modifier = Modifier.padding(end = 8.dp))
-                        RadioButton(selected = numSets == 3, onClick = { numSets = 3 })
-                        Text("3", modifier = Modifier.padding(end = 8.dp))
-                        RadioButton(selected = numSets == 5, onClick = { numSets = 5 })
-                        Text("5")
+                Text("Número de Sets", style = MaterialTheme.typography.labelMedium)
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
+                    listOf(1, 3, 5).forEach { n ->
+                        FilterChip(
+                            selected = numSets == n,
+                            onClick = { numSets = n },
+                            label = { Text(n.toString(), modifier = Modifier.padding(horizontal = 8.dp)) },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                selectedLabelColor = Color.White
+                            )
+                        )
+                        if (n != 5) Spacer(modifier = Modifier.width(8.dp))
                     }
                 }
 
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("Games/Set:", modifier = Modifier.weight(1f))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        RadioButton(selected = gamesPerSet == 4, onClick = { gamesPerSet = 4; tieBreakAt = 3 })
-                        Text("4", modifier = Modifier.padding(end = 8.dp))
-                        RadioButton(selected = gamesPerSet == 6, onClick = { gamesPerSet = 6; tieBreakAt = 6 })
-                        Text("6", modifier = Modifier.padding(end = 8.dp))
-                        RadioButton(selected = gamesPerSet == 8, onClick = { gamesPerSet = 8; tieBreakAt = 8 })
-                        Text("8")
+                Text("Games por Set", style = MaterialTheme.typography.labelMedium)
+                LazyRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Start,
+                    contentPadding = PaddingValues(end = 16.dp)
+                ) {
+                    val gameOptions = listOf(4, 6, 8, 10)
+                    items(gameOptions) { g ->
+                        FilterChip(
+                            selected = gamesPerSet == g,
+                            onClick = { 
+                                gamesPerSet = g
+                                tieBreakAt = if (g == 4) 3 else g
+                            },
+                            label = { Text(g.toString()) },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                selectedLabelColor = Color.White
+                            ),
+                            modifier = Modifier.padding(end = 8.dp)
+                        )
                     }
                 }
+
+                Text("Tie-Break em:", style = MaterialTheme.typography.labelMedium)
+                LazyRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    state = tbListState,
+                    horizontalArrangement = Arrangement.Start,
+                    contentPadding = PaddingValues(end = 16.dp)
+                ) {
+                    items(tbOptions) { t ->
+                        FilterChip(
+                            selected = tieBreakAt == t,
+                            onClick = { tieBreakAt = t },
+                            label = { Text("$t x $t") },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                selectedLabelColor = Color.White
+                            ),
+                            modifier = Modifier.padding(end = 8.dp)
+                        )
+                    }
+                }
+                
+                HorizontalDivider()
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Checkbox(checked = hasAdvantage, onCheckedChange = { hasAdvantage = it })
@@ -247,7 +302,8 @@ private fun FormatFormDialog(
                         value = superTieBreakPoints.toString(),
                         onValueChange = { superTieBreakPoints = it.toIntOrNull() ?: 10 },
                         label = { Text("Pontos Super Tie-Break") },
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number)
                     )
                 }
             }

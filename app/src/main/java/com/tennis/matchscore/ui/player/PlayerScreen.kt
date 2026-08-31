@@ -205,7 +205,7 @@ private fun PlayerItemCard(
                 Icon(
                     imageVector = Icons.Default.Delete,
                     contentDescription = "Excluir",
-                    tint = MaterialTheme.colorScheme.error
+                    tint = Color(0xFF1A237E) // Azul Marinho Profundo
                 )
             }
         }

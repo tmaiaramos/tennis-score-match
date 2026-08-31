@@ -112,7 +112,7 @@ fun MatchStatisticsScreen(
 private fun StatisticsContent(stats: MatchStats, tabIndex: Int) {
     LazyColumn(
         modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp) // Reduzido de 8.dp
+        verticalArrangement = Arrangement.spacedBy(2.dp) // Reduzido de 4.dp
     ) {
         when (tabIndex) {
             0 -> essentialTab(stats)
@@ -302,10 +302,10 @@ private fun GroupHeader(title: String, stats: MatchStats) {
     Surface(
         color = MaterialTheme.colorScheme.primaryContainer,
         shape = RoundedCornerShape(4.dp),
-        modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)
+        modifier = Modifier.fillMaxWidth().padding(vertical = 1.dp)
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
@@ -337,25 +337,26 @@ private fun GroupHeader(title: String, stats: MatchStats) {
 
 @Composable
 private fun StatRow(label: String, v1: String, v2: String) {
-    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp), verticalAlignment = Alignment.CenterVertically) {
+    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
         Text(text = label, modifier = Modifier.weight(1.2f), fontSize = 13.sp, fontWeight = FontWeight.Medium)
         Text(text = v1, modifier = Modifier.weight(1f), textAlign = TextAlign.Center, fontSize = 14.sp)
         Text(text = v2, modifier = Modifier.weight(1f), textAlign = TextAlign.Center, fontSize = 14.sp)
     }
-    HorizontalDivider(thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
+    HorizontalDivider(thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
 }
 
 @Composable
 private fun ComplexStatRow(label: String, p1Total: Int, p1BH: Int, p1FH: Int, p2Total: Int, p2BH: Int, p2FH: Int) {
-    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 1.dp), verticalAlignment = Alignment.CenterVertically) {
+    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 5.dp), verticalAlignment = Alignment.CenterVertically) {
         Column(modifier = Modifier.weight(1.2f)) {
-            Text(text = label, fontSize = 13.sp, fontWeight = FontWeight.Medium, lineHeight = 14.sp)
+            Text(text = label, fontSize = 13.sp, fontWeight = FontWeight.Medium, lineHeight = 12.sp)
+            Spacer(modifier = Modifier.height(2.dp)) // Afasta as letras BH e FH
             Text(
                 text = "BH   FH",
-                fontSize = 7.sp, // Ainda menor
+                fontSize = 9.sp, // Aumentado
                 color = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
                 fontWeight = FontWeight.Bold,
-                lineHeight = 8.sp
+                lineHeight = 9.sp
             )
         }
         Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
@@ -365,7 +366,7 @@ private fun ComplexStatRow(label: String, p1Total: Int, p1BH: Int, p1FH: Int, p2
             ComplexStatCell(total = p2Total, bh = p2BH, fh = p2FH)
         }
     }
-    HorizontalDivider(thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
+    HorizontalDivider(thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
 }
 
 @Composable
@@ -378,7 +379,7 @@ private fun ComplexStatCell(total: Int, bh: Int, fh: Int) {
         // Lado Esquerdo (Backhand)
         Text(
             text = formatVal(bh),
-            fontSize = 8.sp, 
+            fontSize = 12.sp, // Aumentado
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 0.dp)
         )
@@ -387,12 +388,12 @@ private fun ComplexStatCell(total: Int, bh: Int, fh: Int) {
             text = total.toString(),
             fontSize = 14.sp,
             fontWeight = FontWeight.Normal,
-            modifier = Modifier.padding(bottom = 3.5.dp, start = 0.5.dp, end = 0.5.dp) // Corrigido padding
+            modifier = Modifier.padding(bottom = 5.5.dp, start = 3.dp, end = 3.dp) // Mais alto e mais afastado
         )
         // Lado Direito (Forehand)
         Text(
             text = formatVal(fh),
-            fontSize = 8.sp, 
+            fontSize = 12.sp, // Aumentado
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 0.dp)
         )

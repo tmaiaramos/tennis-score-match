@@ -208,24 +208,30 @@ class MatchRepositoryImpl @Inject constructor(
         matchDao.updatePointHistory(updatedPoint)
     }
 
-    private fun mapToEngineState(match: MatchEntity) = MatchScoreState(
-        currentSet = match.currentSet,
-        player1GamesCurrentSet = match.player1GamesCurrentSet,
-        player2GamesCurrentSet = match.player2GamesCurrentSet,
-        player1PointsCurrentGame = match.player1PointsCurrentGame,
-        player2PointsCurrentGame = match.player2PointsCurrentGame,
-        player1SetsWon = match.player1SetsWon,
-        player2SetsWon = match.player2SetsWon,
-        currentServerId = match.currentServerId,
-        player1Id = match.player1Id,
-        player2Id = match.player2Id,
-        serveState = match.serveState,
-        isTieBreak = match.isTieBreak,
-        isSuperTieBreak = match.isSuperTieBreak,
-        isFinished = match.status == MatchStatus.FINISHED,
-        winnerId = match.winnerId,
-        completedSetScores = emptyList()
-    )
+    private suspend fun mapToEngineState(match: MatchEntity): MatchScoreState {
+        val completedSetScores = matchDao.getSetScoresForMatchSync(match.id)
+            .sortedBy { it.setNumber }
+            .map { it.player1Games to it.player2Games }
+
+        return MatchScoreState(
+            currentSet = match.currentSet,
+            player1GamesCurrentSet = match.player1GamesCurrentSet,
+            player2GamesCurrentSet = match.player2GamesCurrentSet,
+            player1PointsCurrentGame = match.player1PointsCurrentGame,
+            player2PointsCurrentGame = match.player2PointsCurrentGame,
+            player1SetsWon = match.player1SetsWon,
+            player2SetsWon = match.player2SetsWon,
+            currentServerId = match.currentServerId,
+            player1Id = match.player1Id,
+            player2Id = match.player2Id,
+            serveState = match.serveState,
+            isTieBreak = match.isTieBreak,
+            isSuperTieBreak = match.isSuperTieBreak,
+            isFinished = match.status == MatchStatus.FINISHED,
+            winnerId = match.winnerId,
+            completedSetScores = completedSetScores
+        )
+    }
 
     override suspend fun undoLastPoint(matchId: Long): Boolean {
         val lastPoint = matchDao.getLastPoint(matchId) ?: return false

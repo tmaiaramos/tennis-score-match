@@ -1,5 +1,7 @@
 package com.tennis.matchscore.ui.history
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -17,6 +19,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.tennis.matchscore.R
 import com.tennis.matchscore.data.local.relation.MatchWithDetails
@@ -124,9 +128,12 @@ private fun MatchHistoryCard(
 ) {
     val dateFormatter = remember { SimpleDateFormat("dd/MM/yyyy HH:mm", Locale("pt", "BR")) }
     val dateStr = dateFormatter.format(Date(match.match.createdAt))
+    val isInProgress = match.match.status == com.tennis.matchscore.domain.model.MatchStatus.IN_PROGRESS
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
     ) {
@@ -137,15 +144,79 @@ private fun MatchHistoryCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(text = dateStr, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text(
-                    text = match.match.courtType.displayName,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Bold
-                )
+                
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (isInProgress) {
+                        Surface(
+                            color = MaterialTheme.colorScheme.tertiaryContainer,
+                            shape = RoundedCornerShape(4.dp),
+                            modifier = Modifier.padding(end = 8.dp)
+                        ) {
+                            Text(
+                                text = "EM ANDAMENTO",
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onTertiaryContainer,
+                                modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+                            )
+                        }
+                    }
+                    Text(
+                        text = match.match.courtType.displayName,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(12.dp))
+
+            // Cabeçalho do Placar (Labels S1, S2, G, Pts)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Spacer(modifier = Modifier.weight(1f))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    match.sets.sortedBy { it.setNumber }.forEach { set ->
+                        Text(
+                            text = "S${set.setNumber}",
+                            modifier = Modifier.width(32.dp),
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    if (isInProgress) {
+                        val currentSetNum = match.sets.size + 1
+                        Text(
+                            text = "S$currentSetNum",
+                            modifier = Modifier.width(32.dp),
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Pts",
+                            modifier = Modifier.width(32.dp),
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.width(32.dp)) // Espaço do Troféu
+            }
+
+            Spacer(modifier = Modifier.height(10.dp)) // Espaçamento vertical entre cabeçalho e números
 
             // Linha Jogador 1
             Row(
@@ -156,13 +227,40 @@ private fun MatchHistoryCard(
                     text = "${match.player1.firstName} ${match.player1.lastName}",
                     modifier = Modifier.weight(1f),
                     fontWeight = if (match.match.winnerId == match.player1.id) FontWeight.Bold else FontWeight.Normal,
-                    fontSize = 16.sp,
+                    fontSize = 15.sp,
                     maxLines = 1,
-                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis
                 )
-                Row {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    // Sets concluídos
                     match.sets.sortedBy { it.setNumber }.forEach { set ->
                         SetScoreItem(set.player1Games, set.player2Games, set.tieBreakPointsPlayer1, match.match.winnerId == match.player1.id && set.winnerPlayerId == match.player1.id, false)
+                    }
+                    // Games do set atual (se em andamento)
+                    if (isInProgress) {
+                        SetScoreItem(
+                            games = match.match.player1GamesCurrentSet,
+                            opponentGames = match.match.player2GamesCurrentSet,
+                            tieBreakPoints = null,
+                            isSetWinner = false,
+                            isSuperTieBreak = false,
+                            isCurrentGames = true
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Box(
+                            modifier = Modifier
+                                .width(32.dp)
+                                .background(MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(4.dp))
+                                .padding(vertical = 2.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = match.match.player1PointsCurrentGame,
+                                color = Color.White,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
                 }
                 Box(modifier = Modifier.width(32.dp), contentAlignment = Alignment.Center) {
@@ -183,13 +281,40 @@ private fun MatchHistoryCard(
                     text = "${match.player2.firstName} ${match.player2.lastName}",
                     modifier = Modifier.weight(1f),
                     fontWeight = if (match.match.winnerId == match.player2.id) FontWeight.Bold else FontWeight.Normal,
-                    fontSize = 16.sp,
+                    fontSize = 15.sp,
                     maxLines = 1,
-                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis
                 )
-                Row {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    // Sets concluídos
                     match.sets.sortedBy { it.setNumber }.forEach { set ->
                         SetScoreItem(set.player2Games, set.player1Games, set.tieBreakPointsPlayer2, match.match.winnerId == match.player2.id && set.winnerPlayerId == match.player2.id, false)
+                    }
+                    // Games do set atual (se em andamento)
+                    if (isInProgress) {
+                        SetScoreItem(
+                            games = match.match.player2GamesCurrentSet,
+                            opponentGames = match.match.player1GamesCurrentSet,
+                            tieBreakPoints = null,
+                            isSetWinner = false,
+                            isSuperTieBreak = false,
+                            isCurrentGames = true
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Box(
+                            modifier = Modifier
+                                .width(32.dp)
+                                .background(MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(4.dp))
+                                .padding(vertical = 2.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = match.match.player2PointsCurrentGame,
+                                color = Color.White,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
                 }
                 Box(modifier = Modifier.width(32.dp), contentAlignment = Alignment.Center) {
@@ -215,7 +340,11 @@ private fun MatchHistoryCard(
                 }
 
                 IconButton(onClick = onDeleteClick) {
-                    Icon(Icons.Default.Delete, contentDescription = "Excluir", tint = MaterialTheme.colorScheme.error)
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Excluir",
+                        tint = Color(0xFF1A237E)
+                    )
                 }
             }
         }
@@ -228,7 +357,8 @@ private fun SetScoreItem(
     opponentGames: Int,
     tieBreakPoints: Int?,
     isSetWinner: Boolean,
-    isSuperTieBreak: Boolean
+    isSuperTieBreak: Boolean,
+    isCurrentGames: Boolean = false
 ) {
     Box(
         modifier = Modifier
@@ -239,8 +369,10 @@ private fun SetScoreItem(
         Text(
             text = games.toString(),
             fontWeight = if (isSetWinner) FontWeight.ExtraBold else FontWeight.Normal,
-            fontSize = 18.sp,
-            color = if (isSetWinner) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+            fontSize = if (isCurrentGames) 16.sp else 18.sp,
+            color = if (isSetWinner) MaterialTheme.colorScheme.primary 
+                    else if (isCurrentGames) MaterialTheme.colorScheme.secondary
+                    else MaterialTheme.colorScheme.onSurface
         )
         if (tieBreakPoints != null) {
             Text(

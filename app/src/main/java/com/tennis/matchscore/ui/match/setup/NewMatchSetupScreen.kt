@@ -124,7 +124,11 @@ fun NewMatchSetupScreen(
                                     Text("🎾 $p1Name", maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis, fontSize = 11.sp)
                                 }
                             },
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                selectedLabelColor = Color.White
+                            )
                         )
                         FilterChip(
                             selected = uiState.initialServer == 2,
@@ -134,7 +138,11 @@ fun NewMatchSetupScreen(
                                     Text("🎾 $p2Name", maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis, fontSize = 11.sp)
                                 }
                             },
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                selectedLabelColor = Color.White
+                            )
                         )
                     }
                 }
@@ -155,7 +163,11 @@ fun NewMatchSetupScreen(
                                         Text(mode.displayName, fontSize = 11.sp) 
                                     }
                                 },
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier.weight(1f),
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                    selectedLabelColor = Color.White
+                                )
                             )
                         }
                     }
@@ -226,7 +238,11 @@ fun NewMatchSetupScreen(
                                             Text(surface.displayName, fontSize = 11.sp) 
                                         }
                                     },
-                                    modifier = Modifier.width(110.dp).height(32.dp) // Largura reduzida para 110.dp
+                                    modifier = Modifier.width(110.dp).height(32.dp), // Largura reduzida para 110.dp
+                                    colors = FilterChipDefaults.filterChipColors(
+                                        selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                        selectedLabelColor = Color.White
+                                    )
                                 )
                             }
                         }
