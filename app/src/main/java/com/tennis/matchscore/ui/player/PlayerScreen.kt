@@ -119,7 +119,11 @@ fun PlayerScreen(
                                     selected = selectedHand == hand,
                                     onClick = { selectedHand = hand },
                                     label = { Text(hand.displayName) },
-                                    modifier = Modifier.weight(1f)
+                                    modifier = Modifier.weight(1f),
+                                    colors = FilterChipDefaults.filterChipColors(
+                                        selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                        selectedLabelColor = Color.White
+                                    )
                                 )
                             }
                         }

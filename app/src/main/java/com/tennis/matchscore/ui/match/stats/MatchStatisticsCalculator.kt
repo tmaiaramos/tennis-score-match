@@ -6,6 +6,7 @@ import com.tennis.matchscore.domain.model.HitHand
 import com.tennis.matchscore.domain.model.MatchEventType
 import com.tennis.matchscore.domain.model.ServeState
 import com.tennis.matchscore.domain.model.ShotType
+import kotlin.math.ceil
 
 data class MatchStats(
     val p1: PlayerStats,
@@ -22,6 +23,7 @@ data class PlayerStats(
     val aces: Int,
     val doubleFaults: Int,
     val firstServesWon: Int,
+    val secondServesIn: Int, // Item 4
     val secondServesWon: Int,
     val totalPointsServed: Int,
     
@@ -56,13 +58,18 @@ data class PlayerStats(
     // By Shot
     val shotStats: Map<ShotType, ShotTypeStats>
 ) {
-    val firstServePercentage: Int get() = if (totalServes > 0) (firstServesIn * 100) / totalServes else 0
-    val firstServePointsWonPercentage: Int get() = if (firstServesIn > 0) (firstServesWon * 100) / firstServesIn else 0
-    val secondServePointsWonPercentage: Int get() = if (totalServes - firstServesIn > 0) (secondServesWon * 100) / (totalServes - firstServesIn) else 0
-    val receivingPointsWonPercentage: Int get() = if (totalPointsReceived > 0) (receivingPointsWon * 100) / totalPointsReceived else 0
-    val netPointsWonPercentage: Int get() = if (netPointsTotal > 0) (netPointsWon * 100) / netPointsTotal else 0
-    val approachPointsWonPercentage: Int get() = if (approachPointsTotal > 0) (approachPointsWon * 100) / approachPointsTotal else 0
-    val aggressiveMargin: Int get() = (winnersFH + winnersBH + inducedForcedErrors) - (unforcedErrorsFH + unforcedErrorsBH)
+    val firstServePercentage: Int get() = if (totalServes > 0) ceil((firstServesIn.toDouble() * 100) / totalServes).toInt() else 0
+    val firstServePointsWonPercentage: Int get() = if (firstServesIn > 0) ceil((firstServesWon.toDouble() * 100) / firstServesIn).toInt() else 0
+    val secondServePointsWonPercentage: Int get() {
+        val totalSecondServes = totalServes - firstServesIn
+        return if (totalSecondServes > 0) ceil((secondServesWon.toDouble() * 100) / totalSecondServes).toInt() else 0
+    }
+    val receivingPointsWonPercentage: Int get() = if (totalPointsReceived > 0) ceil((receivingPointsWon.toDouble() * 100) / totalPointsReceived).toInt() else 0
+    val netPointsWonPercentage: Int get() = if (netPointsTotal > 0) ceil((netPointsWon.toDouble() * 100) / netPointsTotal).toInt() else 0
+    val approachPointsWonPercentage: Int get() = if (approachPointsTotal > 0) ceil((approachPointsWon.toDouble() * 100) / approachPointsTotal).toInt() else 0
+    
+    // Item 5: Ace = Winner; Double Fault = Unforced Error
+    val aggressiveMargin: Int get() = (winnersFH + winnersBH + aces + inducedForcedErrors) - (unforcedErrorsFH + unforcedErrorsBH + doubleFaults)
 }
 
 data class ShotTypeStats(
@@ -104,6 +111,7 @@ class MatchStatisticsCalculator(
         var aces = 0
         var doubleFaults = 0
         var firstServesWon = 0
+        var secondServesIn = 0 // Item 4
         var secondServesWon = 0
         var totalPointsServed = 0
 
@@ -137,15 +145,31 @@ class MatchStatisticsCalculator(
             val wonPoint = point.pointWinnerId == playerId
             val lostPoint = point.pointWinnerId == opponentId
             
+            val detailingPlayerIsMe = (point.eventType == MatchEventType.WINNER && wonPoint) || 
+                                     ((point.eventType == MatchEventType.UNFORCED_ERROR || point.eventType == MatchEventType.FORCED_ERROR) && lostPoint)
+
             if (isServer) {
-                if (point.pointWinnerId != 0L) {
-                    totalServes++
+                // Item 4: Lógica de contabilização de saques (1st In, 2nd In, DF)
+                if (point.serveStateBefore == ServeState.FIRST_SERVE) {
+                    totalServes++ // Todo ponto iniciado no 1o saque incrementa o total de saques
                     totalPointsServed++
-                    if (point.serveStateBefore == ServeState.FIRST_SERVE) {
+                    
+                    if (point.pointWinnerId != 0L) {
+                        // O ponto terminou no 1o saque (ACE, Winner, Erro na devolução, etc)
                         firstServesIn++
                         if (wonPoint) firstServesWon++
-                    } else if (point.serveStateBefore == ServeState.SECOND_SERVE) {
+                    }
+                    // Se point.pointWinnerId == 0L, foi uma "Falta" (registrada pelo repository.recordFault)
+                    // Não incrementamos firstServesIn nem totalPointsServed aqui, 
+                    // pois o ponto continua no 2o saque.
+                } else if (point.serveStateBefore == ServeState.SECOND_SERVE) {
+                    totalPointsServed++
+                    if (point.eventType != MatchEventType.DOUBLE_FAULT) {
+                        // O 2o saque entrou (Item 4)
+                        secondServesIn++
                         if (wonPoint) secondServesWon++
+                    } else {
+                        // Dupla Falta: Já incrementada no doubleFaults++ abaixo
                     }
                 }
                 
@@ -156,7 +180,8 @@ class MatchStatisticsCalculator(
                     if (point.serveStateBefore == ServeState.FIRST_SERVE) unreturnedFirstServes++
                     else unreturnedSecondServes++
                 }
-            } else {
+            }
+else {
                 if (point.pointWinnerId != 0L) {
                     if (point.isReturnEvent) {
                         if (wonPoint && point.eventType == MatchEventType.WINNER) {
@@ -185,29 +210,21 @@ class MatchStatisticsCalculator(
                 }
             }
 
+            // Item 14: Break Points (em favor do jogador atual quando ele é RECEBEDOR)
             if (!isServer && isBreakPointOpportunity(point, playerId, opponentId)) {
                 breakPointsTotal++
                 if (wonPoint) breakPointsWon++
             }
             
-            val detailingPlayerIsMe = (point.eventType == MatchEventType.WINNER && wonPoint) || 
-                                     ((point.eventType == MatchEventType.UNFORCED_ERROR || point.eventType == MatchEventType.FORCED_ERROR) && lostPoint)
+            // Item 6 & 7: Lógica de Rede (Y = Approach + Net; X = Vencidos nesses casos)
+            val myPosition = if (detailingPlayerIsMe) point.winnerPosition else point.loserPosition
+            val isAtNet = myPosition == CourtPosition.NET || myPosition == CourtPosition.APPROACH
             
-            if (detailingPlayerIsMe) {
-                if (point.winnerPosition == CourtPosition.NET) {
-                    netPointsTotal++
-                    if (wonPoint) netPointsWon++
-                }
-                if (point.winnerPosition == CourtPosition.APPROACH) {
-                    approachPointsTotal++
-                    if (wonPoint) approachPointsWon++
-                }
-            } else {
-                if (point.loserPosition == CourtPosition.NET) {
-                    netPointsTotal++
-                    if (wonPoint) netPointsWon++
-                }
-                if (point.loserPosition == CourtPosition.APPROACH) {
+            if (isAtNet) {
+                netPointsTotal++
+                if (wonPoint) netPointsWon++
+                
+                if (myPosition == CourtPosition.APPROACH) {
                     approachPointsTotal++
                     if (wonPoint) approachPointsWon++
                 }
@@ -231,7 +248,7 @@ class MatchStatisticsCalculator(
         return PlayerStats(
             playerId = playerId, playerName = playerName,
             totalServes = totalServes, firstServesIn = firstServesIn, aces = aces, doubleFaults = doubleFaults,
-            firstServesWon = firstServesWon, secondServesWon = secondServesWon, totalPointsServed = totalPointsServed,
+            firstServesWon = firstServesWon, secondServesIn = secondServesIn, secondServesWon = secondServesWon, totalPointsServed = totalPointsServed,
             returnWinnersFH = returnWinnersFH, returnWinnersBH = returnWinnersBH, returnErrorsFH = returnErrorsFH, returnErrorsBH = returnErrorsBH,
             unreturnedFirstServes = unreturnedFirstServes, unreturnedSecondServes = unreturnedSecondServes,
             totalPointsWon = totalPointsWon, winnersFH = winnersFH, winnersBH = winnersBH,
@@ -243,8 +260,14 @@ class MatchStatisticsCalculator(
     }
 
     private fun isBreakPointOpportunity(point: PointHistoryEntity, receiverId: Long, serverId: Long): Boolean {
+        // Pega o placar do ponto ANTES dele ser marcado
         val sR = if (receiverId == p1Id) point.scoreP1Before else point.scoreP2Before
         val sS = if (serverId == p1Id) point.scoreP1Before else point.scoreP2Before
+        
+        // Em Tie-break não se conta "Break Point" no sentido tradicional de estatística de ATP/WTA
+        if (point.scoreP1Before.toIntOrNull() != null) return false
+
+        // Break Point para o recebedor ocorre quando o recebedor está a 1 ponto de ganhar o game
         return when {
             sR == "40" && (sS == "0" || sS == "15" || sS == "30") -> true
             sR == "AD" -> true

@@ -16,7 +16,12 @@ sealed class MatchStatisticsUiState {
         val stats: MatchStats,
         val player1Sets: Int,
         val player2Sets: Int,
-        val completedSets: List<com.tennis.matchscore.ui.match.CompletedSetUiState>
+        val completedSets: List<com.tennis.matchscore.ui.match.CompletedSetUiState>,
+        val isMatchFinished: Boolean,
+        val player1Points: String = "0",
+        val player2Points: String = "0",
+        val player1GamesCurrentSet: Int = 0,
+        val player2GamesCurrentSet: Int = 0
     ) : MatchStatisticsUiState()
     data class Error(val message: String) : MatchStatisticsUiState()
 }
@@ -49,8 +54,11 @@ class MatchStatisticsViewModel @Inject constructor(
                 )
 
                 val format = matchDetails.format
-                val p1Sets = matchDetails.sets.count { it.winnerPlayerId == matchDetails.match.player1Id }
-                val p2Sets = matchDetails.sets.count { it.winnerPlayerId == matchDetails.match.player2Id }
+                val match = matchDetails.match
+                val isFinished = match.status == com.tennis.matchscore.domain.model.MatchStatus.FINISHED
+
+                val p1Sets = matchDetails.sets.count { it.winnerPlayerId == match.player1Id }
+                val p2Sets = matchDetails.sets.count { it.winnerPlayerId == match.player2Id }
                 
                 val completedSetsList = matchDetails.sets
                     .sortedBy { it.setNumber }
@@ -66,8 +74,8 @@ class MatchStatisticsViewModel @Inject constructor(
                             player2Games = setEntity.player2Games,
                             winnerPlayerId = setEntity.winnerPlayerId,
                             isSuperTieBreak = isFinalSetSuperTieBreak,
-                            player1Points = matchDetails.match.player1PointsCurrentGame,
-                            player2Points = matchDetails.match.player2PointsCurrentGame,
+                            player1Points = match.player1PointsCurrentGame,
+                            player2Points = match.player2PointsCurrentGame,
                             tieBreakPointsPlayer1 = setEntity.tieBreakPointsPlayer1,
                             tieBreakPointsPlayer2 = setEntity.tieBreakPointsPlayer2
                         )
@@ -77,7 +85,12 @@ class MatchStatisticsViewModel @Inject constructor(
                     stats = calculator.calculate(),
                     player1Sets = p1Sets,
                     player2Sets = p2Sets,
-                    completedSets = completedSetsList
+                    completedSets = completedSetsList,
+                    isMatchFinished = isFinished,
+                    player1Points = match.player1PointsCurrentGame,
+                    player2Points = match.player2PointsCurrentGame,
+                    player1GamesCurrentSet = match.player1GamesCurrentSet,
+                    player2GamesCurrentSet = match.player2GamesCurrentSet
                 )
             }.onFailure { error ->
                 _uiState.value = MatchStatisticsUiState.Error(error.message ?: "Erro desconhecido")

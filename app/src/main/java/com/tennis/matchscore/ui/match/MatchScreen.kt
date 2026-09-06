@@ -89,6 +89,13 @@ fun MatchScreen(
                         )
                     }
                 },
+                actions = {
+                    if (!uiState.isMatchFinished && !uiState.isDetalingActive) {
+                        IconButton(onClick = { uiState.currentMatchId?.let { onViewStatsClick(it) } }) {
+                            Icon(Icons.Default.BarChart, contentDescription = "Estatísticas")
+                        }
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
                     titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
@@ -656,6 +663,8 @@ private fun AdvancedWinnerDetailingControls(
             MatchEventType.WINNER -> "WINNER"
             MatchEventType.FORCED_ERROR -> "FORCED ERROR"
             MatchEventType.UNFORCED_ERROR -> "UNFORCED ERROR"
+            MatchEventType.ACE -> "ACE"
+            MatchEventType.DOUBLE_FAULT -> "DUPLA FALTA"
             else -> "PONTO"
         }
         
@@ -679,7 +688,17 @@ private fun AdvancedWinnerDetailingControls(
                 .weight(1f),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            if (isP1Winner) {
+            if (uiState.detailingEventType == MatchEventType.ACE || uiState.detailingEventType == MatchEventType.DOUBLE_FAULT) {
+                // Para Ace e Dupla Falta, mostramos apenas uma mensagem central de confirmação
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(
+                        text = if (uiState.detailingEventType == MatchEventType.ACE) "Ace registrado com sucesso!" else "Dupla Falta registrada!",
+                        style = MaterialTheme.typography.headlineSmall,
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            } else if (isP1Winner) {
                 // Jogador 1 (Vencedor) na Esquerda
                 WinnerDetailingColumn(
                     modifier = Modifier.weight(1.2f),

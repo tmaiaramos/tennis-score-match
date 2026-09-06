@@ -1,5 +1,6 @@
 package com.tennis.matchscore.ui.match.setup
 
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -218,7 +219,8 @@ fun NewMatchSetupScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(60.dp)
-                                .clickable { showDatePicker = true }
+                                .clickable { showDatePicker = true },
+                            textStyle = TextStyle(fontSize = 13.sp) // Diminuído (Item 11)
                         )
                     }
 

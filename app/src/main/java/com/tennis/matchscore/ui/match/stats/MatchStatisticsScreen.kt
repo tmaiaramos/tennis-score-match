@@ -1,5 +1,6 @@
 package com.tennis.matchscore.ui.match.stats
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -27,8 +28,8 @@ private fun formatShortName(fullName: String): String {
     }
 }
 
-private fun formatVal(v: Int): String = if (v == 0) "-" else v.toString()
-private fun formatPct(v: Int): String = if (v == 0) "-" else "$v%"
+private fun formatVal(v: Int, hasData: Boolean = true): String = if (v == 0 && !hasData) "-" else v.toString()
+private fun formatPct(v: Int, hasData: Boolean = true): String = if (v == 0 && !hasData) "-" else "$v%"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -111,8 +112,8 @@ fun MatchStatisticsScreen(
 @Composable
 private fun StatisticsContent(stats: MatchStats, tabIndex: Int) {
     LazyColumn(
-        modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(2.dp) // Reduzido de 4.dp
+        modifier = Modifier.fillMaxSize().padding(horizontal = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(1.dp) // Mais compacto
     ) {
         when (tabIndex) {
             0 -> essentialTab(stats)
@@ -123,34 +124,42 @@ private fun StatisticsContent(stats: MatchStats, tabIndex: Int) {
 }
 
 private fun androidx.compose.foundation.lazy.LazyListScope.essentialTab(stats: MatchStats) {
+    val p1Active = stats.p1.totalPointsServed + stats.p1.totalPointsReceived > 0
+    val p2Active = stats.p2.totalPointsServed + stats.p2.totalPointsReceived > 0
+
     item { GroupHeader("1 - Service", stats) }
-    item { StatRow("% 1st service", formatPct(stats.p1.firstServePercentage), formatPct(stats.p2.firstServePercentage)) }
-    item { StatRow("Aces", formatVal(stats.p1.aces), formatVal(stats.p2.aces)) }
-    item { StatRow("Double Faults", formatVal(stats.p1.doubleFaults), formatVal(stats.p2.doubleFaults)) }
+    item { StatRow("% 1st service", formatPct(stats.p1.firstServePercentage, stats.p1.totalServes > 0), formatPct(stats.p2.firstServePercentage, stats.p2.totalServes > 0)) }
+    item { StatRow("Aces", formatVal(stats.p1.aces, p1Active), formatVal(stats.p2.aces, p2Active)) }
+    item { StatRow("Double Faults", formatVal(stats.p1.doubleFaults, p1Active), formatVal(stats.p2.doubleFaults, p2Active)) }
 
     item { GroupHeader("2 - Points", stats) }
-    item { StatRow("Total points won", formatVal(stats.p1.totalPointsWon), formatVal(stats.p2.totalPointsWon)) }
+    item { StatRow("Total points won", formatVal(stats.p1.totalPointsWon, p1Active), formatVal(stats.p2.totalPointsWon, p2Active)) }
     item { 
         ComplexStatRow(
             label = "Winners",
-            p1Total = stats.p1.winnersBH + stats.p1.winnersFH, p1BH = stats.p1.winnersBH, p1FH = stats.p1.winnersFH,
-            p2Total = stats.p2.winnersBH + stats.p2.winnersFH, p2BH = stats.p2.winnersBH, p2FH = stats.p2.winnersFH
+            p1Total = stats.p1.winnersBH + stats.p1.winnersFH + stats.p1.aces, // Soma ACE (Item 5)
+            p1BH = stats.p1.winnersBH, p1FH = stats.p1.winnersFH,
+            p2Total = stats.p2.winnersBH + stats.p2.winnersFH + stats.p2.aces, // Soma ACE (Item 5)
+            p2BH = stats.p2.winnersBH, p2FH = stats.p2.winnersFH,
+            hasData = p1Active || p2Active
         )
     }
     item { 
         ComplexStatRow(
             label = "Unforced Errors",
-            p1Total = stats.p1.unforcedErrorsBH + stats.p1.unforcedErrorsFH, p1BH = stats.p1.unforcedErrorsBH, p1FH = stats.p1.unforcedErrorsFH,
-            p2Total = stats.p2.unforcedErrorsBH + stats.p2.unforcedErrorsFH, p2BH = stats.p2.unforcedErrorsBH, p2FH = stats.p2.unforcedErrorsFH
+            p1Total = stats.p1.unforcedErrorsBH + stats.p1.unforcedErrorsFH + stats.p1.doubleFaults, // Soma DF (Item 5)
+            p1BH = stats.p1.unforcedErrorsBH, p1FH = stats.p1.unforcedErrorsFH,
+            p2Total = stats.p2.unforcedErrorsBH + stats.p2.unforcedErrorsFH + stats.p2.doubleFaults, // Soma DF (Item 5)
+            p2BH = stats.p2.unforcedErrorsBH, p2FH = stats.p2.unforcedErrorsFH,
+            hasData = p1Active || p2Active
         )
     }
-    item { StatRow("Agressive Margin", formatVal(stats.p1.aggressiveMargin), formatVal(stats.p2.aggressiveMargin)) }
+    item { StatRow("Agressive Margin", formatVal(stats.p1.aggressiveMargin, p1Active), formatVal(stats.p2.aggressiveMargin, p2Active)) }
 
     item { GroupHeader("3 - Conversion", stats) }
-    item { StatRow("Receiving pts won", formatPct(stats.p1.receivingPointsWonPercentage), formatPct(stats.p2.receivingPointsWonPercentage)) }
-    item { StatRow("Break points", "${formatVal(stats.p1.breakPointsWon)}/${formatVal(stats.p1.breakPointsTotal)}", "${formatVal(stats.p2.breakPointsWon)}/${formatVal(stats.p2.breakPointsTotal)}") }
-    item { StatRow("1st service pts won", formatPct(stats.p1.firstServePointsWonPercentage), formatPct(stats.p2.firstServePointsWonPercentage)) }
-    item { StatRow("Net points", "${formatVal(stats.p1.netPointsWon)}/${formatVal(stats.p1.netPointsTotal)}", "${formatVal(stats.p2.netPointsWon)}/${formatVal(stats.p2.netPointsTotal)}") }
+    item { StatRow("Receiving pts won", formatPct(stats.p1.receivingPointsWonPercentage, stats.p1.totalPointsReceived > 0), formatPct(stats.p2.receivingPointsWonPercentage, stats.p2.totalPointsReceived > 0)) }
+    item { StatRow("Break points", "${formatVal(stats.p1.breakPointsWon, p1Active)}/${formatVal(stats.p1.breakPointsTotal, p1Active)}", "${formatVal(stats.p2.breakPointsWon, p2Active)}/${formatVal(stats.p2.breakPointsTotal, p2Active)}") }
+    item { StatRow("Net points", "${formatVal(stats.p1.netPointsWon, stats.p1.netPointsTotal > 0)}/${formatVal(stats.p1.netPointsTotal, stats.p1.netPointsTotal > 0)}", "${formatVal(stats.p2.netPointsWon, stats.p2.netPointsTotal > 0)}/${formatVal(stats.p2.netPointsTotal, stats.p2.netPointsTotal > 0)}") }
 }
 
 private fun androidx.compose.foundation.lazy.LazyListScope.detailedTab(stats: MatchStats) {
@@ -160,7 +169,7 @@ private fun androidx.compose.foundation.lazy.LazyListScope.detailedTab(stats: Ma
     item { StatRow("Aces", formatVal(stats.p1.aces), formatVal(stats.p2.aces)) }
     item { StatRow("Double Faults", formatVal(stats.p1.doubleFaults), formatVal(stats.p2.doubleFaults)) }
     item { StatRow("1st services in", formatVal(stats.p1.firstServesIn), formatVal(stats.p2.firstServesIn)) }
-    item { StatRow("2nd services", formatVal(stats.p1.totalServes - stats.p1.firstServesIn), formatVal(stats.p2.totalServes - stats.p2.firstServesIn)) }
+    item { StatRow("2nd services", formatVal(stats.p1.secondServesIn), formatVal(stats.p2.secondServesIn)) }
 
     item { GroupHeader("2 - Return", stats) }
     item { 
@@ -255,44 +264,107 @@ private fun androidx.compose.foundation.lazy.LazyListScope.byShotTab(stats: Matc
 
 @Composable
 private fun ScoreSummary(state: MatchStatisticsUiState.Success) {
+    val isInProgress = !state.isMatchFinished
+    
     Card(
-        modifier = Modifier.fillMaxWidth().padding(16.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
         shape = RoundedCornerShape(12.dp)
     ) {
-        Column(modifier = Modifier.padding(12.dp)) {
+        Column(modifier = Modifier.padding(10.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Text(text = "Resumo da Partida", fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f), fontSize = 14.sp)
-                state.completedSets.forEach { set ->
-                    Text(text = "S${set.setNumber}", modifier = Modifier.width(36.dp), textAlign = TextAlign.Center, fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                Text(text = "Placar", fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f), fontSize = 13.sp)
+                
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    state.completedSets.forEach { set ->
+                        Text(text = "S${set.setNumber}", modifier = Modifier.width(34.dp), textAlign = TextAlign.Center, fontWeight = FontWeight.Bold, fontSize = 10.sp)
+                    }
+                    if (isInProgress) {
+                        val currentSetNum = state.completedSets.size + 1
+                        Text(text = "S$currentSetNum", modifier = Modifier.width(34.dp), textAlign = TextAlign.Center, fontWeight = FontWeight.Bold, fontSize = 10.sp)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(text = "Pts", modifier = Modifier.width(34.dp), textAlign = TextAlign.Center, fontWeight = FontWeight.Bold, fontSize = 10.sp)
+                    }
                 }
             }
-            Spacer(modifier = Modifier.height(8.dp))
-            PlayerScoreSummaryRow(state.stats.p1.playerName, state.completedSets, true)
             Spacer(modifier = Modifier.height(4.dp))
-            PlayerScoreSummaryRow(state.stats.p2.playerName, state.completedSets, false)
+            PlayerScoreSummaryRow(state.stats.p1.playerName, state.completedSets, true, isInProgress, state)
+            Spacer(modifier = Modifier.height(2.dp))
+            PlayerScoreSummaryRow(state.stats.p2.playerName, state.completedSets, false, isInProgress, state)
         }
     }
 }
 
 @Composable
-private fun PlayerScoreSummaryRow(playerName: String, sets: List<CompletedSetUiState>, isPlayer1: Boolean) {
+private fun PlayerScoreSummaryRow(
+    playerName: String, 
+    sets: List<CompletedSetUiState>, 
+    isPlayer1: Boolean,
+    isInProgress: Boolean,
+    state: MatchStatisticsUiState.Success
+) {
     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        Text(text = formatShortName(playerName), modifier = Modifier.weight(1f), fontSize = 13.sp, fontWeight = FontWeight.Medium)
-        sets.forEach { set ->
-            val games = if (isPlayer1) set.player1Games else set.player2Games
-            val opponentGames = if (isPlayer1) set.player2Games else set.player1Games
-            
-            val isWinner = games > opponentGames
+        Text(text = formatShortName(playerName), modifier = Modifier.weight(1f), fontSize = 12.sp, fontWeight = FontWeight.Medium, maxLines = 1)
+        
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            sets.forEach { set ->
+                val games = if (isPlayer1) set.player1Games else set.player2Games
+                val opponentGames = if (isPlayer1) set.player2Games else set.player1Games
+                val tieBreakPoints = if (isPlayer1) set.tieBreakPointsPlayer1 else set.tieBreakPointsPlayer2
+                
+                val isWinner = games > opponentGames
 
-            Text(
-                text = games.toString(),
-                modifier = Modifier.width(36.dp),
-                textAlign = TextAlign.Center,
-                fontWeight = if (isWinner) FontWeight.ExtraBold else FontWeight.Normal,
-                fontSize = 15.sp,
-                color = if (isWinner) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
-            )
+                Box(modifier = Modifier.width(34.dp), contentAlignment = Alignment.Center) {
+                    Text(
+                        text = games.toString(),
+                        fontWeight = if (isWinner) FontWeight.ExtraBold else FontWeight.Normal,
+                        fontSize = 14.sp,
+                        color = if (isWinner) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                    )
+                    if (tieBreakPoints != null) {
+                        Text(
+                            text = tieBreakPoints.toString(),
+                            fontSize = 8.sp,
+                            modifier = Modifier.align(Alignment.TopEnd).offset(x = 2.dp, y = (-2).dp)
+                        )
+                    }
+                }
+            }
+            
+            if (isInProgress) {
+                // Games do set atual
+                val currentGames = if (isPlayer1) state.player1GamesCurrentSet else state.player2GamesCurrentSet
+                val opponentGames = if (isPlayer1) state.player2GamesCurrentSet else state.player1GamesCurrentSet
+                val isWinningSet = currentGames > opponentGames
+
+                Box(modifier = Modifier.width(34.dp), contentAlignment = Alignment.Center) {
+                    Text(
+                        text = currentGames.toString(),
+                        fontWeight = if (isWinningSet) FontWeight.Bold else FontWeight.Normal,
+                        fontSize = 14.sp,
+                        color = if (isWinningSet) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onSurface
+                    )
+                }
+                
+                Spacer(modifier = Modifier.width(8.dp))
+
+                // Pontos do game atual
+                val points = if (isPlayer1) state.player1Points else state.player2Points
+                Box(
+                    modifier = Modifier
+                        .width(34.dp)
+                        .background(MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(4.dp))
+                        .padding(vertical = 2.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = points,
+                        color = Color.White,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
         }
     }
 }
@@ -337,63 +409,63 @@ private fun GroupHeader(title: String, stats: MatchStats) {
 
 @Composable
 private fun StatRow(label: String, v1: String, v2: String) {
-    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-        Text(text = label, modifier = Modifier.weight(1.2f), fontSize = 13.sp, fontWeight = FontWeight.Medium)
-        Text(text = v1, modifier = Modifier.weight(1f), textAlign = TextAlign.Center, fontSize = 14.sp)
-        Text(text = v2, modifier = Modifier.weight(1f), textAlign = TextAlign.Center, fontSize = 14.sp)
+    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+        Text(text = label, modifier = Modifier.weight(1.2f), fontSize = 12.sp, fontWeight = FontWeight.Medium)
+        Text(text = v1, modifier = Modifier.weight(1f), textAlign = TextAlign.Center, fontSize = 13.sp)
+        Text(text = v2, modifier = Modifier.weight(1f), textAlign = TextAlign.Center, fontSize = 13.sp)
     }
-    HorizontalDivider(thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
+    HorizontalDivider(thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.15f))
 }
 
 @Composable
-private fun ComplexStatRow(label: String, p1Total: Int, p1BH: Int, p1FH: Int, p2Total: Int, p2BH: Int, p2FH: Int) {
-    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 5.dp), verticalAlignment = Alignment.CenterVertically) {
+private fun ComplexStatRow(label: String, p1Total: Int, p1BH: Int, p1FH: Int, p2Total: Int, p2BH: Int, p2FH: Int, hasData: Boolean = true) {
+    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp), verticalAlignment = Alignment.CenterVertically) {
         Column(modifier = Modifier.weight(1.2f)) {
-            Text(text = label, fontSize = 13.sp, fontWeight = FontWeight.Medium, lineHeight = 12.sp)
-            Spacer(modifier = Modifier.height(2.dp)) // Afasta as letras BH e FH
+            Text(text = label, fontSize = 12.sp, fontWeight = FontWeight.Medium, lineHeight = 11.sp)
+            Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = "BH   FH",
-                fontSize = 9.sp, // Aumentado
+                fontSize = 10.sp,
                 color = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
                 fontWeight = FontWeight.Bold,
-                lineHeight = 9.sp
+                lineHeight = 10.sp
             )
         }
         Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
-            ComplexStatCell(total = p1Total, bh = p1BH, fh = p1FH)
+            ComplexStatCell(total = p1Total, bh = p1BH, fh = p1FH, hasData = hasData)
         }
         Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
-            ComplexStatCell(total = p2Total, bh = p2BH, fh = p2FH)
+            ComplexStatCell(total = p2Total, bh = p2BH, fh = p2FH, hasData = hasData)
         }
     }
     HorizontalDivider(thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
 }
 
 @Composable
-private fun ComplexStatCell(total: Int, bh: Int, fh: Int) {
-    if (total == 0) {
-        Text("-", fontSize = 14.sp)
+private fun ComplexStatCell(total: Int, bh: Int, fh: Int, hasData: Boolean = true) {
+    if (total == 0 && !hasData) {
+        Text("-", fontSize = 13.sp)
         return
     }
     Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.Center) {
         // Lado Esquerdo (Backhand)
         Text(
-            text = formatVal(bh),
-            fontSize = 12.sp, // Aumentado
+            text = formatVal(bh, hasData),
+            fontSize = 12.sp, 
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 0.dp)
         )
         // Total (Elevado)
         Text(
             text = total.toString(),
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Normal,
-            modifier = Modifier.padding(bottom = 5.5.dp, start = 3.dp, end = 3.dp) // Mais alto e mais afastado
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 5.dp, start = 4.dp, end = 4.dp)
         )
         // Lado Direito (Forehand)
         Text(
-            text = formatVal(fh),
-            fontSize = 12.sp, // Aumentado
+            text = formatVal(fh, hasData),
+            fontSize = 12.sp, 
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 0.dp)
         )

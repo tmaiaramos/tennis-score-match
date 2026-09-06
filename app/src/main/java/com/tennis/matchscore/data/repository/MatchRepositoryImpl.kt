@@ -153,8 +153,16 @@ class MatchRepositoryImpl @Inject constructor(
                 val wasTieBreakSet = currentState.isTieBreak ||
                         format.isTieBreakSet(p1Games, p2Games, setNumber = currentState.currentSet)
 
-                val tbP1 = if (wasTieBreakSet) currentState.player1PointsCurrentGame.toIntOrNull() else null
-                val tbP2 = if (wasTieBreakSet) currentState.player2PointsCurrentGame.toIntOrNull() else null
+                // Item 2 & 3: Capturar os pontos finais do Tie Break corretamente (7x2, etc)
+                var tbP1: Int? = null
+                var tbP2: Int? = null
+                
+                if (wasTieBreakSet) {
+                    val p1PtsBefore = currentState.player1PointsCurrentGame.toIntOrNull() ?: 0
+                    val p2PtsBefore = currentState.player2PointsCurrentGame.toIntOrNull() ?: 0
+                    tbP1 = if (pointWinnerId == match.player1Id) p1PtsBefore + 1 else p1PtsBefore
+                    tbP2 = if (pointWinnerId == match.player2Id) p2PtsBefore + 1 else p2PtsBefore
+                }
 
                 val setScore = SetScoreEntity(
                     matchId = matchId,

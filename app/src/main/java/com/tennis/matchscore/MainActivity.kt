@@ -47,6 +47,7 @@ class MainActivity : ComponentActivity() {
                     color = Color.White,
                 ) {
                     var currentScreen by remember { mutableStateOf("home") }
+                    var returnScreenByStats by remember { mutableStateOf("history") }
                     var selectedMatchIdForStats by remember { mutableStateOf<Long?>(null) }
 
                     when (currentScreen) {
@@ -77,6 +78,7 @@ class MainActivity : ComponentActivity() {
                             onCloseClick = { currentScreen = "home" },
                             onViewStatsClick = { matchId ->
                                 selectedMatchIdForStats = matchId
+                                returnScreenByStats = "match"
                                 currentScreen = "statistics"
                             }
                         )
@@ -97,13 +99,14 @@ class MainActivity : ComponentActivity() {
                             },
                             onViewStatsClick = { matchId ->
                                 selectedMatchIdForStats = matchId
+                                returnScreenByStats = "history"
                                 currentScreen = "statistics"
                             }
                         )
                         "statistics" -> MatchStatisticsScreen(
                             matchId = selectedMatchIdForStats ?: 0L,
                             onBackClick = {
-                                currentScreen = "history"
+                                currentScreen = returnScreenByStats
                             }
                         )
                     }

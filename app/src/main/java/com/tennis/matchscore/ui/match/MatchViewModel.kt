@@ -242,9 +242,29 @@ class MatchViewModel @Inject constructor(
         if (state.isMatchFinished) return
 
         viewModelScope.launch {
+            _uiState.update { it.copy(isDetalingActive = true) }
             runCatching {
-                matchRepository.scorePoint(matchId, state.currentServerId, MatchEventType.ACE, isReturnEvent = false)
-            }.onFailure { it.printStackTrace() }
+                val pointId = matchRepository.scorePoint(matchId, state.currentServerId, MatchEventType.ACE, isReturnEvent = false)
+                if (state.scoringMode == ScoringMode.ADVANCED) {
+                    _uiState.update {
+                        it.copy(
+                            detailingPointId = pointId,
+                            detailingEventType = MatchEventType.ACE,
+                            winnerDetailingPlayerId = state.currentServerId,
+                            isReturnDetailing = false,
+                            selectedWinnerPosition = null,
+                            selectedWinnerHitHand = null,
+                            selectedWinnerShotType = null,
+                            selectedLoserPosition = null
+                        )
+                    }
+                } else {
+                    _uiState.update { it.copy(isDetalingActive = false) }
+                }
+            }.onFailure { 
+                it.printStackTrace()
+                _uiState.update { it.copy(isDetalingActive = false) }
+            }
         }
     }
 
@@ -258,10 +278,31 @@ class MatchViewModel @Inject constructor(
                 if (state.serveState == ServeState.FIRST_SERVE) {
                     matchRepository.recordFault(matchId)
                 } else {
+                    _uiState.update { it.copy(isDetalingActive = true) }
                     val receiverId = if (state.currentServerId == state.player1Id) state.player2Id else state.player1Id
-                    matchRepository.scorePoint(matchId, receiverId, MatchEventType.DOUBLE_FAULT, isReturnEvent = false)
+                    val pointId = matchRepository.scorePoint(matchId, receiverId, MatchEventType.DOUBLE_FAULT, isReturnEvent = false)
+                    
+                    if (state.scoringMode == ScoringMode.ADVANCED) {
+                        _uiState.update {
+                            it.copy(
+                                detailingPointId = pointId,
+                                detailingEventType = MatchEventType.DOUBLE_FAULT,
+                                winnerDetailingPlayerId = state.currentServerId, // Detalha quem cometeu a falta
+                                isReturnDetailing = false,
+                                selectedWinnerPosition = null,
+                                selectedWinnerHitHand = null,
+                                selectedWinnerShotType = null,
+                                selectedLoserPosition = null
+                            )
+                        }
+                    } else {
+                        _uiState.update { it.copy(isDetalingActive = false) }
+                    }
                 }
-            }.onFailure { it.printStackTrace() }
+            }.onFailure { 
+                it.printStackTrace()
+                _uiState.update { it.copy(isDetalingActive = false) }
+            }
         }
     }
 
