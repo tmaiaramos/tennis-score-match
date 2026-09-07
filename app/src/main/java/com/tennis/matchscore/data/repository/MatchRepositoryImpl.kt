@@ -153,15 +153,27 @@ class MatchRepositoryImpl @Inject constructor(
                 val wasTieBreakSet = currentState.isTieBreak ||
                         format.isTieBreakSet(p1Games, p2Games, setNumber = currentState.currentSet)
 
-                // Item 2 & 3: Capturar os pontos finais do Tie Break corretamente (7x2, etc)
+                // Item 2 & 3: Capturar os pontos finais do Tie Break corretamente
                 var tbP1: Int? = null
                 var tbP2: Int? = null
                 
                 if (wasTieBreakSet) {
                     val p1PtsBefore = currentState.player1PointsCurrentGame.toIntOrNull() ?: 0
                     val p2PtsBefore = currentState.player2PointsCurrentGame.toIntOrNull() ?: 0
-                    tbP1 = if (pointWinnerId == match.player1Id) p1PtsBefore + 1 else p1PtsBefore
-                    tbP2 = if (pointWinnerId == match.player2Id) p2PtsBefore + 1 else p2PtsBefore
+                    
+                    // Verificamos se o placar já não foi atualizado pela Engine no newState
+                    // Caso a Engine tenha mantido os pontos no newState (antes de zerar no próximo set)
+                    val p1PtsAfter = newState.player1PointsCurrentGame.toIntOrNull()
+                    val p2PtsAfter = newState.player2PointsCurrentGame.toIntOrNull()
+                    
+                    if (p1PtsAfter != null && p2PtsAfter != null && (p1PtsAfter > 0 || p2PtsAfter > 0)) {
+                        tbP1 = p1PtsAfter
+                        tbP2 = p2PtsAfter
+                    } else {
+                        // Caso contrário, calculamos baseados no vencedor do ponto
+                        tbP1 = if (pointWinnerId == match.player1Id) p1PtsBefore + 1 else p1PtsBefore
+                        tbP2 = if (pointWinnerId == match.player2Id) p2PtsBefore + 1 else p2PtsBefore
+                    }
                 }
 
                 val setScore = SetScoreEntity(

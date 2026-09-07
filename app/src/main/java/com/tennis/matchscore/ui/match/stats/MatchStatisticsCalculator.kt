@@ -166,11 +166,11 @@ class MatchStatisticsCalculator(
                     if (point.pointWinnerId != 0L) {
                         totalPointsServed++ // Ponto encerrado no 2o saque
                         if (point.eventType != MatchEventType.DOUBLE_FAULT) {
-                            // 2o saque entrou e o ponto foi disputado
+                            // 2o saque entrou e o ponto foi disputado (Item 4)
                             secondServesIn++
                             if (wonPoint) secondServesWon++
                         } else {
-                            // Dupla falta: Já contabilizada em doubleFaults
+                            // Dupla falta: Não incrementa secondServesIn (Item 4)
                         }
                     }
                 }

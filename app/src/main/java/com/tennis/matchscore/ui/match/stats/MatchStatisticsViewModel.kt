@@ -13,7 +13,9 @@ import javax.inject.Inject
 sealed class MatchStatisticsUiState {
     object Loading : MatchStatisticsUiState()
     data class Success(
-        val stats: MatchStats,
+        val totalStats: MatchStats,
+        val setStats: Map<Int, MatchStats>,
+        val availableSets: List<Int>, // 0 = Total, 1..N = Sets
         val player1Sets: Int,
         val player2Sets: Int,
         val completedSets: List<com.tennis.matchscore.ui.match.CompletedSetUiState>,
@@ -45,13 +47,31 @@ class MatchStatisticsViewModel @Inject constructor(
                 val p1FullName = "${matchDetails.player1.firstName} ${matchDetails.player1.lastName}".trim()
                 val p2FullName = "${matchDetails.player2.firstName} ${matchDetails.player2.lastName}".trim()
                 
-                val calculator = MatchStatisticsCalculator(
+                val p1Name = p1FullName.ifBlank { "Jogador 1" }
+                val p2Name = p2FullName.ifBlank { "Jogador 2" }
+
+                // Cálculo Total
+                val totalCalculator = MatchStatisticsCalculator(
                     p1Id = matchDetails.match.player1Id,
                     p2Id = matchDetails.match.player2Id,
-                    p1Name = p1FullName.ifBlank { "Jogador 1" },
-                    p2Name = p2FullName.ifBlank { "Jogador 2" },
+                    p1Name = p1Name,
+                    p2Name = p2Name,
                     points = points
                 )
+                val totalStats = totalCalculator.calculate()
+
+                // Cálculo por Set
+                val setStatsMap = points.groupBy { it.setNumber }.mapValues { (_, pointsInSet) ->
+                    MatchStatisticsCalculator(
+                        p1Id = matchDetails.match.player1Id,
+                        p2Id = matchDetails.match.player2Id,
+                        p1Name = p1Name,
+                        p2Name = p2Name,
+                        points = pointsInSet
+                    ).calculate()
+                }
+
+                val availableSets = (listOf(0) + setStatsMap.keys.sorted())
 
                 val format = matchDetails.format
                 val match = matchDetails.match
@@ -82,7 +102,9 @@ class MatchStatisticsViewModel @Inject constructor(
                     }
                 
                 _uiState.value = MatchStatisticsUiState.Success(
-                    stats = calculator.calculate(),
+                    totalStats = totalStats,
+                    setStats = setStatsMap,
+                    availableSets = availableSets,
                     player1Sets = p1Sets,
                     player2Sets = p2Sets,
                     completedSets = completedSetsList,
@@ -93,6 +115,7 @@ class MatchStatisticsViewModel @Inject constructor(
                     player2GamesCurrentSet = match.player2GamesCurrentSet
                 )
             }.onFailure { error ->
+                error.printStackTrace()
                 _uiState.value = MatchStatisticsUiState.Error(error.message ?: "Erro desconhecido")
             }
         }
