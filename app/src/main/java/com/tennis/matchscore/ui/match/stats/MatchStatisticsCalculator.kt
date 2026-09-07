@@ -149,27 +149,29 @@ class MatchStatisticsCalculator(
                                      ((point.eventType == MatchEventType.UNFORCED_ERROR || point.eventType == MatchEventType.FORCED_ERROR) && lostPoint)
 
             if (isServer) {
-                // Item 4: Lógica de contabilização de saques (1st In, 2nd In, DF)
+                // Item 4 & 13: Lógica de contabilização de saques (1st In, 2nd In, DF)
                 if (point.serveStateBefore == ServeState.FIRST_SERVE) {
-                    totalServes++ // Todo ponto iniciado no 1o saque incrementa o total de saques
-                    totalPointsServed++
-                    
                     if (point.pointWinnerId != 0L) {
-                        // O ponto terminou no 1o saque (ACE, Winner, Erro na devolução, etc)
+                        // Ponto encerrado no 1o saque (Ace, Winner, Erro de devolução)
+                        totalServes++
+                        totalPointsServed++
                         firstServesIn++
                         if (wonPoint) firstServesWon++
-                    }
-                    // Se point.pointWinnerId == 0L, foi uma "Falta" (registrada pelo repository.recordFault)
-                    // Não incrementamos firstServesIn nem totalPointsServed aqui, 
-                    // pois o ponto continua no 2o saque.
-                } else if (point.serveStateBefore == ServeState.SECOND_SERVE) {
-                    totalPointsServed++
-                    if (point.eventType != MatchEventType.DOUBLE_FAULT) {
-                        // O 2o saque entrou (Item 4)
-                        secondServesIn++
-                        if (wonPoint) secondServesWon++
                     } else {
-                        // Dupla Falta: Já incrementada no doubleFaults++ abaixo
+                        // Foi uma "Falta" (1o saque fora). Ponto continua.
+                        totalServes++
+                        // Não incrementamos totalPointsServed nem firstServesIn aqui.
+                    }
+                } else if (point.serveStateBefore == ServeState.SECOND_SERVE) {
+                    if (point.pointWinnerId != 0L) {
+                        totalPointsServed++ // Ponto encerrado no 2o saque
+                        if (point.eventType != MatchEventType.DOUBLE_FAULT) {
+                            // 2o saque entrou e o ponto foi disputado
+                            secondServesIn++
+                            if (wonPoint) secondServesWon++
+                        } else {
+                            // Dupla falta: Já contabilizada em doubleFaults
+                        }
                     }
                 }
                 
@@ -211,18 +213,19 @@ else {
             }
 
             // Item 14: Break Points (em favor do jogador atual quando ele é RECEBEDOR)
-            if (!isServer && isBreakPointOpportunity(point, playerId, opponentId)) {
+            if (!isServer && point.pointWinnerId != 0L && isBreakPointOpportunity(point, playerId, opponentId)) {
                 breakPointsTotal++
                 if (wonPoint) breakPointsWon++
             }
             
-            // Item 6 & 7: Lógica de Rede (Y = Approach + Net; X = Vencidos nesses casos)
+            // Item 6 & 7: Lógica de Rede (Somente posição NET)
             val myPosition = if (detailingPlayerIsMe) point.winnerPosition else point.loserPosition
-            val isAtNet = myPosition == CourtPosition.NET || myPosition == CourtPosition.APPROACH
             
-            if (isAtNet) {
-                netPointsTotal++
-                if (wonPoint) netPointsWon++
+            if (point.pointWinnerId != 0L) {
+                if (myPosition == CourtPosition.NET) {
+                    netPointsTotal++
+                    if (wonPoint) netPointsWon++
+                }
                 
                 if (myPosition == CourtPosition.APPROACH) {
                     approachPointsTotal++
@@ -260,14 +263,16 @@ else {
     }
 
     private fun isBreakPointOpportunity(point: PointHistoryEntity, receiverId: Long, serverId: Long): Boolean {
-        // Pega o placar do ponto ANTES dele ser marcado
+        // Placar antes do ponto ser jogado
         val sR = if (receiverId == p1Id) point.scoreP1Before else point.scoreP2Before
         val sS = if (serverId == p1Id) point.scoreP1Before else point.scoreP2Before
         
-        // Em Tie-break não se conta "Break Point" no sentido tradicional de estatística de ATP/WTA
-        if (point.scoreP1Before.toIntOrNull() != null) return false
+        // Em Tie-break não existe "Break Point" (é "Mini-break", outra categoria)
+        if (sR.toIntOrNull() != null || sS.toIntOrNull() != null) return false
 
-        // Break Point para o recebedor ocorre quando o recebedor está a 1 ponto de ganhar o game
+        // Situações de Break Point para o recebedor:
+        // 1. Recebedor tem 40 e Sacador tem 0, 15 ou 30.
+        // 2. Recebedor tem Vantagem (AD) e Sacador tem 40 (implícito no AD).
         return when {
             sR == "40" && (sS == "0" || sS == "15" || sS == "30") -> true
             sR == "AD" -> true

@@ -159,6 +159,7 @@ private fun androidx.compose.foundation.lazy.LazyListScope.essentialTab(stats: M
     item { GroupHeader("3 - Conversion", stats) }
     item { StatRow("Receiving pts won", formatPct(stats.p1.receivingPointsWonPercentage, stats.p1.totalPointsReceived > 0), formatPct(stats.p2.receivingPointsWonPercentage, stats.p2.totalPointsReceived > 0)) }
     item { StatRow("Break points", "${formatVal(stats.p1.breakPointsWon, p1Active)}/${formatVal(stats.p1.breakPointsTotal, p1Active)}", "${formatVal(stats.p2.breakPointsWon, p2Active)}/${formatVal(stats.p2.breakPointsTotal, p2Active)}") }
+    item { StatRow("1st service pts won", formatPct(stats.p1.firstServePointsWonPercentage, stats.p1.firstServesIn > 0), formatPct(stats.p2.firstServePointsWonPercentage, stats.p2.firstServesIn > 0)) }
     item { StatRow("Net points", "${formatVal(stats.p1.netPointsWon, stats.p1.netPointsTotal > 0)}/${formatVal(stats.p1.netPointsTotal, stats.p1.netPointsTotal > 0)}", "${formatVal(stats.p2.netPointsWon, stats.p2.netPointsTotal > 0)}/${formatVal(stats.p2.netPointsTotal, stats.p2.netPointsTotal > 0)}") }
 }
 
