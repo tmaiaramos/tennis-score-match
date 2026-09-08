@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Partida de Tênis - Placar e Estatística</string>
+    <string name="app_name">Tênis - Placar e Estatística</string>
 
     <!-- Menu Principal -->
     <string name="menu_main_title">Menu Principal</string>

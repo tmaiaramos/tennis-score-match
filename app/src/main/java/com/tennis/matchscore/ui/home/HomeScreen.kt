@@ -1,5 +1,6 @@
 package com.tennis.matchscore.ui.home
 
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -20,7 +21,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
 import com.tennis.matchscore.R
 
@@ -30,7 +30,7 @@ fun HomeScreen(
     onNavigateToNewMatch: () -> Unit,
     onNavigateToPlayers: () -> Unit,
     onNavigateToFormats: () -> Unit,
-    onNavigateToHistory: () -> Unit,
+    onNavigateToHistory: () -> Unit
 ) {
     var showMenu by remember { mutableStateOf(false) }
 
@@ -47,7 +47,12 @@ fun HomeScreen(
                             modifier = Modifier.size(32.dp)
                         )
                         Spacer(modifier = Modifier.width(12.dp))
-                        Text(stringResource(id = R.string.app_name), fontWeight = FontWeight.Bold)
+                        Text(
+                            text = stringResource(id = R.string.app_name),
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp,
+                            maxLines = 1
+                        )
                     }
                 },
                 actions = {
@@ -165,6 +170,7 @@ fun HomeScreen(
                     modifier = Modifier.weight(1f),
                     onClick = onNavigateToHistory
                 )
+                Spacer(modifier = Modifier.weight(1f))
             }
         }
     }
