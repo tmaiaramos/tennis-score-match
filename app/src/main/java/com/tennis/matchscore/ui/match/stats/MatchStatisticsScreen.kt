@@ -1,5 +1,6 @@
 package com.tennis.matchscore.ui.match.stats
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -34,7 +35,7 @@ private fun formatShortName(fullName: String): String {
 private fun formatVal(v: Int, hasData: Boolean = true): String = if (v == 0 && !hasData) "-" else v.toString()
 private fun formatPct(v: Int, hasData: Boolean = true): String = if (v == 0 && !hasData) "-" else "$v%"
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun MatchStatisticsScreen(
     matchId: Long,
@@ -156,12 +157,12 @@ private fun StatisticsContent(stats: MatchStats, tabIndex: Int) {
 }
 
 private fun androidx.compose.foundation.lazy.LazyListScope.essentialTab(stats: MatchStats) {
-    item { GroupHeader(stringResource(id = R.string.group_service), stats) }
+    stickyHeader { GroupHeader(stringResource(id = R.string.group_service), stats) }
     item { StatRow(stringResource(id = R.string.stat_pct_1st_serve), formatPct(stats.p1.firstServePercentage, stats.p1.totalServes > 0), formatPct(stats.p2.firstServePercentage, stats.p2.totalServes > 0)) }
     item { StatRow(stringResource(id = R.string.stat_aces), formatVal(stats.p1.aces, stats.p1.aces > 0), formatVal(stats.p2.aces, stats.p2.aces > 0)) }
     item { StatRow(stringResource(id = R.string.stat_double_faults), formatVal(stats.p1.doubleFaults, stats.p1.doubleFaults > 0), formatVal(stats.p2.doubleFaults, stats.p2.doubleFaults > 0)) }
 
-    item { GroupHeader(stringResource(id = R.string.group_points), stats) }
+    stickyHeader { GroupHeader(stringResource(id = R.string.group_points), stats) }
     item { StatRow(stringResource(id = R.string.stat_total_pts_won), formatVal(stats.p1.totalPointsWon, stats.p1.totalPointsWon > 0), formatVal(stats.p2.totalPointsWon, stats.p2.totalPointsWon > 0)) }
     item { 
         ComplexStatRow(
@@ -183,7 +184,7 @@ private fun androidx.compose.foundation.lazy.LazyListScope.essentialTab(stats: M
     }
     item { StatRow(stringResource(id = R.string.stat_aggressive_margin), formatVal(stats.p1.aggressiveMargin, stats.p1.aggressiveMargin != 0), formatVal(stats.p2.aggressiveMargin, stats.p2.aggressiveMargin != 0)) }
 
-    item { GroupHeader(stringResource(id = R.string.group_conversion), stats) }
+    stickyHeader { GroupHeader(stringResource(id = R.string.group_conversion), stats) }
     item { StatRow(stringResource(id = R.string.stat_receiving_pts_won), formatPct(stats.p1.receivingPointsWonPercentage, stats.p1.totalPointsReceived > 0), formatPct(stats.p2.receivingPointsWonPercentage, stats.p2.totalPointsReceived > 0)) }
     item { StatRow(stringResource(id = R.string.stat_break_points), "${formatVal(stats.p1.breakPointsWon, stats.p1.breakPointsTotal > 0)}/${formatVal(stats.p1.breakPointsTotal, stats.p1.breakPointsTotal > 0)}", "${formatVal(stats.p2.breakPointsWon, stats.p2.breakPointsTotal > 0)}/${formatVal(stats.p2.breakPointsTotal, stats.p2.breakPointsTotal > 0)}") }
     item { StatRow(stringResource(id = R.string.stat_1st_serve_pts_won), formatPct(stats.p1.firstServePointsWonPercentage, stats.p1.firstServesIn > 0), formatPct(stats.p2.firstServePointsWonPercentage, stats.p2.firstServesIn > 0)) }
@@ -191,7 +192,7 @@ private fun androidx.compose.foundation.lazy.LazyListScope.essentialTab(stats: M
 }
 
 private fun androidx.compose.foundation.lazy.LazyListScope.detailedTab(stats: MatchStats) {
-    item { GroupHeader(stringResource(id = R.string.group_service), stats) }
+    stickyHeader { GroupHeader(stringResource(id = R.string.group_service), stats) }
     item { StatRow(stringResource(id = R.string.stat_total_services), formatVal(stats.p1.totalServes, stats.p1.totalServes > 0), formatVal(stats.p2.totalServes, stats.p2.totalServes > 0)) }
     item { StatRow(stringResource(id = R.string.stat_pct_1st_serve), formatPct(stats.p1.firstServePercentage, stats.p1.totalServes > 0), formatPct(stats.p2.firstServePercentage, stats.p2.totalServes > 0)) }
     item { StatRow(stringResource(id = R.string.stat_aces), formatVal(stats.p1.aces, stats.p1.aces > 0), formatVal(stats.p2.aces, stats.p2.aces > 0)) }
@@ -199,7 +200,7 @@ private fun androidx.compose.foundation.lazy.LazyListScope.detailedTab(stats: Ma
     item { StatRow(stringResource(id = R.string.stat_1st_serves_in), formatVal(stats.p1.firstServesIn, stats.p1.firstServesIn > 0), formatVal(stats.p2.firstServesIn, stats.p2.firstServesIn > 0)) }
     item { StatRow(stringResource(id = R.string.stat_2nd_serves), formatVal(stats.p1.secondServesIn, stats.p1.secondServesIn > 0), formatVal(stats.p2.secondServesIn, stats.p2.secondServesIn > 0)) }
 
-    item { GroupHeader(stringResource(id = R.string.group_return), stats) }
+    stickyHeader { GroupHeader(stringResource(id = R.string.group_return), stats) }
     item { 
         ComplexStatRow(
             label = stringResource(id = R.string.stat_return_errors),
@@ -217,7 +218,7 @@ private fun androidx.compose.foundation.lazy.LazyListScope.detailedTab(stats: Ma
     item { StatRow(stringResource(id = R.string.stat_unreturned_1st), formatVal(stats.p1.unreturnedFirstServes, stats.p1.unreturnedFirstServes > 0), formatVal(stats.p2.unreturnedFirstServes, stats.p2.unreturnedFirstServes > 0)) }
     item { StatRow(stringResource(id = R.string.stat_unreturned_2nd), formatVal(stats.p1.unreturnedSecondServes, stats.p1.unreturnedSecondServes > 0), formatVal(stats.p2.unreturnedSecondServes, stats.p2.unreturnedSecondServes > 0)) }
 
-    item { GroupHeader(stringResource(id = R.string.group_points), stats) }
+    stickyHeader { GroupHeader(stringResource(id = R.string.group_points), stats) }
     item { StatRow(stringResource(id = R.string.stat_total_pts_won), formatVal(stats.p1.totalPointsWon, stats.p1.totalPointsWon > 0), formatVal(stats.p2.totalPointsWon, stats.p2.totalPointsWon > 0)) }
     item { 
         ComplexStatRow(
@@ -242,7 +243,7 @@ private fun androidx.compose.foundation.lazy.LazyListScope.detailedTab(stats: Ma
     }
     item { StatRow(stringResource(id = R.string.stat_aggressive_margin), formatVal(stats.p1.aggressiveMargin, stats.p1.aggressiveMargin != 0), formatVal(stats.p2.aggressiveMargin, stats.p2.aggressiveMargin != 0)) }
 
-    item { GroupHeader(stringResource(id = R.string.group_conversion), stats) }
+    stickyHeader { GroupHeader(stringResource(id = R.string.group_conversion), stats) }
     item { StatRow(stringResource(id = R.string.stat_2nd_serve_pts_won), formatPct(stats.p1.secondServePointsWonPercentage, stats.p1.totalServes - stats.p1.firstServesIn > 0), formatPct(stats.p2.secondServePointsWonPercentage, stats.p2.totalServes - stats.p2.firstServesIn > 0)) }
     item { StatRow(stringResource(id = R.string.stat_1st_serve_pts_won), formatPct(stats.p1.firstServePointsWonPercentage, stats.p1.firstServesIn > 0), formatPct(stats.p2.firstServePointsWonPercentage, stats.p2.firstServesIn > 0)) }
     item { StatRow(stringResource(id = R.string.stat_receiving_pts_won), formatPct(stats.p1.receivingPointsWonPercentage, stats.p1.totalPointsReceived > 0), formatPct(stats.p2.receivingPointsWonPercentage, stats.p2.totalPointsReceived > 0)) }
@@ -265,7 +266,7 @@ private fun androidx.compose.foundation.lazy.LazyListScope.byShotTab(stats: Matc
             ShotType.SWING -> R.string.shot_swing
         }
         
-        item { 
+        stickyHeader { 
             val label = stringResource(id = labelRes)
             GroupHeader("${index + 1} - $label", stats) 
         }
