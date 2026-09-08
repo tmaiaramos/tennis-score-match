@@ -12,12 +12,14 @@ import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.runtime.mutableLongStateOf
+import com.tennis.matchscore.R
 import com.tennis.matchscore.data.local.entity.MatchFormatEntity
 import com.tennis.matchscore.data.local.entity.PlayerEntity
 import java.text.SimpleDateFormat
@@ -49,20 +51,20 @@ fun NewMatchSetupScreen(
                 title = {
                     Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                         Icon(
-                            painter = androidx.compose.ui.res.painterResource(id = com.tennis.matchscore.R.drawable.ic_app_logo_png),
+                            painter = androidx.compose.ui.res.painterResource(id = R.drawable.ic_app_logo_png),
                             contentDescription = null,
                             tint = Color.Unspecified,
                             modifier = Modifier.size(32.dp)
                         )
                         Spacer(modifier = Modifier.width(12.dp))
-                        Text("Nova Partida")
+                        Text(stringResource(id = R.string.screen_new_match_title))
                     }
                 },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Voltar"
+                            contentDescription = stringResource(id = R.string.btn_cancel_back)
                         )
                     }
                 },
@@ -89,17 +91,17 @@ fun NewMatchSetupScreen(
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Text("Jogadores", style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(id = R.string.menu_players), style = MaterialTheme.typography.titleMedium)
 
                 PlayerDropdown(
-                    label = "Jogador 1",
+                    label = stringResource(id = R.string.new_match_player1),
                     players = uiState.players,
                     selectedPlayer = uiState.player1,
                     onPlayerSelected = viewModel::onPlayer1Selected
                 )
 
                 PlayerDropdown(
-                    label = "Jogador 2",
+                    label = stringResource(id = R.string.new_match_player2),
                     players = uiState.players.filter { it.id != uiState.player1?.id },
                     selectedPlayer = uiState.player2,
                     onPlayerSelected = viewModel::onPlayer2Selected
@@ -108,14 +110,14 @@ fun NewMatchSetupScreen(
                 HorizontalDivider()
 
                 Column(modifier = Modifier.fillMaxWidth()) {
-                    Text("Sacador Inicial", style = MaterialTheme.typography.titleSmall)
+                    Text(stringResource(id = R.string.new_match_server), style = MaterialTheme.typography.titleSmall)
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        val p1Name = uiState.player1?.let { "${it.firstName} ${it.lastName}".trim() } ?: "Jogador 1"
-                        val p2Name = uiState.player2?.let { "${it.firstName} ${it.lastName}".trim() } ?: "Jogador 2"
+                        val p1Name = uiState.player1?.let { "${it.firstName} ${it.lastName}".trim() } ?: stringResource(id = R.string.new_match_player1)
+                        val p2Name = uiState.player2?.let { "${it.firstName} ${it.lastName}".trim() } ?: stringResource(id = R.string.new_match_player2)
 
                         FilterChip(
                             selected = uiState.initialServer == 1,
@@ -149,19 +151,24 @@ fun NewMatchSetupScreen(
                 }
 
                 Column(modifier = Modifier.fillMaxWidth()) {
-                    Text("Tipo de Marcação", style = MaterialTheme.typography.titleSmall)
+                    Text(stringResource(id = R.string.new_match_detail_level), style = MaterialTheme.typography.titleSmall)
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         ScoringMode.entries.forEach { mode ->
+                            val labelRes = when(mode) {
+                                ScoringMode.BASIC -> R.string.scoring_basic
+                                ScoringMode.INTERMEDIATE -> R.string.scoring_intermediate
+                                ScoringMode.ADVANCED -> R.string.scoring_advanced
+                            }
                             FilterChip(
                                 selected = uiState.scoringMode == mode,
                                 onClick = { viewModel.onScoringModeChanged(mode) },
                                 label = { 
                                     Box(modifier = Modifier.fillMaxWidth(), contentAlignment = androidx.compose.ui.Alignment.Center) {
-                                        Text(mode.displayName, fontSize = 11.sp) 
+                                        Text(stringResource(id = labelRes), fontSize = 11.sp) 
                                     }
                                 },
                                 modifier = Modifier.weight(1f),
@@ -184,7 +191,7 @@ fun NewMatchSetupScreen(
 
                 uiState.selectedFormat?.let { format ->
                     Text(
-                        text = if (format.hasAdvantage) "• Modo: Com Vantagem (Ad)" else "• Modo: Sem Vantagem (No-Ad)",
+                        text = if (format.hasAdvantage) stringResource(id = R.string.mode_advantage) else stringResource(id = R.string.mode_no_advantage),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.padding(start = 4.dp, top = 2.dp)
@@ -202,11 +209,11 @@ fun NewMatchSetupScreen(
                             onValueChange = {},
                             readOnly = true,
                             enabled = false,
-                            label = { Text("Data da Partida") },
+                            label = { Text(stringResource(id = R.string.new_match_date)) },
                             trailingIcon = {
                                 Icon(
                                     imageVector = Icons.Default.CalendarToday,
-                                    contentDescription = "Selecionar Data",
+                                    contentDescription = stringResource(id = R.string.new_match_date),
                                     modifier = Modifier.size(18.dp)
                                 )
                             },
@@ -228,16 +235,20 @@ fun NewMatchSetupScreen(
                         modifier = Modifier.weight(0.7f),
                         horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
                     ) {
-                        Text("Tipo de Quadra", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(stringResource(id = R.string.new_match_court_type), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Spacer(modifier = Modifier.height(8.dp)) // Aumentado para 8dp
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) { // Aumentado para 8dp
                             CourtSurface.entries.forEach { surface ->
+                                val labelRes = when(surface) {
+                                    CourtSurface.HARD -> R.string.court_hard
+                                    CourtSurface.CLAY -> R.string.court_clay
+                                }
                                 FilterChip(
                                     selected = uiState.surface == surface,
                                     onClick = { viewModel.onSurfaceChanged(surface) },
                                     label = { 
                                         Box(modifier = Modifier.fillMaxWidth(), contentAlignment = androidx.compose.ui.Alignment.Center) {
-                                            Text(surface.displayName, fontSize = 11.sp) 
+                                            Text(stringResource(id = labelRes), fontSize = 11.sp) 
                                         }
                                     },
                                     modifier = Modifier.width(110.dp).height(32.dp), // Largura reduzida para 110.dp
@@ -272,7 +283,7 @@ fun NewMatchSetupScreen(
                     modifier = Modifier.fillMaxWidth(),
                     enabled = uiState.isValid
                 ) {
-                    Text("Iniciar Partida")
+                    Text(stringResource(id = R.string.new_match_start))
                 }
             }
         }
@@ -294,12 +305,12 @@ fun NewMatchSetupScreen(
                             showDatePicker = false
                         }
                     ) {
-                        Text("OK")
+                        Text(stringResource(id = R.string.btn_ok))
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { showDatePicker = false }) {
-                        Text("Cancelar")
+                        Text(stringResource(id = R.string.rule_cancel))
                     }
                 }
             ) {
@@ -321,7 +332,7 @@ private fun PlayerDropdown(
 
     val selectedDisplayName = selectedPlayer?.let {
         "${it.firstName} ${it.lastName}".trim()
-    } ?: "Selecione o jogador"
+    } ?: stringResource(id = R.string.new_match_select_player)
 
     ExposedDropdownMenuBox(
         expanded = expanded,
@@ -369,10 +380,10 @@ private fun FormatDropdown(
         onExpandedChange = { expanded = !expanded }
     ) {
         OutlinedTextField(
-            value = selectedFormat?.name ?: "Selecione o formato",
+            value = selectedFormat?.name ?: stringResource(id = R.string.new_match_select_player),
             onValueChange = {},
             readOnly = true,
-            label = { Text("Formato / Regra") },
+            label = { Text(stringResource(id = R.string.new_match_rule)) },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
             modifier = Modifier
                 .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
@@ -388,7 +399,7 @@ private fun FormatDropdown(
                         Column {
                             Text(format.name, fontWeight = FontWeight.Medium)
                             Text(
-                                text = if (format.hasAdvantage) "Com Vantagem (Ad)" else "Sem Vantagem (No-Ad)",
+                                text = if (format.hasAdvantage) stringResource(id = R.string.rule_advantage) else "Sem Vantagem (No-Ad)",
                                 fontSize = 11.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )

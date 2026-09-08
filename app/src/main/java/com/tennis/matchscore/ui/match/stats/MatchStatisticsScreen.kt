@@ -11,11 +11,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.tennis.matchscore.R
 import com.tennis.matchscore.domain.model.ShotType
 import com.tennis.matchscore.ui.match.CompletedSetUiState
 
@@ -41,7 +44,11 @@ fun MatchStatisticsScreen(
     val uiState by viewModel.uiState.collectAsState()
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     var selectedSetTab by remember { mutableIntStateOf(0) } // 0 = Total
-    val tabs = listOf("Essential", "Detailed", "By Shot")
+    val tabs = listOf(
+        stringResource(id = R.string.tab_essential),
+        stringResource(id = R.string.tab_detailed),
+        stringResource(id = R.string.tab_by_shot)
+    )
 
     LaunchedEffect(matchId) {
         viewModel.loadStatistics(matchId)
@@ -54,18 +61,18 @@ fun MatchStatisticsScreen(
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
-                            painter = androidx.compose.ui.res.painterResource(id = com.tennis.matchscore.R.drawable.ic_app_logo_png),
+                            painter = painterResource(id = R.drawable.ic_app_logo_png),
                             contentDescription = null,
                             tint = Color.Unspecified,
                             modifier = Modifier.size(32.dp)
                         )
                         Spacer(modifier = Modifier.width(12.dp))
-                        Text("Estatísticas da Partida")
+                        Text(stringResource(id = R.string.screen_stats_title))
                     }
                 },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Voltar")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(id = R.string.btn_cancel_back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -108,7 +115,7 @@ fun MatchStatisticsScreen(
                                     onClick = { selectedSetTab = setNum },
                                     text = { 
                                         Text(
-                                            text = if (setNum == 0) "Total" else "Set $setNum",
+                                            text = if (setNum == 0) stringResource(id = R.string.stats_total) else stringResource(id = R.string.set_label, setNum),
                                             fontSize = 12.sp,
                                             fontWeight = if (selectedSetTab == setNum) FontWeight.Bold else FontWeight.Normal
                                         )
@@ -149,16 +156,16 @@ private fun StatisticsContent(stats: MatchStats, tabIndex: Int) {
 }
 
 private fun androidx.compose.foundation.lazy.LazyListScope.essentialTab(stats: MatchStats) {
-    item { GroupHeader("1 - Service", stats) }
-    item { StatRow("% 1st service", formatPct(stats.p1.firstServePercentage, stats.p1.totalServes > 0), formatPct(stats.p2.firstServePercentage, stats.p2.totalServes > 0)) }
-    item { StatRow("Aces", formatVal(stats.p1.aces, stats.p1.aces > 0), formatVal(stats.p2.aces, stats.p2.aces > 0)) }
-    item { StatRow("Double Faults", formatVal(stats.p1.doubleFaults, stats.p1.doubleFaults > 0), formatVal(stats.p2.doubleFaults, stats.p2.doubleFaults > 0)) }
+    item { GroupHeader(stringResource(id = R.string.group_service), stats) }
+    item { StatRow(stringResource(id = R.string.stat_pct_1st_serve), formatPct(stats.p1.firstServePercentage, stats.p1.totalServes > 0), formatPct(stats.p2.firstServePercentage, stats.p2.totalServes > 0)) }
+    item { StatRow(stringResource(id = R.string.stat_aces), formatVal(stats.p1.aces, stats.p1.aces > 0), formatVal(stats.p2.aces, stats.p2.aces > 0)) }
+    item { StatRow(stringResource(id = R.string.stat_double_faults), formatVal(stats.p1.doubleFaults, stats.p1.doubleFaults > 0), formatVal(stats.p2.doubleFaults, stats.p2.doubleFaults > 0)) }
 
-    item { GroupHeader("2 - Points", stats) }
-    item { StatRow("Total points won", formatVal(stats.p1.totalPointsWon, stats.p1.totalPointsWon > 0), formatVal(stats.p2.totalPointsWon, stats.p2.totalPointsWon > 0)) }
+    item { GroupHeader(stringResource(id = R.string.group_points), stats) }
+    item { StatRow(stringResource(id = R.string.stat_total_pts_won), formatVal(stats.p1.totalPointsWon, stats.p1.totalPointsWon > 0), formatVal(stats.p2.totalPointsWon, stats.p2.totalPointsWon > 0)) }
     item { 
         ComplexStatRow(
-            label = "Winners",
+            label = stringResource(id = R.string.stat_winners),
             p1Total = stats.p1.winnersBH + stats.p1.winnersFH + stats.p1.aces,
             p1BH = stats.p1.winnersBH, p1FH = stats.p1.winnersFH,
             p2Total = stats.p2.winnersBH + stats.p2.winnersFH + stats.p2.aces,
@@ -167,116 +174,121 @@ private fun androidx.compose.foundation.lazy.LazyListScope.essentialTab(stats: M
     }
     item { 
         ComplexStatRow(
-            label = "Unforced Errors",
+            label = stringResource(id = R.string.stat_unforced_errors),
             p1Total = stats.p1.unforcedErrorsBH + stats.p1.unforcedErrorsFH + stats.p1.doubleFaults,
             p1BH = stats.p1.unforcedErrorsBH, p1FH = stats.p1.unforcedErrorsFH,
             p2Total = stats.p2.unforcedErrorsBH + stats.p2.unforcedErrorsFH + stats.p2.doubleFaults,
             p2BH = stats.p2.unforcedErrorsBH, p2FH = stats.p2.unforcedErrorsFH
         )
     }
-    item { StatRow("Agressive Margin", formatVal(stats.p1.aggressiveMargin, stats.p1.aggressiveMargin != 0), formatVal(stats.p2.aggressiveMargin, stats.p2.aggressiveMargin != 0)) }
+    item { StatRow(stringResource(id = R.string.stat_aggressive_margin), formatVal(stats.p1.aggressiveMargin, stats.p1.aggressiveMargin != 0), formatVal(stats.p2.aggressiveMargin, stats.p2.aggressiveMargin != 0)) }
 
-    item { GroupHeader("3 - Conversion", stats) }
-    item { StatRow("Receiving pts won", formatPct(stats.p1.receivingPointsWonPercentage, stats.p1.totalPointsReceived > 0), formatPct(stats.p2.receivingPointsWonPercentage, stats.p2.totalPointsReceived > 0)) }
-    item { StatRow("Break points", "${formatVal(stats.p1.breakPointsWon, stats.p1.breakPointsTotal > 0)}/${formatVal(stats.p1.breakPointsTotal, stats.p1.breakPointsTotal > 0)}", "${formatVal(stats.p2.breakPointsWon, stats.p2.breakPointsTotal > 0)}/${formatVal(stats.p2.breakPointsTotal, stats.p2.breakPointsTotal > 0)}") }
-    item { StatRow("1st service pts won", formatPct(stats.p1.firstServePointsWonPercentage, stats.p1.firstServesIn > 0), formatPct(stats.p2.firstServePointsWonPercentage, stats.p2.firstServesIn > 0)) }
-    item { StatRow("Net points", "${formatVal(stats.p1.netPointsWon, stats.p1.netPointsTotal > 0)}/${formatVal(stats.p1.netPointsTotal, stats.p1.netPointsTotal > 0)}", "${formatVal(stats.p2.netPointsWon, stats.p2.netPointsTotal > 0)}/${formatVal(stats.p2.netPointsTotal, stats.p2.netPointsTotal > 0)}") }
+    item { GroupHeader(stringResource(id = R.string.group_conversion), stats) }
+    item { StatRow(stringResource(id = R.string.stat_receiving_pts_won), formatPct(stats.p1.receivingPointsWonPercentage, stats.p1.totalPointsReceived > 0), formatPct(stats.p2.receivingPointsWonPercentage, stats.p2.totalPointsReceived > 0)) }
+    item { StatRow(stringResource(id = R.string.stat_break_points), "${formatVal(stats.p1.breakPointsWon, stats.p1.breakPointsTotal > 0)}/${formatVal(stats.p1.breakPointsTotal, stats.p1.breakPointsTotal > 0)}", "${formatVal(stats.p2.breakPointsWon, stats.p2.breakPointsTotal > 0)}/${formatVal(stats.p2.breakPointsTotal, stats.p2.breakPointsTotal > 0)}") }
+    item { StatRow(stringResource(id = R.string.stat_1st_serve_pts_won), formatPct(stats.p1.firstServePointsWonPercentage, stats.p1.firstServesIn > 0), formatPct(stats.p2.firstServePointsWonPercentage, stats.p2.firstServesIn > 0)) }
+    item { StatRow(stringResource(id = R.string.stat_net_points), "${formatVal(stats.p1.netPointsWon, stats.p1.netPointsTotal > 0)}/${formatVal(stats.p1.netPointsTotal, stats.p1.netPointsTotal > 0)}", "${formatVal(stats.p2.netPointsWon, stats.p2.netPointsTotal > 0)}/${formatVal(stats.p2.netPointsTotal, stats.p2.netPointsTotal > 0)}") }
 }
 
 private fun androidx.compose.foundation.lazy.LazyListScope.detailedTab(stats: MatchStats) {
-    item { GroupHeader("1 - Service", stats) }
-    item { StatRow("Total Services", formatVal(stats.p1.totalServes, stats.p1.totalServes > 0), formatVal(stats.p2.totalServes, stats.p2.totalServes > 0)) }
-    item { StatRow("% 1st service", formatPct(stats.p1.firstServePercentage, stats.p1.totalServes > 0), formatPct(stats.p2.firstServePercentage, stats.p2.totalServes > 0)) }
-    item { StatRow("Aces", formatVal(stats.p1.aces, stats.p1.aces > 0), formatVal(stats.p2.aces, stats.p2.aces > 0)) }
-    item { StatRow("Double Faults", formatVal(stats.p1.doubleFaults, stats.p1.doubleFaults > 0), formatVal(stats.p2.doubleFaults, stats.p2.doubleFaults > 0)) }
-    item { StatRow("1st services in", formatVal(stats.p1.firstServesIn, stats.p1.firstServesIn > 0), formatVal(stats.p2.firstServesIn, stats.p2.firstServesIn > 0)) }
-    item { StatRow("2nd services", formatVal(stats.p1.secondServesIn, stats.p1.secondServesIn > 0), formatVal(stats.p2.secondServesIn, stats.p2.secondServesIn > 0)) }
+    item { GroupHeader(stringResource(id = R.string.group_service), stats) }
+    item { StatRow(stringResource(id = R.string.stat_total_services), formatVal(stats.p1.totalServes, stats.p1.totalServes > 0), formatVal(stats.p2.totalServes, stats.p2.totalServes > 0)) }
+    item { StatRow(stringResource(id = R.string.stat_pct_1st_serve), formatPct(stats.p1.firstServePercentage, stats.p1.totalServes > 0), formatPct(stats.p2.firstServePercentage, stats.p2.totalServes > 0)) }
+    item { StatRow(stringResource(id = R.string.stat_aces), formatVal(stats.p1.aces, stats.p1.aces > 0), formatVal(stats.p2.aces, stats.p2.aces > 0)) }
+    item { StatRow(stringResource(id = R.string.stat_double_faults), formatVal(stats.p1.doubleFaults, stats.p1.doubleFaults > 0), formatVal(stats.p2.doubleFaults, stats.p2.doubleFaults > 0)) }
+    item { StatRow(stringResource(id = R.string.stat_1st_serves_in), formatVal(stats.p1.firstServesIn, stats.p1.firstServesIn > 0), formatVal(stats.p2.firstServesIn, stats.p2.firstServesIn > 0)) }
+    item { StatRow(stringResource(id = R.string.stat_2nd_serves), formatVal(stats.p1.secondServesIn, stats.p1.secondServesIn > 0), formatVal(stats.p2.secondServesIn, stats.p2.secondServesIn > 0)) }
 
-    item { GroupHeader("2 - Return", stats) }
+    item { GroupHeader(stringResource(id = R.string.group_return), stats) }
     item { 
         ComplexStatRow(
-            label = "Return errors",
+            label = stringResource(id = R.string.stat_return_errors),
             p1Total = stats.p1.returnErrorsBH + stats.p1.returnErrorsFH, p1BH = stats.p1.returnErrorsBH, p1FH = stats.p1.returnErrorsFH,
             p2Total = stats.p2.returnErrorsBH + stats.p2.returnErrorsFH, p2BH = stats.p2.returnErrorsBH, p2FH = stats.p2.returnErrorsFH
         )
     }
     item { 
         ComplexStatRow(
-            label = "Return winners",
+            label = stringResource(id = R.string.stat_return_winners),
             p1Total = stats.p1.returnWinnersBH + stats.p1.returnWinnersFH, p1BH = stats.p1.returnWinnersBH, p1FH = stats.p1.returnWinnersFH,
             p2Total = stats.p2.returnWinnersBH + stats.p2.returnWinnersFH, p2BH = stats.p2.returnWinnersBH, p2FH = stats.p2.returnWinnersFH
         )
     }
-    item { StatRow("Unreturned 1st serv.", formatVal(stats.p1.unreturnedFirstServes, stats.p1.unreturnedFirstServes > 0), formatVal(stats.p2.unreturnedFirstServes, stats.p2.unreturnedFirstServes > 0)) }
-    item { StatRow("Unreturned 2nd serv.", formatVal(stats.p1.unreturnedSecondServes, stats.p1.unreturnedSecondServes > 0), formatVal(stats.p2.unreturnedSecondServes, stats.p2.unreturnedSecondServes > 0)) }
+    item { StatRow(stringResource(id = R.string.stat_unreturned_1st), formatVal(stats.p1.unreturnedFirstServes, stats.p1.unreturnedFirstServes > 0), formatVal(stats.p2.unreturnedFirstServes, stats.p2.unreturnedFirstServes > 0)) }
+    item { StatRow(stringResource(id = R.string.stat_unreturned_2nd), formatVal(stats.p1.unreturnedSecondServes, stats.p1.unreturnedSecondServes > 0), formatVal(stats.p2.unreturnedSecondServes, stats.p2.unreturnedSecondServes > 0)) }
 
-    item { GroupHeader("3 - Points", stats) }
-    item { StatRow("Total points won", formatVal(stats.p1.totalPointsWon, stats.p1.totalPointsWon > 0), formatVal(stats.p2.totalPointsWon, stats.p2.totalPointsWon > 0)) }
+    item { GroupHeader(stringResource(id = R.string.group_points), stats) }
+    item { StatRow(stringResource(id = R.string.stat_total_pts_won), formatVal(stats.p1.totalPointsWon, stats.p1.totalPointsWon > 0), formatVal(stats.p2.totalPointsWon, stats.p2.totalPointsWon > 0)) }
     item { 
         ComplexStatRow(
-            label = "Winners",
+            label = stringResource(id = R.string.stat_winners),
             p1Total = stats.p1.winnersBH + stats.p1.winnersFH + stats.p1.aces, p1BH = stats.p1.winnersBH, p1FH = stats.p1.winnersFH,
             p2Total = stats.p2.winnersBH + stats.p2.winnersFH + stats.p2.aces, p2BH = stats.p2.winnersBH, p2FH = stats.p2.winnersFH
         )
     }
     item { 
         ComplexStatRow(
-            label = "Unforced Errors",
+            label = stringResource(id = R.string.stat_unforced_errors),
             p1Total = stats.p1.unforcedErrorsBH + stats.p1.unforcedErrorsFH + stats.p1.doubleFaults, p1BH = stats.p1.unforcedErrorsBH, p1FH = stats.p1.unforcedErrorsFH,
             p2Total = stats.p2.unforcedErrorsBH + stats.p2.unforcedErrorsFH + stats.p2.doubleFaults, p2BH = stats.p2.unforcedErrorsBH, p2FH = stats.p2.unforcedErrorsFH
         )
     }
     item { 
         ComplexStatRow(
-            label = "Forced Errors",
+            label = stringResource(id = R.string.stat_forced_errors),
             p1Total = stats.p1.forcedErrorsBH + stats.p1.forcedErrorsFH, p1BH = stats.p1.forcedErrorsBH, p1FH = stats.p1.forcedErrorsFH,
             p2Total = stats.p2.forcedErrorsBH + stats.p2.forcedErrorsFH, p2BH = stats.p2.forcedErrorsBH, p2FH = stats.p2.forcedErrorsFH
         )
     }
-    item { StatRow("Agressive margin", formatVal(stats.p1.aggressiveMargin, stats.p1.aggressiveMargin != 0), formatVal(stats.p2.aggressiveMargin, stats.p2.aggressiveMargin != 0)) }
+    item { StatRow(stringResource(id = R.string.stat_aggressive_margin), formatVal(stats.p1.aggressiveMargin, stats.p1.aggressiveMargin != 0), formatVal(stats.p2.aggressiveMargin, stats.p2.aggressiveMargin != 0)) }
 
-    item { GroupHeader("4 - Conversion", stats) }
-    item { StatRow("2nd service pts won", formatPct(stats.p1.secondServePointsWonPercentage, stats.p1.totalServes - stats.p1.firstServesIn > 0), formatPct(stats.p2.secondServePointsWonPercentage, stats.p2.totalServes - stats.p2.firstServesIn > 0)) }
-    item { StatRow("1st service pts won", formatPct(stats.p1.firstServePointsWonPercentage, stats.p1.firstServesIn > 0), formatPct(stats.p2.firstServePointsWonPercentage, stats.p2.firstServesIn > 0)) }
-    item { StatRow("Receiving pts won", formatPct(stats.p1.receivingPointsWonPercentage, stats.p1.totalPointsReceived > 0), formatPct(stats.p2.receivingPointsWonPercentage, stats.p2.totalPointsReceived > 0)) }
-    item { StatRow("Break points", "${formatVal(stats.p1.breakPointsWon, stats.p1.breakPointsTotal > 0)}/${formatVal(stats.p1.breakPointsTotal, stats.p1.breakPointsTotal > 0)}", "${formatVal(stats.p2.breakPointsWon, stats.p2.breakPointsTotal > 0)}/${formatVal(stats.p2.breakPointsTotal, stats.p2.breakPointsTotal > 0)}") }
-    item { StatRow("Net Points", "${formatVal(stats.p1.netPointsWon, stats.p1.netPointsTotal > 0)}/${formatVal(stats.p1.netPointsTotal, stats.p1.netPointsTotal > 0)}", "${formatVal(stats.p2.netPointsWon, stats.p2.netPointsTotal > 0)}/${formatVal(stats.p2.netPointsTotal, stats.p2.netPointsTotal > 0)}") }
-    item { StatRow("Approach points", "${formatVal(stats.p1.approachPointsWon, stats.p1.approachPointsTotal > 0)}/${formatVal(stats.p1.approachPointsTotal, stats.p1.approachPointsTotal > 0)}", "${formatVal(stats.p2.approachPointsWon, stats.p2.approachPointsTotal > 0)}/${formatVal(stats.p2.approachPointsTotal, stats.p2.approachPointsTotal > 0)}") }
+    item { GroupHeader(stringResource(id = R.string.group_conversion), stats) }
+    item { StatRow(stringResource(id = R.string.stat_2nd_serve_pts_won), formatPct(stats.p1.secondServePointsWonPercentage, stats.p1.totalServes - stats.p1.firstServesIn > 0), formatPct(stats.p2.secondServePointsWonPercentage, stats.p2.totalServes - stats.p2.firstServesIn > 0)) }
+    item { StatRow(stringResource(id = R.string.stat_1st_serve_pts_won), formatPct(stats.p1.firstServePointsWonPercentage, stats.p1.firstServesIn > 0), formatPct(stats.p2.firstServePointsWonPercentage, stats.p2.firstServesIn > 0)) }
+    item { StatRow(stringResource(id = R.string.stat_receiving_pts_won), formatPct(stats.p1.receivingPointsWonPercentage, stats.p1.totalPointsReceived > 0), formatPct(stats.p2.receivingPointsWonPercentage, stats.p2.totalPointsReceived > 0)) }
+    item { StatRow(stringResource(id = R.string.stat_break_points), "${formatVal(stats.p1.breakPointsWon, stats.p1.breakPointsTotal > 0)}/${formatVal(stats.p1.breakPointsTotal, stats.p1.breakPointsTotal > 0)}", "${formatVal(stats.p2.breakPointsWon, stats.p2.breakPointsTotal > 0)}/${formatVal(stats.p2.breakPointsTotal, stats.p2.breakPointsTotal > 0)}") }
+    item { StatRow(stringResource(id = R.string.stat_net_points), "${formatVal(stats.p1.netPointsWon, stats.p1.netPointsTotal > 0)}/${formatVal(stats.p1.netPointsTotal, stats.p1.netPointsTotal > 0)}", "${formatVal(stats.p2.netPointsWon, stats.p2.netPointsTotal > 0)}/${formatVal(stats.p2.netPointsTotal, stats.p2.netPointsTotal > 0)}") }
+    item { StatRow(stringResource(id = R.string.stat_approach_points), "${formatVal(stats.p1.approachPointsWon, stats.p1.approachPointsTotal > 0)}/${formatVal(stats.p1.approachPointsTotal, stats.p1.approachPointsTotal > 0)}", "${formatVal(stats.p2.approachPointsWon, stats.p2.approachPointsTotal > 0)}/${formatVal(stats.p2.approachPointsTotal, stats.p2.approachPointsTotal > 0)}") }
 }
 
 private fun androidx.compose.foundation.lazy.LazyListScope.byShotTab(stats: MatchStats) {
-    val shots = listOf(
-        "Ground Stroke" to ShotType.GROUND,
-        "Slice" to ShotType.SLICE,
-        "Volley" to ShotType.VOLLEY,
-        "Drop-shot" to ShotType.DROP,
-        "Smash" to ShotType.SMASH,
-        "Lob" to ShotType.LOB,
-        "Swing" to ShotType.SWING
-    )
-
-    shots.forEachIndexed { index, (label, type) ->
-        item { GroupHeader("${index + 1} - $label", stats) }
+    val shotTypes = ShotType.entries
+    
+    shotTypes.forEachIndexed { index, type ->
+        val labelRes = when(type) {
+            ShotType.GROUND -> R.string.shot_ground
+            ShotType.SLICE -> R.string.shot_slice
+            ShotType.VOLLEY -> R.string.shot_volley
+            ShotType.DROP -> R.string.shot_drop
+            ShotType.SMASH -> R.string.shot_smash
+            ShotType.LOB -> R.string.shot_lob
+            ShotType.SWING -> R.string.shot_swing
+        }
+        
+        item { 
+            val label = stringResource(id = labelRes)
+            GroupHeader("${index + 1} - $label", stats) 
+        }
         val s1 = stats.p1.shotStats[type] ?: ShotTypeStats()
         val s2 = stats.p2.shotStats[type] ?: ShotTypeStats()
 
         item { 
             ComplexStatRow(
-                label = "Winners",
+                label = stringResource(id = R.string.stat_winners),
                 p1Total = s1.winnersBH + s1.winnersFH, p1BH = s1.winnersBH, p1FH = s1.winnersFH,
                 p2Total = s2.winnersBH + s2.winnersFH, p2BH = s2.winnersBH, p2FH = s2.winnersFH
             )
         }
         item { 
             ComplexStatRow(
-                label = "Forced Errors",
+                label = stringResource(id = R.string.stat_forced_errors),
                 p1Total = s1.forcedErrorsBH + s1.forcedErrorsFH, p1BH = s1.forcedErrorsBH, p1FH = s1.forcedErrorsFH,
                 p2Total = s2.forcedErrorsBH + s2.forcedErrorsFH, p2BH = s2.forcedErrorsBH, p2FH = s2.forcedErrorsFH
             )
         }
         item { 
             ComplexStatRow(
-                label = "Unforced Errors",
+                label = stringResource(id = R.string.stat_unforced_errors),
                 p1Total = s1.unforcedErrorsBH + s1.unforcedErrorsFH, p1BH = s1.unforcedErrorsBH, p1FH = s1.unforcedErrorsFH,
                 p2Total = s2.unforcedErrorsBH + s2.unforcedErrorsFH, p2BH = s2.unforcedErrorsBH, p2FH = s2.unforcedErrorsFH
             )
@@ -295,7 +307,7 @@ private fun ScoreSummary(state: MatchStatisticsUiState.Success) {
     ) {
         Column(modifier = Modifier.padding(10.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Text(text = "Placar", fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f), fontSize = 13.sp)
+                Text(text = stringResource(id = R.string.stats_score), fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f), fontSize = 13.sp)
                 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     state.completedSets.forEach { set ->

@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -24,6 +25,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.tennis.matchscore.R
 import com.tennis.matchscore.data.local.relation.MatchWithDetails
+import com.tennis.matchscore.domain.model.CourtType
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -52,14 +54,14 @@ fun MatchHistoryScreen(
                             modifier = Modifier.size(32.dp)
                         )
                         Spacer(modifier = Modifier.width(12.dp))
-                        Text("Histórico de Partidas", fontWeight = FontWeight.Bold)
+                        Text(stringResource(id = R.string.screen_history_title), fontWeight = FontWeight.Bold)
                     }
                 },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Voltar",
+                            contentDescription = stringResource(id = R.string.btn_cancel_back),
                         )
                     }
                 },
@@ -72,7 +74,7 @@ fun MatchHistoryScreen(
     ) { innerPadding ->
         if (matches.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text(text = "Nenhuma partida registrada", style = MaterialTheme.typography.bodyLarge)
+                Text(text = stringResource(id = R.string.history_empty), style = MaterialTheme.typography.bodyLarge)
             }
         } else {
             LazyColumn(
@@ -97,8 +99,8 @@ fun MatchHistoryScreen(
     if (matchToDelete != null) {
         AlertDialog(
             onDismissRequest = { matchToDelete = null },
-            title = { Text("Excluir partida?") },
-            text = { Text("Deseja realmente excluir esta partida? Esta ação não pode ser desfeita.") },
+            title = { Text(stringResource(id = R.string.history_delete_title)) },
+            text = { Text(stringResource(id = R.string.history_delete_msg)) },
             confirmButton = {
                 Button(
                     onClick = {
@@ -107,12 +109,12 @@ fun MatchHistoryScreen(
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                 ) {
-                    Text("Excluir")
+                    Text(stringResource(id = R.string.delete_confirm))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { matchToDelete = null }) {
-                    Text("Cancelar")
+                    Text(stringResource(id = R.string.rule_cancel))
                 }
             }
         )
@@ -153,7 +155,7 @@ private fun MatchHistoryCard(
                             modifier = Modifier.padding(end = 8.dp)
                         ) {
                             Text(
-                                text = "EM ANDAMENTO",
+                                text = stringResource(id = R.string.history_in_progress),
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onTertiaryContainer,
@@ -161,8 +163,12 @@ private fun MatchHistoryCard(
                             )
                         }
                     }
+                    val surfaceLabel = when(match.match.courtType) {
+                        CourtType.HARD -> stringResource(id = R.string.court_hard)
+                        CourtType.CLAY -> stringResource(id = R.string.court_clay)
+                    }
                     Text(
-                        text = match.match.courtType.displayName,
+                        text = surfaceLabel,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Bold
@@ -335,14 +341,14 @@ private fun MatchHistoryCard(
                     TextButton(onClick = onStatsClick) {
                         Icon(Icons.Default.BarChart, contentDescription = null, modifier = Modifier.size(18.dp))
                         Spacer(Modifier.width(4.dp))
-                        Text("Estatísticas")
+                        Text(stringResource(id = R.string.history_stats_btn))
                     }
                 }
 
                 IconButton(onClick = onDeleteClick) {
                     Icon(
                         imageVector = Icons.Default.Delete,
-                        contentDescription = "Excluir",
+                        contentDescription = stringResource(id = R.string.delete_confirm),
                         tint = Color(0xFF1A237E)
                     )
                 }

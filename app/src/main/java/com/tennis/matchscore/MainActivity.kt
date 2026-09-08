@@ -2,7 +2,7 @@ package com.tennis.matchscore
 
 import androidx.compose.ui.graphics.Color
 import android.os.Bundle
-import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
@@ -28,7 +28,7 @@ import com.tennis.matchscore.ui.theme.TennisMatchScoreTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
 
     private val matchViewModel: MatchViewModel by viewModels()
     private val playerViewModel: PlayerViewModel by viewModels()

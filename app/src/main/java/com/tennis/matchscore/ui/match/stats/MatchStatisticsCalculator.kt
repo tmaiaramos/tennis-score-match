@@ -178,14 +178,14 @@ class MatchStatisticsCalculator(
                 if (point.eventType == MatchEventType.ACE) aces++
                 if (point.eventType == MatchEventType.DOUBLE_FAULT) doubleFaults++
                 
-                if (point.eventType == MatchEventType.ACE || (point.isReturnEvent && point.pointWinnerId == playerId && (point.eventType == MatchEventType.UNFORCED_ERROR || point.eventType == MatchEventType.FORCED_ERROR))) {
+                if (point.eventType == MatchEventType.ACE || ((point.isReturnEvent == true) && point.pointWinnerId == playerId && (point.eventType == MatchEventType.UNFORCED_ERROR || point.eventType == MatchEventType.FORCED_ERROR))) {
                     if (point.serveStateBefore == ServeState.FIRST_SERVE) unreturnedFirstServes++
                     else unreturnedSecondServes++
                 }
             }
 else {
                 if (point.pointWinnerId != 0L) {
-                    if (point.isReturnEvent) {
+                    if (point.isReturnEvent == true) {
                         if (wonPoint && point.eventType == MatchEventType.WINNER) {
                             if (point.winnerHitHand == HitHand.FOREHAND) returnWinnersFH++ else returnWinnersBH++
                         }

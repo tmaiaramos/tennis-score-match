@@ -1,3 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Tennis Match Score</string>
+    <string name="app_name">Partida de Tênis - Placar e Estatística</string>
+
+    <!-- Menu Principal -->
+    <string name="menu_main_title">Menu Principal</string>
+    <string name="menu_new_match">Nova Partida</string>
+    <string name="menu_new_match_desc">Selecionar jogadores, regra e tipo de quadra</string>
+    <string name="menu_players">Jogadores</string>
+    <string name="menu_players_desc">Cadastrar / Editar</string>
+    <string name="menu_rules">Regras &amp; Formatos</string>
+    <string name="menu_rules_desc">Configurar Jogos</string>
+    <string name="menu_history">Histórico</string>
+    <string name="menu_history_desc">Partidas Anteriores</string>
+
+    <!-- Tela Jogadores -->
+    <string name="screen_players_title">Jogadores</string>
+    <string name="player_new">Novo Jogador</string>
+    <string name="player_first_name">Primeiro Nome</string>
+    <string name="player_last_name">Sobrenome</string>
+    <string name="player_add">Adicionar Jogador</string>
+    <string name="player_registered">Jogadores Cadastrados (%1$d)</string>
+    <string name="player_dominant_hand">Mão Dominante</string>
+    <string name="hand_right">Destro</string>
+    <string name="hand_left">Canhoto</string>
+    <string name="delete_confirm">Excluir</string>
+
+    <!-- Tela Regras -->
+    <string name="screen_rules_title">Regras e Formatos</string>
+    <string name="rules_registered">Formatos de Partida</string>
+    <string name="rule_new_title">Novo Formato</string>
+    <string name="rule_edit_title">Editar Formato</string>
+    <string name="rule_name">Nome do Formato</string>
+    <string name="rule_num_sets">Número de Sets</string>
+    <string name="rule_games_per_set">Games por Set</string>
+    <string name="rule_tb_at">Tie-Break em:</string>
+    <string name="rule_advantage">Com Vantagem (Ad)</string>
+    <string name="rule_super_tb">Super Tie-Break no set final</string>
+    <string name="rule_super_tb_pts">Pontos Super Tie-Break</string>
+    <string name="rule_save">Salvar</string>
+    <string name="rule_cancel">Cancelar</string>
+
+    <!-- Tela Histórico -->
+    <string name="screen_history_title">Histórico e Partidas</string>
+    <string name="history_empty">Nenhuma partida registrada</string>
+    <string name="history_in_progress">EM ANDAMENTO</string>
+    <string name="history_stats_btn">Estatísticas</string>
+    <string name="history_delete_title">Excluir partida?</string>
+    <string name="history_delete_msg">Deseja realmente excluir esta partida? Esta ação não pode ser desfeita.</string>
+
+    <!-- Tela Nova Partida -->
+    <string name="screen_new_match_title">Nova Partida</string>
+    <string name="new_match_player1">Jogador 1</string>
+    <string name="new_match_player2">Jogador 2</string>
+    <string name="new_match_select_player">Selecione o jogador</string>
+    <string name="new_match_server">Sacador Inicial</string>
+    <string name="new_match_detail_level">Nível de Detalhe</string>
+    <string name="new_match_rule">Formato / Regra</string>
+    <string name="new_match_date">Data da Partida</string>
+    <string name="new_match_court_type">Tipo de Quadra</string>
+    <string name="new_match_start">Iniciar Partida</string>
+    <string name="court_hard">Rápida</string>
+    <string name="court_clay">Saibro</string>
+    <string name="mode_advantage">Modo: Com Vantagem (Ad)</string>
+    <string name="mode_no_advantage">Modo: Sem Vantagem (No-Ad)</string>
+
+    <!-- Tela Placar -->
+    <string name="score_title">Placar</string>
+    <string name="score_super_tb">Placar (SUPER TIE-BREAK)</string>
+    <string name="score_tie_break">Placar (TIE-BREAK)</string>
+    <string name="score_player">Jogador</string>
+    <string name="score_undo">Desfazer Ponto / Jogada</string>
+    <string name="score_1st_serve">1º Saque</string>
+    <string name="score_2nd_serve">2º Saque</string>
+    <string name="score_receiving">Recebendo</string>
+    <string name="score_ace">ACE</string>
+    <string name="score_fault">Falta</string>
+    <string name="score_double_fault">Dupla Falta</string>
+    <string name="score_return_winner">Vencedora Devolução</string>
+    <string name="score_return_error">Erro Devolução</string>
+    <string name="score_ball_in_play">Bola em Jogo</string>
+    <string name="score_ace_msg">ACE registrado!</string>
+    <string name="score_double_fault_msg">Dupla Falta registrada!</string>
+    <string name="score_confirm_continue">Confirmar e Continuar</string>
+    <string name="score_confirm_finish">Confirmar e Finalizar Partida</string>
+    <string name="score_winner_label">VENCEDORA</string>
+    <string name="score_opp_pos">Posição Oponente:</string>
+    <string name="score_pos">Posição:</string>
+    <string name="score_pos_baseline">Fundo</string>
+    <string name="score_pos_approach">Aproxim.</string>
+    <string name="score_pos_net">Rede</string>
+    <string name="score_hand">Lado:</string>
+    <string name="score_hand_fh">Forehand</string>
+    <string name="score_hand_bh">Backhand</string>
+    <string name="score_shot">Golpe:</string>
+    <string name="score_shot_ground">Normal</string>
+    <string name="score_shot_slice">Slice</string>
+    <string name="score_shot_volley">Voleio</string>
+    <string name="score_shot_drop">Curta</string>
+    <string name="score_shot_lob">Lob</string>
+    <string name="score_shot_smash">Smash</string>
+    <string name="score_shot_swing">Swing</string>
+    <string name="btn_winner">Vencedora</string>
+    <string name="btn_forced_error">Erro Forçado</string>
+    <string name="btn_unforced_error">Erro Não Forçado</string>
+    <string name="btn_cancel_back">Cancelar / Voltar</string>
+
+    <!-- Diálogo de Saída -->
+    <string name="exit_dialog_title">Sair da Partida?</string>
+    <string name="exit_dialog_msg">A partida ainda está em andamento. Deseja realmente sair e retornar ao menu?</string>
+    <string name="exit_dialog_hint">A contagem de pontos poderá ser retomada a qualquer momento.</string>
+    <string name="exit_dialog_cancel">Cancelar</string>
+    <string name="exit_dialog_exit">Sair</string>
+
+    <string name="game_over_title">Fim de Jogo! 🏆</string>
+    <string name="game_over_winner">Vencedor: %1$s</string>
+    <string name="game_over_msg">A partida foi salva automaticamente no histórico!</string>
+    <string name="btn_close">Fechar</string>
+    <string name="btn_ok">OK</string>
+
+    <!-- Tela Estatísticas -->
+    <string name="screen_stats_title">Estatísticas da Partida</string>
+    <string name="tab_essential">Essencial</string>
+    <string name="tab_detailed">Detalhado</string>
+    <string name="tab_by_shot">Por Golpe</string>
+    <string name="stats_total">Total</string>
+    <string name="stats_score">Placar</string>
+    <string name="set_label">Set %1$d</string>
+
+    <string name="group_service">1 - Saque</string>
+    <string name="stat_pct_1st_serve">% 1º Saque</string>
+    <string name="stat_aces">Aces</string>
+    <string name="stat_double_faults">Duplas Faltas</string>
+    <string name="group_points">2 - Pontos</string>
+    <string name="stat_total_pts_won">Total Pts Vencidos</string>
+    <string name="stat_winners">Vencedoras</string>
+    <string name="stat_unforced_errors">Erros Não Forçados</string>
+    <string name="stat_aggressive_margin">Margem Agressiva</string>
+    <string name="group_conversion">3 - Conversão</string>
+    <string name="stat_receiving_pts_won">Pts Vencidos Receb.</string>
+    <string name="stat_break_points">Pontos Quebra</string>
+    <string name="stat_1st_serve_pts_won">Pts Venc. 1º Saque</string>
+    <string name="stat_net_points">Pontos na Rede</string>
+
+    <string name="stat_total_services">Total Saques</string>
+    <string name="stat_1st_serves_in">Acertos 1º Saque</string>
+    <string name="stat_2nd_serves">Acertos 2º Saque</string>
+    <string name="group_return">2 - Devolução</string>
+    <string name="stat_return_errors">Erros Devolução</string>
+    <string name="stat_return_winners">Vencedoras Devol.</string>
+    <string name="stat_unreturned_1st">1º Saq. Não Devolv.</string>
+    <string name="stat_unreturned_2nd">2º Saq. Não Devolv.</string>
+    <string name="stat_forced_errors">Erros Forçados</string>
+    <string name="stat_2nd_serve_pts_won">Pts venc. c/ 2º Saque</string>
+    <string name="stat_approach_points">Pts Aproxim.</string>
+
+    <!-- Por Golpe -->
+    <string name="shot_ground">Batida Normal</string>
+    <string name="shot_slice">Slice</string>
+    <string name="shot_volley">Voleio</string>
+    <string name="shot_drop">Curtas</string>
+    <string name="shot_smash">Smash</string>
+    <string name="shot_lob">Lob</string>
+    <string name="shot_swing">Swing</string>
+
+    <!-- Modos de Marcação -->
+    <string name="scoring_basic">Básico</string>
+    <string name="scoring_intermediate">Intermed.</string>
+    <string name="scoring_advanced">Avançado</string>
+
+    <!-- Configurações -->
+    <string name="lang_portuguese">Português</string>
+    <string name="lang_english">Inglês</string>
+    <string name="menu_settings">Configurações</string>
 </resources>

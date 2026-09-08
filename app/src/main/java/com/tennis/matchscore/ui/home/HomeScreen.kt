@@ -5,19 +5,23 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
 import com.tennis.matchscore.R
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -28,6 +32,8 @@ fun HomeScreen(
     onNavigateToFormats: () -> Unit,
     onNavigateToHistory: () -> Unit,
 ) {
+    var showMenu by remember { mutableStateOf(false) }
+
     Scaffold(
         containerColor = Color.White,
         topBar = {
@@ -41,7 +47,31 @@ fun HomeScreen(
                             modifier = Modifier.size(32.dp)
                         )
                         Spacer(modifier = Modifier.width(12.dp))
-                        Text("Tennis Match Score", fontWeight = FontWeight.Bold)
+                        Text(stringResource(id = R.string.app_name), fontWeight = FontWeight.Bold)
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { showMenu = true }) {
+                        Icon(Icons.Default.MoreVert, contentDescription = stringResource(id = R.string.menu_settings))
+                    }
+                    DropdownMenu(
+                        expanded = showMenu,
+                        onDismissRequest = { showMenu = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(id = R.string.lang_portuguese)) },
+                            onClick = {
+                                AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("pt"))
+                                showMenu = false
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text(stringResource(id = R.string.lang_english)) },
+                            onClick = {
+                                AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("en"))
+                                showMenu = false
+                            }
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -59,7 +89,7 @@ fun HomeScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                text = "Menu Principal",
+                text = stringResource(id = R.string.menu_main_title),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
@@ -69,7 +99,7 @@ fun HomeScreen(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(130.dp) // Aumentado de 100.dp para 130.dp
+                    .height(130.dp)
                     .clickable { onNavigateToNewMatch() },
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
                 shape = RoundedCornerShape(16.dp)
@@ -89,13 +119,13 @@ fun HomeScreen(
                     Spacer(modifier = Modifier.width(16.dp))
                     Column {
                         Text(
-                            text = "Iniciar Nova Partida",
+                            text = stringResource(id = R.string.menu_new_match),
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onPrimary
                         )
                         Text(
-                            text = "Selecionar jogadores, regra e tipo de quadra",
+                            text = stringResource(id = R.string.menu_new_match_desc),
                             fontSize = 12.sp,
                             color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
                         )
@@ -109,15 +139,15 @@ fun HomeScreen(
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 MenuOptionCard(
-                    title = "Jogadores",
-                    subtitle = "Cadastrar / Editar",
+                    title = stringResource(id = R.string.menu_players),
+                    subtitle = stringResource(id = R.string.menu_players_desc),
                     icon = Icons.Default.Person,
                     modifier = Modifier.weight(1f),
                     onClick = onNavigateToPlayers
                 )
                 MenuOptionCard(
-                    title = "Regras & Formatos",
-                    subtitle = "Configurar Jogos",
+                    title = stringResource(id = R.string.menu_rules),
+                    subtitle = stringResource(id = R.string.menu_rules_desc),
                     icon = Icons.Default.Settings,
                     modifier = Modifier.weight(1f),
                     onClick = onNavigateToFormats
@@ -129,8 +159,8 @@ fun HomeScreen(
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 MenuOptionCard(
-                    title = "Histórico",
-                    subtitle = "Partidas Anteriores",
+                    title = stringResource(id = R.string.menu_history),
+                    subtitle = stringResource(id = R.string.menu_history_desc),
                     icon = Icons.AutoMirrored.Filled.List,
                     modifier = Modifier.weight(1f),
                     onClick = onNavigateToHistory

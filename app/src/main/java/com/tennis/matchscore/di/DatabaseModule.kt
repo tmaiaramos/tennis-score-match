@@ -25,9 +25,10 @@ object DatabaseModule {
         return Room.databaseBuilder(
             context,
             AppDatabase::class.java,
-            "tennis_match_score_v3" // Incrementado para forçar a criação com as novas regras
+            "tennis_match_score.db"
         )
-            .fallbackToDestructiveMigration(false)
+            .addMigrations(AppDatabase.MIGRATION_1_2, AppDatabase.MIGRATION_2_3)
+            .fallbackToDestructiveMigration(true)
             .addCallback(object : RoomDatabase.Callback() {
                 override fun onCreate(db: SupportSQLiteDatabase) {
                     super.onCreate(db)

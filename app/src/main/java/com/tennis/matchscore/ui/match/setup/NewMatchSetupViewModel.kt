@@ -59,7 +59,7 @@ class NewMatchSetupViewModel @Inject constructor(
         currentSelection.copy(
             players = players,
             formats = formats,
-            selectedFormat = currentSelection.selectedFormat ?: formats.firstOrNull { it.isDefault } ?: formats.firstOrNull(),
+            selectedFormat = currentSelection.selectedFormat ?: formats.firstOrNull { it.isDefault == true } ?: formats.firstOrNull(),
             isLoading = false
         )
     }.stateIn(

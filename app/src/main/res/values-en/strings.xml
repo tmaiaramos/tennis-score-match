@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Tennis Match Score</string>
+
+    <!-- Main Menu -->
+    <string name="menu_main_title">Main Menu</string>
+    <string name="menu_new_match">New Match</string>
+    <string name="menu_new_match_desc">Select players, rule and court</string>
+    <string name="menu_players">Players</string>
+    <string name="menu_players_desc">New Players / Edit</string>
+    <string name="menu_rules">Rules</string>
+    <string name="menu_rules_desc">Configure Matches</string>
+    <string name="menu_history">Saved Matches</string>
+    <string name="menu_history_desc">Previous Matches</string>
+
+    <!-- Players Screen -->
+    <string name="screen_players_title">Players</string>
+    <string name="player_new">New Player</string>
+    <string name="player_first_name">First Name</string>
+    <string name="player_last_name">Second Name</string>
+    <string name="player_add">Add Player</string>
+    <string name="player_registered">Registered Players (%1$d)</string>
+    <string name="player_dominant_hand">Dominant Hand</string>
+    <string name="hand_right">Right-Handed</string>
+    <string name="hand_left">Left-Handed</string>
+    <string name="delete_confirm">Delete</string>
+
+    <!-- Rules Screen -->
+    <string name="screen_rules_title">Rules</string>
+    <string name="rules_registered">Registered Rules</string>
+    <string name="rule_new_title">New Match Rules</string>
+    <string name="rule_edit_title">Edit Match Rules</string>
+    <string name="rule_name">Rule Name</string>
+    <string name="rule_num_sets">Number of Sets</string>
+    <string name="rule_games_per_set">Games per Set</string>
+    <string name="rule_tb_at">Tie-Break in</string>
+    <string name="rule_advantage">Advantage</string>
+    <string name="rule_super_tb">Match tie-break in the final set</string>
+    <string name="rule_super_tb_pts">Match Tie-Break Points</string>
+    <string name="rule_save">Save</string>
+    <string name="rule_cancel">Cancel</string>
+
+    <!-- History Screen -->
+    <string name="screen_history_title">Previous Matches</string>
+    <string name="history_empty">No matches found</string>
+    <string name="history_in_progress">IN GAME</string>
+    <string name="history_stats_btn">Statistics</string>
+    <string name="history_delete_title">Delete match?</string>
+    <string name="history_delete_msg">Are you sure you want to delete this match? This action cannot be undone.</string>
+
+    <!-- New Match Screen -->
+    <string name="screen_new_match_title">New Match</string>
+    <string name="new_match_player1">Player 1</string>
+    <string name="new_match_player2">Player 2</string>
+    <string name="new_match_select_player">Select player</string>
+    <string name="new_match_server">The Server</string>
+    <string name="new_match_detail_level">Detail Level</string>
+    <string name="new_match_rule">Rule</string>
+    <string name="new_match_date">Match Date</string>
+    <string name="new_match_court_type">Court Surface</string>
+    <string name="new_match_start">Start Match</string>
+    <string name="court_hard">Hard</string>
+    <string name="court_clay">Clay</string>
+    <string name="mode_advantage">Mode: Advantage</string>
+    <string name="mode_no_advantage">Mode: No-Ad</string>
+
+    <!-- Score Screen -->
+    <string name="score_title">Score</string>
+    <string name="score_super_tb">Score (SUPER TIE-BREAK)</string>
+    <string name="score_tie_break">Score (TIE-BREAK)</string>
+    <string name="score_player">Player</string>
+    <string name="score_undo">Undo Point / Play</string>
+    <string name="score_1st_serve">1st Service</string>
+    <string name="score_2nd_serve">2nd Service</string>
+    <string name="score_receiving">Receiving</string>
+    <string name="score_ace">ACE</string>
+    <string name="score_fault">Fault</string>
+    <string name="score_double_fault">Double Fault</string>
+    <string name="score_return_winner">Return Winner</string>
+    <string name="score_return_error">Return Error</string>
+    <string name="score_ball_in_play">Ball in Play</string>
+    <string name="score_ace_msg">ACE registered!</string>
+    <string name="score_double_fault_msg">Double Fault registered!</string>
+    <string name="score_confirm_continue">Confirm and Continue</string>
+    <string name="score_confirm_finish">Confirm and Finish Match</string>
+    <string name="score_winner_label">WINNER</string>
+    <string name="score_opp_pos">Opponent position:</string>
+    <string name="score_pos">Position:</string>
+    <string name="score_pos_baseline">Baseline</string>
+    <string name="score_pos_approach">Approach</string>
+    <string name="score_pos_net">Net</string>
+    <string name="score_hand">Hand:</string>
+    <string name="score_hand_fh">Forehand</string>
+    <string name="score_hand_bh">Backhand</string>
+    <string name="score_shot">Shot:</string>
+    <string name="score_shot_ground">Ground</string>
+    <string name="score_shot_slice">Slice</string>
+    <string name="score_shot_volley">Volley</string>
+    <string name="score_shot_drop">Drop</string>
+    <string name="score_shot_lob">Lob</string>
+    <string name="score_shot_smash">Smash</string>
+    <string name="score_shot_swing">Swing</string>
+    <string name="btn_winner">Winner</string>
+    <string name="btn_forced_error">Forced Error</string>
+    <string name="btn_unforced_error">Unforced Error</string>
+    <string name="btn_cancel_back">Cancel / Back</string>
+
+    <!-- Exit Dialog -->
+    <string name="exit_dialog_title">Leave the Match?</string>
+    <string name="exit_dialog_msg">The match hasn\'t finished yet. Wish to leave and go back to the main menu?</string>
+    <string name="exit_dialog_hint">Scoring can be resumed at any time.</string>
+    <string name="exit_dialog_cancel">Cancel</string>
+    <string name="exit_dialog_exit">Exit</string>
+
+    <string name="game_over_title">Game Over! 🏆</string>
+    <string name="game_over_winner">Winner: %1$s</string>
+    <string name="game_over_msg">The match has been automatically saved in history!</string>
+    <string name="btn_close">Close</string>
+    <string name="btn_ok">OK</string>
+
+    <!-- Statistics Screen -->
+    <string name="screen_stats_title">Match Statistics</string>
+    <string name="tab_essential">Essential</string>
+    <string name="tab_detailed">Detailed</string>
+    <string name="tab_by_shot">By Shot</string>
+    <string name="stats_total">Total</string>
+    <string name="stats_score">Score</string>
+    <string name="set_label">Set %1$d</string>
+
+    <string name="group_service">1 - Service</string>
+    <string name="stat_pct_1st_serve">% 1st Service</string>
+    <string name="stat_aces">Aces</string>
+    <string name="stat_double_faults">Double Faults</string>
+    <string name="group_points">2 - Points</string>
+    <string name="stat_total_pts_won">Total points won</string>
+    <string name="stat_winners">Winners</string>
+    <string name="stat_unforced_errors">Unforced Errors</string>
+    <string name="stat_aggressive_margin">Aggressive Margin</string>
+    <string name="group_conversion">3 - Conversion</string>
+    <string name="stat_receiving_pts_won">Receiving Pts Won</string>
+    <string name="stat_break_points">Break Points</string>
+    <string name="stat_1st_serve_pts_won">1st Service Pts Won</string>
+    <string name="stat_net_points">Net Points</string>
+
+    <string name="stat_total_services">Total Services</string>
+    <string name="stat_1st_serves_in">1st Service in</string>
+    <string name="stat_2nd_serves">2nd Services</string>
+    <string name="group_return">2 - Return</string>
+    <string name="stat_return_errors">Return Errors</string>
+    <string name="stat_return_winners">Return Winners</string>
+    <string name="stat_unreturned_1st">Unreturned 1st serv.</string>
+    <string name="stat_unreturned_2nd">Unreturned 2nd serv.</string>
+    <string name="stat_forced_errors">Forced Errors</string>
+    <string name="stat_2nd_serve_pts_won">2nd Service Pts Won</string>
+    <string name="stat_approach_points">Approach Points</string>
+
+    <!-- By Shot -->
+    <string name="shot_ground">Ground Stroke</string>
+    <string name="shot_slice">Slice</string>
+    <string name="shot_volley">Volley</string>
+    <string name="shot_drop">Drop-shot</string>
+    <string name="shot_smash">Smash</string>
+    <string name="shot_lob">Lob</string>
+    <string name="shot_swing">Swing Volley</string>
+
+    <!-- Detail Levels -->
+    <string name="scoring_basic">Basic</string>
+    <string name="scoring_intermediate">Inter.</string>
+    <string name="scoring_advanced">Advanced</string>
+
+    <!-- Settings -->
+    <string name="lang_portuguese">Portuguese</string>
+    <string name="lang_english">English</string>
+    <string name="menu_settings">Settings</string>
+</resources>

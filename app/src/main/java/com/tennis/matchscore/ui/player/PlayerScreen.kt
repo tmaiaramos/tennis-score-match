@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -47,14 +48,14 @@ fun PlayerScreen(
                             modifier = Modifier.size(32.dp)
                         )
                         Spacer(modifier = Modifier.width(12.dp))
-                        Text("Cadastro de Jogadores", fontWeight = FontWeight.Bold)
+                        Text(stringResource(id = R.string.screen_players_title), fontWeight = FontWeight.Bold)
                     }
                 },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Voltar",
+                            contentDescription = stringResource(id = R.string.btn_cancel_back),
                         )
                     }
                 },
@@ -83,7 +84,7 @@ fun PlayerScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Text(
-                        text = "Novo Jogador",
+                        text = stringResource(id = R.string.player_new),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
@@ -91,7 +92,7 @@ fun PlayerScreen(
                     OutlinedTextField(
                         value = firstName,
                         onValueChange = { firstName = it },
-                        label = { Text("Primeiro Nome") },
+                        label = { Text(stringResource(id = R.string.player_first_name)) },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true
                     )
@@ -99,26 +100,25 @@ fun PlayerScreen(
                     OutlinedTextField(
                         value = lastName,
                         onValueChange = { lastName = it },
-                        label = { Text("Sobrenome") },
+                        label = { Text(stringResource(id = R.string.player_last_name)) },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true
                     )
 
                     Column {
-                        Text(
-                            text = "Mão Dominante",
-                            style = MaterialTheme.typography.bodySmall,
-                            modifier = Modifier.padding(start = 4.dp, bottom = 4.dp)
-                        )
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             DominantHand.entries.forEach { hand ->
+                                val label = when(hand) {
+                                    DominantHand.RIGHT_HANDED -> stringResource(id = R.string.hand_right)
+                                    DominantHand.LEFT_HANDED -> stringResource(id = R.string.hand_left)
+                                }
                                 FilterChip(
                                     selected = selectedHand == hand,
                                     onClick = { selectedHand = hand },
-                                    label = { Text(hand.displayName) },
+                                    label = { Text(label) },
                                     modifier = Modifier.weight(1f),
                                     colors = FilterChipDefaults.filterChipColors(
                                         selectedContainerColor = MaterialTheme.colorScheme.primary,
@@ -144,7 +144,7 @@ fun PlayerScreen(
                     ) {
                         Icon(Icons.Default.Add, contentDescription = null)
                         Spacer(Modifier.width(8.dp))
-                        Text("Adicionar Jogador")
+                        Text(stringResource(id = R.string.player_add))
                     }
                 }
             }
@@ -152,7 +152,7 @@ fun PlayerScreen(
             HorizontalDivider()
 
             Text(
-                text = "Jogadores Cadastrados (${players.size})",
+                text = stringResource(id = R.string.player_registered, players.size),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
@@ -198,8 +198,12 @@ private fun PlayerItemCard(
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp
                 )
+                val handLabel = when(player.dominantHand) {
+                    DominantHand.RIGHT_HANDED -> stringResource(id = R.string.hand_right)
+                    DominantHand.LEFT_HANDED -> stringResource(id = R.string.hand_left)
+                }
                 Text(
-                    text = player.dominantHand.displayName,
+                    text = handLabel,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.secondary
                 )
@@ -208,7 +212,7 @@ private fun PlayerItemCard(
             IconButton(onClick = onDeleteClick) {
                 Icon(
                     imageVector = Icons.Default.Delete,
-                    contentDescription = "Excluir",
+                    contentDescription = stringResource(id = R.string.delete_confirm),
                     tint = Color(0xFF1A237E) // Azul Marinho Profundo
                 )
             }

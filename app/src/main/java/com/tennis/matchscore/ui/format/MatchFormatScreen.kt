@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -49,14 +50,14 @@ fun MatchFormatScreen(
                             modifier = Modifier.size(32.dp)
                         )
                         Spacer(modifier = Modifier.width(12.dp))
-                        Text("Regras e Formatos", fontWeight = FontWeight.Bold)
+                        Text(stringResource(id = R.string.screen_rules_title), fontWeight = FontWeight.Bold)
                     }
                 },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Voltar",
+                            contentDescription = stringResource(id = R.string.btn_cancel_back),
                         )
                     }
                 },
@@ -75,7 +76,7 @@ fun MatchFormatScreen(
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Novo Formato")
+                Icon(Icons.Default.Add, contentDescription = stringResource(id = R.string.rule_new_title))
             }
         }
     ) { innerPadding ->
@@ -86,7 +87,7 @@ fun MatchFormatScreen(
                 .padding(16.dp)
         ) {
             Text(
-                text = "Formatos de Partida",
+                text = stringResource(id = R.string.rules_registered),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary,
@@ -125,8 +126,8 @@ fun MatchFormatScreen(
                         numberOfSets = entity.numberOfSets,
                         gamesPerSet = entity.gamesPerSet,
                         tieBreakAt = entity.tieBreakAt,
-                        hasAdvantage = entity.hasAdvantage,
-                        hasSuperTieBreakInFinalSet = entity.hasSuperTieBreakInFinalSet,
+                        hasAdvantage = entity.hasAdvantage ?: true,
+                        hasSuperTieBreakInFinalSet = entity.hasSuperTieBreakInFinalSet ?: true,
                         superTieBreakPoints = entity.superTieBreakPoints
                     )
                 } else {
@@ -164,7 +165,7 @@ private fun FormatItemCard(
                     color = MaterialTheme.colorScheme.secondary
                 )
                 Text(
-                    text = if (format.hasAdvantage) "Com Vantagem (Ad)" else "Sem Vantagem (No-Ad)",
+                    text = if (format.hasAdvantage) stringResource(id = R.string.rule_advantage) else "Sem Vantagem (No-Ad)",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.tertiary
                 )
@@ -172,10 +173,10 @@ private fun FormatItemCard(
 
             Row {
                 IconButton(onClick = onEditClick) {
-                    Icon(Icons.Default.Edit, contentDescription = "Editar", tint = MaterialTheme.colorScheme.primary)
+                    Icon(Icons.Default.Edit, contentDescription = stringResource(id = R.string.rule_edit_title), tint = MaterialTheme.colorScheme.primary)
                 }
                 IconButton(onClick = onDeleteClick) {
-                    Icon(Icons.Default.Delete, contentDescription = "Excluir", tint = Color(0xFF1A237E))
+                    Icon(Icons.Default.Delete, contentDescription = stringResource(id = R.string.delete_confirm), tint = Color(0xFF1A237E))
                 }
             }
         }
@@ -211,7 +212,7 @@ private fun FormatFormDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(if (format == null) "Novo Formato" else "Editar Formato") },
+        title = { Text(if (format == null) stringResource(id = R.string.rule_new_title) else stringResource(id = R.string.rule_edit_title)) },
         text = {
             Column(
                 modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()),
@@ -220,11 +221,11 @@ private fun FormatFormDialog(
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Nome do Formato") },
+                    label = { Text(stringResource(id = R.string.rule_name)) },
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                Text("Número de Sets", style = MaterialTheme.typography.labelMedium)
+                Text(stringResource(id = R.string.rule_num_sets), style = MaterialTheme.typography.labelMedium)
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
                     listOf(1, 3, 5).forEach { n ->
                         FilterChip(
@@ -240,7 +241,7 @@ private fun FormatFormDialog(
                     }
                 }
 
-                Text("Games por Set", style = MaterialTheme.typography.labelMedium)
+                Text(stringResource(id = R.string.rule_games_per_set), style = MaterialTheme.typography.labelMedium)
                 LazyRow(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Start,
@@ -264,7 +265,7 @@ private fun FormatFormDialog(
                     }
                 }
 
-                Text("Tie-Break em:", style = MaterialTheme.typography.labelMedium)
+                Text(stringResource(id = R.string.rule_tb_at), style = MaterialTheme.typography.labelMedium)
                 LazyRow(
                     modifier = Modifier.fillMaxWidth(),
                     state = tbListState,
@@ -289,19 +290,19 @@ private fun FormatFormDialog(
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Checkbox(checked = hasAdvantage, onCheckedChange = { hasAdvantage = it })
-                    Text("Com Vantagem (Ad)")
+                    Text(stringResource(id = R.string.rule_advantage))
                 }
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Checkbox(checked = hasSuperTieBreak, onCheckedChange = { hasSuperTieBreak = it })
-                    Text("Super Tie-Break no set final")
+                    Text(stringResource(id = R.string.rule_super_tb))
                 }
 
                 if (hasSuperTieBreak) {
                     OutlinedTextField(
                         value = superTieBreakPoints.toString(),
                         onValueChange = { superTieBreakPoints = it.toIntOrNull() ?: 10 },
-                        label = { Text("Pontos Super Tie-Break") },
+                        label = { Text(stringResource(id = R.string.rule_super_tb_pts)) },
                         modifier = Modifier.fillMaxWidth(),
                         keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number)
                     )
@@ -327,12 +328,12 @@ private fun FormatFormDialog(
                 },
                 enabled = name.isNotBlank()
             ) {
-                Text("Salvar")
+                Text(stringResource(id = R.string.rule_save))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancelar")
+                Text(stringResource(id = R.string.rule_cancel))
             }
         }
     )

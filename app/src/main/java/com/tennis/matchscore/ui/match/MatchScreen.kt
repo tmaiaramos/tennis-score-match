@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -23,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.TextStyle
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.tennis.matchscore.R
 import com.tennis.matchscore.domain.model.CourtPosition
 import com.tennis.matchscore.domain.model.HitHand
 import com.tennis.matchscore.domain.model.MatchEventType
@@ -64,10 +66,10 @@ fun MatchScreen(
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(
                             text = when {
-                                uiState.isMatchFinished && !uiState.isDetalingActive -> "Placar"
-                                uiState.isSuperTieBreak -> "Placar (SUPER TIE-BREAK)"
-                                uiState.isTieBreak -> "Placar (TIE-BREAK)"
-                                else -> "Placar"
+                                uiState.isMatchFinished && !uiState.isDetalingActive -> stringResource(id = R.string.score_title)
+                                uiState.isSuperTieBreak -> stringResource(id = R.string.score_super_tb)
+                                uiState.isTieBreak -> stringResource(id = R.string.score_tie_break)
+                                else -> stringResource(id = R.string.score_title)
                             },
                             fontWeight = FontWeight.Bold,
                         )
@@ -85,14 +87,14 @@ fun MatchScreen(
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Voltar"
+                            contentDescription = stringResource(id = R.string.btn_cancel_back)
                         )
                     }
                 },
                 actions = {
                     if (!uiState.isMatchFinished && !uiState.isDetalingActive) {
                         IconButton(onClick = { uiState.currentMatchId?.let { onViewStatsClick(it) } }) {
-                            Icon(Icons.Default.BarChart, contentDescription = "Estatísticas")
+                            Icon(Icons.Default.BarChart, contentDescription = stringResource(id = R.string.history_stats_btn))
                         }
                     }
                 },
@@ -132,7 +134,7 @@ fun MatchScreen(
                     ) {
                         Icon(Icons.AutoMirrored.Filled.Undo, contentDescription = null, modifier = Modifier.size(18.dp))
                         Spacer(Modifier.width(8.dp))
-                        Text("Desfazer Ponto / Jogada", fontWeight = FontWeight.Bold)
+                        Text(stringResource(id = R.string.score_undo), fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -198,7 +200,7 @@ fun MatchScreen(
                             ) {
                                 Icon(Icons.Default.BarChart, contentDescription = null)
                                 Spacer(Modifier.width(8.dp))
-                                Text("Ver Estatísticas", fontSize = 16.sp)
+                                Text(stringResource(id = R.string.history_stats_btn), fontSize = 16.sp)
                             }
                         }
 
@@ -209,7 +211,7 @@ fun MatchScreen(
                                 .fillMaxWidth()
                                 .height(56.dp)
                         ) {
-                            Text("Voltar ao Menu Principal", fontSize = 16.sp)
+                            Text(stringResource(id = R.string.btn_cancel_back), fontSize = 16.sp)
                         }
                     }
                 }
@@ -221,8 +223,8 @@ fun MatchScreen(
     if (showExitConfirmationDialog) {
         AlertDialog(
             onDismissRequest = { showExitConfirmationDialog = false },
-            title = { Text("Sair da partida?") },
-            text = { Text("A partida ainda está em andamento. Deseja realmente sair e retornar ao menu?") },
+            title = { Text(stringResource(id = R.string.exit_dialog_title)) },
+            text = { Text(stringResource(id = R.string.exit_dialog_msg)) },
             confirmButton = {
                 Button(
                     onClick = {
@@ -231,12 +233,12 @@ fun MatchScreen(
                     },
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Text("Sair")
+                    Text(stringResource(id = R.string.exit_dialog_exit))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showExitConfirmationDialog = false }) {
-                    Text("Cancelar")
+                    Text(stringResource(id = R.string.rule_cancel))
                 }
             }
         )
@@ -245,9 +247,9 @@ fun MatchScreen(
     if (uiState.isMatchFinished && uiState.winnerName != null && !uiState.isDetalingActive) {
         AlertDialog(
             onDismissRequest = { },
-            title = { Text("Fim de Jogo! 🏆") },
+            title = { Text(stringResource(id = R.string.game_over_title)) },
             text = {
-                Text("Vencedor: ${uiState.winnerName}\n\nA partida foi salva automaticamente no histórico!")
+                Text(stringResource(id = R.string.game_over_winner, uiState.winnerName ?: "") + "\n\n" + stringResource(id = R.string.game_over_msg))
             },
             confirmButton = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -258,7 +260,7 @@ fun MatchScreen(
                             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary),
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text("Ver Estatísticas")
+                            Text(stringResource(id = R.string.history_stats_btn))
                         }
                     }
                     Button(
@@ -266,7 +268,7 @@ fun MatchScreen(
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Fechar")
+                        Text(stringResource(id = R.string.btn_close))
                     }
                 }
             }
@@ -303,7 +305,7 @@ private fun BasicScoringControls(
                 horizontalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = "🎾 Saque: ",
+                    text = "🎾 " + stringResource(id = R.string.new_match_server) + ": ",
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSecondaryContainer
@@ -397,7 +399,7 @@ private fun IntermediateScoringControls(
                 )
                 if (isP1Server) {
                     val isSecondServe = uiState.serveState == ServeState.SECOND_SERVE
-                    val label = if (isSecondServe) "2º Saque" else "1º Saque"
+                    val label = if (isSecondServe) stringResource(id = R.string.score_2nd_serve) else stringResource(id = R.string.score_1st_serve)
                     Surface(
                         color = if (isSecondServe) Color(0xFF2196F3) else MaterialTheme.colorScheme.primary, // Azul para 2º saque
                         shape = RoundedCornerShape(4.dp),
@@ -412,7 +414,7 @@ private fun IntermediateScoringControls(
                         )
                     }
                 } else {
-                    Text(text = "Recebendo", color = MaterialTheme.colorScheme.secondary, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                    Text(text = stringResource(id = R.string.score_receiving), color = MaterialTheme.colorScheme.secondary, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                 }
             }
 
@@ -429,7 +431,7 @@ private fun IntermediateScoringControls(
                 )
                 if (!isP1Server) {
                     val isSecondServe = uiState.serveState == ServeState.SECOND_SERVE
-                    val label = if (isSecondServe) "2º Saque" else "1º Saque"
+                    val label = if (isSecondServe) stringResource(id = R.string.score_2nd_serve) else stringResource(id = R.string.score_1st_serve)
                     Surface(
                         color = if (isSecondServe) Color(0xFF2196F3) else MaterialTheme.colorScheme.primary, // Azul para 2º saque
                         shape = RoundedCornerShape(4.dp),
@@ -444,7 +446,7 @@ private fun IntermediateScoringControls(
                         )
                     }
                 } else {
-                    Text(text = "Recebendo", color = MaterialTheme.colorScheme.secondary, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                    Text(text = stringResource(id = R.string.score_receiving), color = MaterialTheme.colorScheme.secondary, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                 }
             }
         }
@@ -462,11 +464,11 @@ private fun IntermediateScoringControls(
                 Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
                     if (isP1Server) {
                         Button(onClick = onAceClick, shape = RoundedCornerShape(12.dp), modifier = Modifier.fillMaxSize()) {
-                            Text("ACE", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                            Text(stringResource(id = R.string.score_ace), fontSize = 20.sp, fontWeight = FontWeight.Bold)
                         }
                     } else if (isAdvanced) {
                         Button(onClick = onReturnWinnerClick, shape = RoundedCornerShape(12.dp), modifier = Modifier.fillMaxSize()) {
-                            Text("Winner\nDevolução", textAlign = TextAlign.Center, fontSize = 18.sp, fontWeight = FontWeight.Bold, lineHeight = 20.sp)
+                            Text(stringResource(id = R.string.score_return_winner), textAlign = TextAlign.Center, fontSize = 18.sp, fontWeight = FontWeight.Bold, lineHeight = 20.sp)
                         }
                     }
                 }
@@ -475,11 +477,11 @@ private fun IntermediateScoringControls(
                 Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
                     if (!isP1Server) {
                         Button(onClick = onAceClick, shape = RoundedCornerShape(12.dp), modifier = Modifier.fillMaxSize()) {
-                            Text("ACE", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                            Text(stringResource(id = R.string.score_ace), fontSize = 20.sp, fontWeight = FontWeight.Bold)
                         }
                     } else if (isAdvanced) {
                         Button(onClick = onReturnWinnerClick, shape = RoundedCornerShape(12.dp), modifier = Modifier.fillMaxSize()) {
-                            Text("Winner\nDevolução", textAlign = TextAlign.Center, fontSize = 18.sp, fontWeight = FontWeight.Bold, lineHeight = 20.sp)
+                            Text(stringResource(id = R.string.score_return_winner), textAlign = TextAlign.Center, fontSize = 18.sp, fontWeight = FontWeight.Bold, lineHeight = 20.sp)
                         }
                     }
                 }
@@ -503,7 +505,7 @@ private fun IntermediateScoringControls(
                                 contentColor = Color.White
                             )
                         ) {
-                            Text(text = if (isFirst) "Falta" else "Dupla\nFalta", textAlign = TextAlign.Center, fontSize = 20.sp, fontWeight = FontWeight.Bold, lineHeight = 22.sp)
+                            Text(text = if (isFirst) stringResource(id = R.string.score_fault) else stringResource(id = R.string.score_double_fault), textAlign = TextAlign.Center, fontSize = 20.sp, fontWeight = FontWeight.Bold, lineHeight = 22.sp)
                         }
                     } else if (isAdvanced) {
                         Button(
@@ -512,7 +514,7 @@ private fun IntermediateScoringControls(
                             modifier = Modifier.fillMaxSize(),
                             colors = ButtonDefaults.buttonColors(containerColor = customBlue, contentColor = Color.White)
                         ) {
-                            Text("Erro\nDevolução", textAlign = TextAlign.Center, fontSize = 18.sp, fontWeight = FontWeight.Bold, lineHeight = 20.sp)
+                            Text(stringResource(id = R.string.score_return_error), textAlign = TextAlign.Center, fontSize = 18.sp, fontWeight = FontWeight.Bold, lineHeight = 20.sp)
                         }
                     }
                 }
@@ -530,7 +532,7 @@ private fun IntermediateScoringControls(
                                 contentColor = Color.White
                             )
                         ) {
-                            Text(text = if (isFirst) "Falta" else "Dupla\nFalta", textAlign = TextAlign.Center, fontSize = 20.sp, fontWeight = FontWeight.Bold, lineHeight = 22.sp)
+                            Text(text = if (isFirst) stringResource(id = R.string.score_fault) else stringResource(id = R.string.score_double_fault), textAlign = TextAlign.Center, fontSize = 20.sp, fontWeight = FontWeight.Bold, lineHeight = 22.sp)
                         }
                     } else if (isAdvanced) {
                         Button(
@@ -539,7 +541,7 @@ private fun IntermediateScoringControls(
                             modifier = Modifier.fillMaxSize(),
                             colors = ButtonDefaults.buttonColors(containerColor = customBlue, contentColor = Color.White)
                         ) {
-                            Text("Erro\nDevolução", textAlign = TextAlign.Center, fontSize = 18.sp, fontWeight = FontWeight.Bold, lineHeight = 20.sp)
+                            Text(stringResource(id = R.string.score_return_error), textAlign = TextAlign.Center, fontSize = 18.sp, fontWeight = FontWeight.Bold, lineHeight = 20.sp)
                         }
                     }
                 }
@@ -558,7 +560,7 @@ private fun IntermediateScoringControls(
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     TennisBallIcon(size = 16.dp, modifier = Modifier.padding(end = 8.dp), ballColor = MaterialTheme.colorScheme.onPrimaryContainer)
-                    Text("Bola em Jogo", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(id = R.string.score_ball_in_play), fontSize = 20.sp, fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -593,10 +595,10 @@ private fun RallyScoringControls(
         ) {
             Row(modifier = Modifier.fillMaxWidth().weight(1f), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Button(onClick = { onWinnerClick(uiState.player1Id) }, shape = RoundedCornerShape(12.dp), modifier = Modifier.weight(1f).fillMaxHeight()) {
-                    Text("Winner", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(id = R.string.btn_winner), fontSize = 20.sp, fontWeight = FontWeight.Bold)
                 }
                 Button(onClick = { onWinnerClick(uiState.player2Id) }, shape = RoundedCornerShape(12.dp), modifier = Modifier.weight(1f).fillMaxHeight()) {
-                    Text("Winner", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(id = R.string.btn_winner), fontSize = 20.sp, fontWeight = FontWeight.Bold)
                 }
             }
 
@@ -607,7 +609,7 @@ private fun RallyScoringControls(
                     modifier = Modifier.weight(1f).fillMaxHeight(),
                     colors = ButtonDefaults.buttonColors(containerColor = customBlue, contentColor = Color.White)
                 ) {
-                    Text(text = "Forced\nError", textAlign = TextAlign.Center, fontSize = 20.sp, fontWeight = FontWeight.Bold, lineHeight = 22.sp)
+                    Text(text = stringResource(id = R.string.btn_forced_error), textAlign = TextAlign.Center, fontSize = 20.sp, fontWeight = FontWeight.Bold, lineHeight = 22.sp)
                 }
                 Button(
                     onClick = { onForcedErrorClick(uiState.player2Id) }, 
@@ -615,7 +617,7 @@ private fun RallyScoringControls(
                     modifier = Modifier.weight(1f).fillMaxHeight(),
                     colors = ButtonDefaults.buttonColors(containerColor = customBlue, contentColor = Color.White)
                 ) {
-                    Text(text = "Forced\nError", textAlign = TextAlign.Center, fontSize = 20.sp, fontWeight = FontWeight.Bold, lineHeight = 22.sp)
+                    Text(text = stringResource(id = R.string.btn_forced_error), textAlign = TextAlign.Center, fontSize = 20.sp, fontWeight = FontWeight.Bold, lineHeight = 22.sp)
                 }
             }
 
@@ -626,7 +628,7 @@ private fun RallyScoringControls(
                     modifier = Modifier.weight(1f).fillMaxHeight(),
                     colors = ButtonDefaults.buttonColors(containerColor = customBlue, contentColor = Color.White)
                 ) {
-                    Text(text = "Unforced\nError", textAlign = TextAlign.Center, fontSize = 20.sp, fontWeight = FontWeight.Bold, lineHeight = 22.sp)
+                    Text(text = stringResource(id = R.string.btn_unforced_error), textAlign = TextAlign.Center, fontSize = 20.sp, fontWeight = FontWeight.Bold, lineHeight = 22.sp)
                 }
                 Button(
                     onClick = { onUnforcedErrorClick(uiState.player2Id) }, 
@@ -634,12 +636,12 @@ private fun RallyScoringControls(
                     modifier = Modifier.weight(1f).fillMaxHeight(),
                     colors = ButtonDefaults.buttonColors(containerColor = customBlue, contentColor = Color.White)
                 ) {
-                    Text(text = "Unforced\nError", textAlign = TextAlign.Center, fontSize = 20.sp, fontWeight = FontWeight.Bold, lineHeight = 22.sp)
+                    Text(text = stringResource(id = R.string.btn_unforced_error), textAlign = TextAlign.Center, fontSize = 20.sp, fontWeight = FontWeight.Bold, lineHeight = 22.sp)
                 }
             }
 
             TextButton(onClick = onCancelClick, modifier = Modifier.fillMaxWidth()) {
-                Text("Cancelar / Voltar", color = MaterialTheme.colorScheme.error)
+                Text(stringResource(id = R.string.btn_cancel_back), color = MaterialTheme.colorScheme.error)
             }
         }
     }
@@ -660,11 +662,11 @@ private fun AdvancedWinnerDetailingControls(
 
     Column(modifier = Modifier.fillMaxSize()) {
         val eventLabel = when (uiState.detailingEventType) {
-            MatchEventType.WINNER -> "WINNER"
-            MatchEventType.FORCED_ERROR -> "FORCED ERROR"
-            MatchEventType.UNFORCED_ERROR -> "UNFORCED ERROR"
-            MatchEventType.ACE -> "ACE"
-            MatchEventType.DOUBLE_FAULT -> "DUPLA FALTA"
+            MatchEventType.WINNER -> stringResource(id = R.string.score_winner_label)
+            MatchEventType.FORCED_ERROR -> stringResource(id = R.string.btn_forced_error).uppercase()
+            MatchEventType.UNFORCED_ERROR -> stringResource(id = R.string.btn_unforced_error).uppercase()
+            MatchEventType.ACE -> stringResource(id = R.string.score_ace)
+            MatchEventType.DOUBLE_FAULT -> stringResource(id = R.string.score_double_fault).uppercase()
             else -> "PONTO"
         }
         
@@ -692,7 +694,7 @@ private fun AdvancedWinnerDetailingControls(
                 // Para Ace e Dupla Falta, mostramos apenas uma mensagem central de confirmação
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text(
-                        text = if (uiState.detailingEventType == MatchEventType.ACE) "Ace registrado com sucesso!" else "Dupla Falta registrada!",
+                        text = if (uiState.detailingEventType == MatchEventType.ACE) stringResource(id = R.string.score_ace_msg) else stringResource(id = R.string.score_double_fault_msg),
                         style = MaterialTheme.typography.headlineSmall,
                         textAlign = TextAlign.Center,
                         color = MaterialTheme.colorScheme.primary
@@ -758,7 +760,7 @@ private fun AdvancedWinnerDetailingControls(
             )
         ) {
             Text(
-                text = if (uiState.isMatchFinished) "Confirmar e Finalizar Partida" else "Confirmar e Continuar",
+                text = if (uiState.isMatchFinished) stringResource(id = R.string.score_confirm_finish) else stringResource(id = R.string.score_confirm_continue),
                 fontWeight = FontWeight.Bold,
                 fontSize = 16.sp
             )
@@ -788,10 +790,15 @@ private fun WinnerDetailingColumn(
         )
 
         // Posicionamento
-        Text("Posição:", fontSize = 12.sp, fontWeight = FontWeight.Normal, color = if (positionEnabled) Color.Unspecified else Color.Gray)
+        Text(stringResource(id = R.string.score_pos), fontSize = 12.sp, fontWeight = FontWeight.Normal, color = if (positionEnabled) Color.Unspecified else Color.Gray)
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             CourtPosition.entries.forEach { pos ->
                 val selected = selectedPosition == pos
+                val labelRes = when(pos) {
+                    CourtPosition.BASELINE -> R.string.score_pos_baseline
+                    CourtPosition.APPROACH -> R.string.score_pos_approach
+                    CourtPosition.NET -> R.string.score_pos_net
+                }
                 Button(
                     onClick = { onPositionSelected(pos) },
                     modifier = Modifier.weight(1f).height(40.dp),
@@ -803,7 +810,7 @@ private fun WinnerDetailingColumn(
                     elevation = null
                 ) {
                     Text(
-                        text = pos.name.take(1) + pos.name.drop(1).lowercase(), 
+                        text = stringResource(id = labelRes), 
                         fontSize = 11.sp,
                         style = TextStyle(letterSpacing = 0.9.sp)
                     )
@@ -814,10 +821,14 @@ private fun WinnerDetailingColumn(
         Spacer(modifier = Modifier.height(10.dp))
 
         // Lado do Golpe
-        Text("Lado:", fontSize = 12.sp, fontWeight = FontWeight.Normal)
+        Text(stringResource(id = R.string.score_hand), fontSize = 12.sp, fontWeight = FontWeight.Normal)
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             HitHand.entries.forEach { hand ->
                 val selected = selectedHitHand == hand
+                val labelRes = when(hand) {
+                    HitHand.FOREHAND -> R.string.score_hand_fh
+                    HitHand.BACKHAND -> R.string.score_hand_bh
+                }
                 Button(
                     onClick = { onHitHandSelected(hand) },
                     modifier = Modifier.weight(1f).height(40.dp),
@@ -828,7 +839,7 @@ private fun WinnerDetailingColumn(
                     elevation = null
                 ) {
                     Text(
-                        text = hand.name.lowercase().capitalize(), 
+                        text = stringResource(id = labelRes), 
                         fontSize = 11.sp,
                         style = TextStyle(letterSpacing = 0.9.sp)
                     )
@@ -839,7 +850,7 @@ private fun WinnerDetailingColumn(
         Spacer(modifier = Modifier.height(10.dp))
 
         // Tipo de Golpe
-        Text("Golpe:", fontSize = 12.sp, fontWeight = FontWeight.Normal)
+        Text(stringResource(id = R.string.score_shot), fontSize = 12.sp, fontWeight = FontWeight.Normal)
         
         val row1 = listOf(ShotType.GROUND, ShotType.SLICE, ShotType.VOLLEY)
         val row2 = listOf(ShotType.DROP, ShotType.LOB, ShotType.SMASH, ShotType.SWING)
@@ -873,6 +884,15 @@ private fun RowScope.ShotTypeButton(
     customBlue: Color,
     onShotTypeSelected: (ShotType) -> Unit
 ) {
+    val labelRes = when(type) {
+        ShotType.GROUND -> R.string.score_shot_ground
+        ShotType.SLICE -> R.string.score_shot_slice
+        ShotType.VOLLEY -> R.string.score_shot_volley
+        ShotType.DROP -> R.string.score_shot_drop
+        ShotType.LOB -> R.string.score_shot_lob
+        ShotType.SMASH -> R.string.score_shot_smash
+        ShotType.SWING -> R.string.score_shot_swing
+    }
     Button(
         onClick = { onShotTypeSelected(type) },
         modifier = Modifier.weight(1f).height(40.dp),
@@ -883,7 +903,7 @@ private fun RowScope.ShotTypeButton(
         elevation = null
     ) {
         Text(
-            text = type.name.lowercase().capitalize(),
+            text = stringResource(id = labelRes),
             fontSize = 11.sp,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
@@ -908,9 +928,14 @@ private fun LoserDetailingColumn(
             fontSize = 14.sp,
             modifier = Modifier.padding(bottom = 8.dp)
         )
-        Text("Posição Oponente:", fontSize = 12.sp, fontWeight = FontWeight.Normal, color = if (positionEnabled) Color.Unspecified else Color.Gray)
+        Text(stringResource(id = R.string.score_opp_pos), fontSize = 12.sp, fontWeight = FontWeight.Normal, color = if (positionEnabled) Color.Unspecified else Color.Gray)
         CourtPosition.entries.forEach { pos ->
             val selected = selectedPosition == pos
+            val labelRes = when(pos) {
+                CourtPosition.BASELINE -> R.string.score_pos_baseline
+                CourtPosition.APPROACH -> R.string.score_pos_approach
+                CourtPosition.NET -> R.string.score_pos_net
+            }
             Button(
                 onClick = { onPositionSelected(pos) },
                 enabled = positionEnabled,
@@ -924,7 +949,7 @@ private fun LoserDetailingColumn(
                 elevation = null
             ) {
                 Text(
-                    text = pos.name.lowercase().capitalize(), 
+                    text = stringResource(id = labelRes), 
                     fontSize = 11.sp,
                     style = TextStyle(letterSpacing = 0.8.sp)
                 )
@@ -947,7 +972,7 @@ private fun ScoreBoardCard(uiState: MatchUiState) {
     ) {
         Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Text(text = "Jogador", modifier = Modifier.weight(2.5f), fontWeight = FontWeight.Bold)
+                Text(text = stringResource(id = R.string.score_player), modifier = Modifier.weight(2.5f), fontWeight = FontWeight.Bold)
                 uiState.completedSets.forEach { completedSet ->
                     Text(text = "S${completedSet.setNumber}", modifier = Modifier.weight(1f), textAlign = TextAlign.Center, fontWeight = FontWeight.Bold)
                 }
@@ -1023,4 +1048,4 @@ fun TennisBallIcon(size: Dp = 16.dp, modifier: Modifier = Modifier, ballColor: C
     }
 }
 
-fun String.capitalize(): String = replaceFirstChar { if (it.isLowerCase()) it.titlecase(java.util.Locale.getDefault()) else it.toString() }
+
